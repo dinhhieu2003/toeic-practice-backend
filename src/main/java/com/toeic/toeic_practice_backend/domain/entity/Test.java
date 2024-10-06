@@ -6,13 +6,13 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Document(collection = "tests")
-@Getter
-@Setter
+@Data
+@EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor
 @AllArgsConstructor
 public class Test extends BaseEntity{
@@ -27,15 +27,13 @@ public class Test extends BaseEntity{
     private String fullTestAudioUrl;
     private List<Part> parts;
 
-    @Getter
-    @Setter
+    @Data
     @NoArgsConstructor
     @AllArgsConstructor
     public static class Part {
         private String number;
         private List<QuestionGroup> questionGroups;
-        @Getter
-        @Setter
+        @Data
         @NoArgsConstructor
         @AllArgsConstructor
         public static class QuestionGroup {

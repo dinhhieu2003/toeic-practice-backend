@@ -24,6 +24,7 @@ public class DBConfig extends AbstractMongoClientConfiguration{
 	private String dbName;
 	@Value("${spring.data.mongodb.uri}")
 	private String dbUri;
+    
 	@Override
 	protected String getDatabaseName() {
 		return this.dbName;

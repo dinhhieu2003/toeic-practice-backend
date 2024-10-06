@@ -21,7 +21,9 @@ import com.toeic.toeic_practice_backend.utils.security.JwtTokenUtils;
 
 @Configuration
 public class SecurityJwtConfiguration {
+
 	private static final Logger LOG = LoggerFactory.getLogger(SecurityJwtConfiguration.class);
+    
 	@Value("${toeic-practice-backend.security.authentication.jwt.base64-secret}")
 	private String jwtKey;
 	
