@@ -21,9 +21,13 @@ import lombok.RequiredArgsConstructor;
 public class SecurityConfiguration {
 	
 	private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+
 	private final OAuth2LoginSuccessHandler successHandler;
+
 	private final OAuth2AuthenticationFailureHandler failureHandler;
+
 	private String[] whiteList = {"/api/v1/auth/**", "/oauth2/**", "/api/oauth2/**"};
+	
 	@Bean
 	public PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();

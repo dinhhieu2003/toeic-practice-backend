@@ -32,12 +32,12 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
 
         response.setContentType("application/json;charset=UTF-8");
 
-
-
         ErrorCode errorCode = ErrorCode.UNAUTHENTICATED;
 
         String errorMessage = errorCode.getMessage();
+
         Throwable cause = authException.getCause();
+        
         if (cause != null) {
             String message = cause.getMessage();
             if (message != null) errorMessage = message;

@@ -19,7 +19,9 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
+
 	private final UserService userService;
+	
 	@GetMapping("/account")
 	public ResponseEntity<User> getCurrentAccount() {
 		// Lấy thông tin Authentication hiện tại từ SecurityContextHolder
