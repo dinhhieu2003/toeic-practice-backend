@@ -19,32 +19,31 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class User extends BaseEntity{
 	@Id
-	private String id;
-	private String email;
-	private String avatar;
-	private String refreshToken;
-	private List<Attempt> testAttemptHistory = new ArrayList<>();
-    private List<Learning> learningProgress = new ArrayList<>();
+    private String id;
+    private String email;
+    private String avatar;
+    private String refreshToken;
     @DBRef(lazy = false)
     private Role role;
-	
-	@Data
-	@NoArgsConstructor
-	@AllArgsConstructor
-	public static class Attempt {
-		private String testId;
-		private int totalAttempt;
-		private float averageScore;
-		private float averageTime;
-		private float highestScore;
-		private String resultId;
-	}
-	
-	@Data
-	@NoArgsConstructor
-	@AllArgsConstructor
-	public static class Learning {
-		private String courseId;
-		private boolean isCompleted;
-	}
+    private int target;
+    private List<TestAttempt> testAttemptHistory = new ArrayList<>();
+    private List<LearningProgress> learningProgress= new ArrayList<>();
+    
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    class TestAttempt {
+        private String testId;
+        @DBRef(lazy = false)
+        private List<Result> results = new ArrayList<>();
+    }
+    
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    class LearningProgress {
+    	@DBRef(lazy = false)
+    	private List<Course> courses = new ArrayList<>();
+    	private boolean isCompleted;
+    }
 }

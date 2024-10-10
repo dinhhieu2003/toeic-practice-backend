@@ -8,22 +8,20 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-@Document(collection = "roles")
+@Document(collection = "categories")
 @Data
 @EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class Role extends BaseEntity{
+public class Category extends BaseEntity{
     @Id
     private String id;
-    private String name;
-    private String description;
-    @DBRef(lazy = false)
-    private List<Permission> permissions = new ArrayList<>();
+    private String format;
+    private int year;
+    @DBRef(lazy = true)
+    private List<Test> tests= new ArrayList<>();
 }

@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.HandlerMapping;
 
+import com.toeic.toeic_practice_backend.domain.entity.Permission;
 import com.toeic.toeic_practice_backend.domain.entity.Role;
 import com.toeic.toeic_practice_backend.domain.entity.User;
 import com.toeic.toeic_practice_backend.exception.AppException;
@@ -50,12 +51,16 @@ public class PermissionInterceptor implements HandlerInterceptor {
             if (user != null) {
                 Role role = user.getRole();
                 if (role != null) {
-                    List<Role.Permission> permissions = role.getPermissions();
+                    List<Permission> permissions = role.getPermissions();
                     boolean isAllow = permissions.stream().anyMatch(item -> item.getApiPath().equals(path)
                             && item.getMethod().equals(httpMethod));
 
                     if (!isAllow) {
-                        throw new AppException(ErrorCode.UNAUTHORIZED);
+                    	if(role.getName().equalsIgnoreCase("admin")) {
+                    		isAllow = true;
+                    	} else {
+                    		throw new AppException(ErrorCode.UNAUTHORIZED);
+                    	}    
                     }
                 } else {
                     throw new AppException(ErrorCode.UNAUTHORIZED);

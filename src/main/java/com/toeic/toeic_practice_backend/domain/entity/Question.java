@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.AllArgsConstructor;
@@ -17,20 +18,27 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Question extends BaseEntity{
-    @Id
+	@Id
     private String id;
-    private String number;
+    private int questionNum;
+    private int partNum;
+    private String type;  // single, group, or subquestion
+    @DBRef(lazy = false)
+    private List<Question> subQuestions;
     private String content;
-    private String difficulty;
+    private int difficulty;
+    private List<String> topic= new ArrayList<>();  // Array of topics
+    private List<Resource> resources= new ArrayList<>();
     private String transcript;
-    private List<Answer> answers = new ArrayList<>();
-
+    private String explanation;
+    private List<String> answers= new ArrayList<>();
+    private String correctAnswer;
+    
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class Answer {
-        private String answerOption;
+    class Resource {
+        private String type;  // paragraph, image, or audio
         private String content;
-        private boolean isCorrect;
     }
 }

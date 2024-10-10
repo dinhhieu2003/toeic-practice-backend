@@ -8,13 +8,12 @@ import lombok.Getter;
 @Getter
 public enum ErrorCode {
 	UNCATEGORIZED_EXCEPTION(9999, "Uncategorized error", HttpStatus.INTERNAL_SERVER_ERROR),
-	INVALID_KEY(1001, "Invalid key error", HttpStatus.BAD_REQUEST),
-	EXISTED_USER(1002, "Email existed", HttpStatus.BAD_REQUEST),
-	COMPANY_EXISTED(1003, "This company is existed", HttpStatus.BAD_REQUEST),
-	
-	
-	UNAUTHENTICATED(1006, "Unauthenticated", HttpStatus.UNAUTHORIZED),
-	UNAUTHORIZED(1007, "You do not have permission", HttpStatus.FORBIDDEN);
+	INVALID_KEY(1001, "Invalid key provided", HttpStatus.BAD_REQUEST),
+	USER_ALREADY_EXISTS(1002, "Email already exists", HttpStatus.BAD_REQUEST),
+	UNAUTHENTICATED(1003, "Unauthenticated access", HttpStatus.UNAUTHORIZED),
+	UNAUTHORIZED(1004, "You do not have permission", HttpStatus.FORBIDDEN),
+	TOKEN_NOT_VALID(1005, "Token is not valid", HttpStatus.BAD_REQUEST),
+	MISSING_COOKIE(1006, "Required cookie is missing", HttpStatus.BAD_REQUEST);
 	
 	private final int code;
 	private final String message;

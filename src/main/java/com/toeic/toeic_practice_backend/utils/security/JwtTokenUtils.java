@@ -42,10 +42,6 @@ public class JwtTokenUtils {
 		Instant now = Instant.now();
         Instant validity = now.plus(accessTokenExpiration, ChronoUnit.SECONDS);
 
-        List<String> listPermission = new ArrayList<>();
-        listPermission.add("ROLE_USER_CREATE");
-        listPermission.add("ROLE_USER_UPDATE");
-
 //        User information in token
         UserToken userToken = new UserToken();
         userToken.setId(user.getId());
@@ -56,7 +52,6 @@ public class JwtTokenUtils {
                 .expiresAt(validity)
                 .subject(user.getEmail())
                 .claim("user", userToken)
-                .claim("permission", listPermission)
                 .build();
 
         JwsHeader jwsHeader = JwsHeader.with(JWT_ALGORITHM).build();

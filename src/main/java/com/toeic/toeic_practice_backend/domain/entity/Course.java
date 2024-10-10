@@ -1,5 +1,6 @@
 package com.toeic.toeic_practice_backend.domain.entity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.annotation.Id;
@@ -16,23 +17,30 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Course extends BaseEntity{
-    @Id
+	@Id
     private String id;
     private String name;
-    private String topic;
+    private List<String> topic = new ArrayList<>();  // Array of topic names
     private String format;
-    private String difficulty;
+    private int difficulty;
     private Lecture lecture;
-    private String content;
-    private String description;
-    private List<String> questionIds;
+    private Assignment assignment;
     
     @Data
-    @NoArgsConstructor
     @AllArgsConstructor
-    public static class Lecture {
-    	private String title;
-    	private String content;
-    	private String description;
+    @NoArgsConstructor
+    class Assignment {
+        private int required;
+        private int totalQuestion;
+        private List<String> questionIds;
+    }
+    
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    class Lecture {
+        private String title;
+        private String content;
+        private String description;
     }
 }
