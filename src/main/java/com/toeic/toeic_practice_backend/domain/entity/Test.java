@@ -25,8 +25,6 @@ public class Test extends BaseEntity{
     private int totalQuestion;
     private int totalScore;
     private int limitTime;
-    @DBRef(lazy = false)
-    private List<Question> questions = new ArrayList<>();
     @DBRef(lazy = true)
     private Category category;
 }

@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.toeic.toeic_practice_backend.service.AzureBlobService;
+import com.toeic.toeic_practice_backend.service.QuestionService;
 import com.toeic.toeic_practice_backend.service.TestService;
 
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,17 @@ import lombok.RequiredArgsConstructor;
 public class TestController {
 	private final TestService testService;
 	private final AzureBlobService azureBlobService;
+	private final QuestionService questionService;
+	
+	@PostMapping("/import")
+    public ResponseEntity<?> importQuestions(@RequestParam("file") MultipartFile file) {
+        try {
+            questionService.importQuestions(file);
+            return ResponseEntity.ok(null);
+        } catch (IOException e) {
+            return ResponseEntity.status(500).body("Failed to import questions: " + e.getMessage());
+        }
+    }
 	
 	@PostMapping("/upload")
     public ResponseEntity<?> uploadFiles(@RequestParam("files") List<MultipartFile> files) {
