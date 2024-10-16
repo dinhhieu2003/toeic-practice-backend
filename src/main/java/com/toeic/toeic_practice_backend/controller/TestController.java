@@ -6,6 +6,8 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.toeic.toeic_practice_backend.domain.dto.request.test.TestCreationRequest;
+import com.toeic.toeic_practice_backend.domain.entity.Test;
 import com.toeic.toeic_practice_backend.service.AzureBlobService;
 import com.toeic.toeic_practice_backend.service.QuestionService;
 import com.toeic.toeic_practice_backend.service.TestService;
@@ -27,10 +31,10 @@ public class TestController {
 	private final AzureBlobService azureBlobService;
 	private final QuestionService questionService;
 	
-	@PostMapping("/import")
-    public ResponseEntity<?> importQuestions(@RequestParam("file") MultipartFile file) {
+	@PostMapping("{testId}/import")
+    public ResponseEntity<?> importQuestions(@RequestParam("file") MultipartFile file, @PathVariable String testId) {
         try {
-            questionService.importQuestions(file);
+            questionService.importQuestions(file, testId);
             return ResponseEntity.ok(null);
         } catch (IOException e) {
             return ResponseEntity.status(500).body("Failed to import questions: " + e.getMessage());
@@ -67,4 +71,8 @@ public class TestController {
         return ResponseEntity.ok(null);
     }
 	
+	@PostMapping("")
+	public ResponseEntity<Test> addTest(@RequestBody TestCreationRequest test) {
+		return ResponseEntity.status(HttpStatus.CREATED).body(testService.addTest(test));
+	}
 }

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.AllArgsConstructor;
@@ -24,17 +25,9 @@ public class Course extends BaseEntity{
     private String format;
     private int difficulty;
     private Lecture lecture;
-    private Assignment assignment;
-    
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-    class Assignment {
-        private int required;
-        private int totalQuestion;
-        private List<String> questionIds;
-    }
-    
+    @DBRef(lazy=false)
+    private List<Practice> practices;
+   
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
