@@ -26,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class QuestionService {
     private final QuestionRepository questionRepository;
-
+    private String urlResource = "https://tuine09.blob.core.windows.net/resources/";
     @Transactional(rollbackFor = {Exception.class})
     public void importQuestions(MultipartFile file, String testId) throws IOException {
         Workbook workbook = null;
@@ -103,10 +103,10 @@ public class QuestionService {
             String audioName = getCellValue(row.getCell(3));
             List<Question.Resource> resources = new ArrayList<>();
             if (imageName != null && !imageName.isEmpty()) {
-                resources.add(new Question.Resource("image", imageName));
+                resources.add(new Question.Resource("image", urlResource + imageName));
             }
             if (audioName != null && !audioName.isEmpty()) {
-                resources.add(new Question.Resource("audio", audioName));
+                resources.add(new Question.Resource("audio", urlResource + audioName));
             }
             question.setResources(resources);
             // Extract options
@@ -139,7 +139,7 @@ public class QuestionService {
             String audioName = getCellValue(row.getCell(3));
             List<Question.Resource> resources = new ArrayList<>();
             if (audioName != null && !audioName.isEmpty()) {
-                resources.add(new Question.Resource("audio", audioName));
+                resources.add(new Question.Resource("audio", urlResource + audioName));
             }
             question.setResources(resources);
 
@@ -176,10 +176,10 @@ public class QuestionService {
             String audioName = getCellValue(row.getCell(4));
             List<Question.Resource> resources = new ArrayList<>();
             if (imageName != null && !imageName.isEmpty()) {
-                resources.add(new Question.Resource("image", imageName));
+                resources.add(new Question.Resource("image", urlResource + imageName));
             }
             if (audioName != null && !audioName.isEmpty()) {
-                resources.add(new Question.Resource("audio", audioName));
+                resources.add(new Question.Resource("audio", urlResource + audioName));
             }
             question.setResources(resources);
 
@@ -232,7 +232,9 @@ public class QuestionService {
         try {
             Question question = new Question();
             question.setType(getCellValue(row.getCell(0)));
-            question.setQuestionNum((int) getNumericCellValue(row.getCell(1)));
+            if (!"group".equalsIgnoreCase(question.getType())) {
+                question.setQuestionNum((int) getNumericCellValue(row.getCell(1)));
+            }
             question.setContent(getCellValue(row.getCell(2)));
 
             // Handle paragraph texts and their order
@@ -257,7 +259,7 @@ public class QuestionService {
                 String[] images = imageNames.split(";");
                 String[] imageOrderArray = imageOrders.split(",");
                 for (int i = 0; i < images.length; i++) {
-                    resourceOrderMap.put(Integer.parseInt(imageOrderArray[i]), "image:" + images[i].trim());
+                    resourceOrderMap.put(Integer.parseInt(imageOrderArray[i]), "image:" + urlResource + images[i].trim());
                 }
             }
 
@@ -285,6 +287,7 @@ public class QuestionService {
 
             return question;
         } catch (Exception e) {
+        	System.out.println(row.getRowNum());
             // Log error and return null to skip this row
             System.err.println("Error parsing row for Part 6: " + e.getMessage());
             return null;
