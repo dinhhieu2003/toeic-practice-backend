@@ -36,14 +36,20 @@ public class User extends BaseEntity{
         private String testId;
         @DBRef(lazy = false)
         private List<Result> results = new ArrayList<>();
+        private int totalAttempt;
+        private int averageScore;
+        private int averageTime;
+        private int highestScore;
     }
     
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
     class LearningProgress {
-    	@DBRef(lazy = false)
-    	private List<Course> courses = new ArrayList<>();
-    	private boolean isCompleted;
+    	@DBRef(lazy=false)
+    	private Course courseId;
+    	private float percent;
+    	@DBRef(lazy=true)
+    	private List<ResultPractice> resultPractices;
     }
 }

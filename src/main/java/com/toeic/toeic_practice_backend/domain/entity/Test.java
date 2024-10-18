@@ -7,6 +7,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -25,8 +27,7 @@ public class Test extends BaseEntity{
     private int totalQuestion;
     private int totalScore;
     private int limitTime;
-    @DBRef(lazy = false)
-    private List<Question> questions = new ArrayList<>();
     @DBRef(lazy = true)
+    @JsonIgnore
     private Category category;
 }

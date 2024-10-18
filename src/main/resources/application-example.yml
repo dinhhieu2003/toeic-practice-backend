@@ -1,0 +1,48 @@
+server:
+  port: 8080
+
+client:
+  url: http://localhost:3000
+ 
+spring:
+  application:
+    name: toeic-practice-backend
+  data:
+    mongodb:
+      uri:
+      database: 
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            clientId: 
+            clientSecret: 
+            redirectUri: "{baseUrl}/oauth2/callback/{registrationId}"
+            scope:
+              - email
+              - profile
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${gmail}
+    password: ${password}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            
+# Config jwt
+## env var
+toeic-practice-backend:
+ security:
+  authentication:
+   jwt:
+    # This token must be encoded using Base64 and be at least 256 bits long (you can type `openssl rand -base64 64` on your command line to generate a 512 bits one)
+    base64-secret: 
+    # Token is valid 24 hours
+    token-validity-in-seconds: 86400
+    # RefreshToken is valid 7 days
+    refreshToken-validity-in-seconds: 604800

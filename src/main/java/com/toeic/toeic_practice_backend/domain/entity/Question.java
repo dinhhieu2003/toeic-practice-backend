@@ -20,11 +20,13 @@ import lombok.NoArgsConstructor;
 public class Question extends BaseEntity{
 	@Id
     private String id;
+	private String testId;
+	private String practiceId;
     private int questionNum;
     private int partNum;
     private String type;  // single, group, or subquestion
     @DBRef(lazy = false)
-    private List<Question> subQuestions;
+    private List<Question> subQuestions = new ArrayList<>();
     private String content;
     private int difficulty;
     private List<String> topic= new ArrayList<>();  // Array of topics
@@ -37,7 +39,7 @@ public class Question extends BaseEntity{
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    class Resource {
+    public static class Resource {
         private String type;  // paragraph, image, or audio
         private String content;
     }

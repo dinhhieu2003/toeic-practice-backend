@@ -13,8 +13,14 @@ public enum ErrorCode {
 	UNAUTHENTICATED(1003, "Unauthenticated access", HttpStatus.UNAUTHORIZED),
 	UNAUTHORIZED(1004, "You do not have permission", HttpStatus.FORBIDDEN),
 	TOKEN_NOT_VALID(1005, "Token is not valid", HttpStatus.BAD_REQUEST),
-	MISSING_COOKIE(1006, "Required cookie is missing", HttpStatus.BAD_REQUEST);
+	MISSING_COOKIE(1006, "Required cookie is missing", HttpStatus.BAD_REQUEST),
 	
+//	Category
+	CATEGORY_ALREADY_EXISTS(2001, "Category already exists", HttpStatus.BAD_REQUEST),
+	CATEGORY_NOT_FOUND(2002, "Category not found", HttpStatus.NOT_FOUND),
+	
+//	Test 
+	TEST_ALREADY_EXISTS(2001, "Test already exists", HttpStatus.BAD_REQUEST);
 	private final int code;
 	private final String message;
 	private final HttpStatusCode statusCode;
