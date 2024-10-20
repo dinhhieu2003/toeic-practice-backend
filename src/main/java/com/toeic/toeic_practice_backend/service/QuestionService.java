@@ -119,6 +119,7 @@ public class QuestionService {
 
             question.setTranscript(getCellValue(row.getCell(9)));
             question.setExplanation(getCellValue(row.getCell(10)));
+            question.setDifficulty((int) getNumericCellValue(row.getCell(11)));
 
             return question;
         } catch (Exception e) {
@@ -153,7 +154,7 @@ public class QuestionService {
 
             question.setTranscript(getCellValue(row.getCell(8)));
             question.setExplanation(getCellValue(row.getCell(9)));
-
+            question.setDifficulty((int) getNumericCellValue(row.getCell(10)));
             return question;
         } catch (Exception e) {
             // Log error and return null to skip this row
@@ -193,6 +194,7 @@ public class QuestionService {
 
             question.setTranscript(getCellValue(row.getCell(10)));
             question.setExplanation(getCellValue(row.getCell(11)));
+            question.setDifficulty((int) getNumericCellValue(row.getCell(12)));
 
             return question;
         } catch (Exception e) {
@@ -217,8 +219,8 @@ public class QuestionService {
             }
             question.setAnswers(answers);
             question.setCorrectAnswer(getCellValue(row.getCell(7)));
-
             question.setExplanation(getCellValue(row.getCell(8)));
+            question.setDifficulty((int) getNumericCellValue(row.getCell(9)));
 
             return question;
         } catch (Exception e) {
@@ -281,9 +283,9 @@ public class QuestionService {
             }
             question.setAnswers(answers);
             question.setCorrectAnswer(getCellValue(row.getCell(11)));
-
             question.setTranscript(getCellValue(row.getCell(12)));
             question.setExplanation(getCellValue(row.getCell(13)));
+            question.setDifficulty((int) getNumericCellValue(row.getCell(14)));
 
             return question;
         } catch (Exception e) {

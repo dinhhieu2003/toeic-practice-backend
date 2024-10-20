@@ -20,7 +20,11 @@ public enum ErrorCode {
 	CATEGORY_NOT_FOUND(2002, "Category not found", HttpStatus.NOT_FOUND),
 	
 //	Test 
-	TEST_ALREADY_EXISTS(2001, "Test already exists", HttpStatus.BAD_REQUEST);
+	TEST_ALREADY_EXISTS(2001, "Test already exists", HttpStatus.BAD_REQUEST),
+	
+//	Topic
+	TOPIC_ALREADY_EXISTS(3001, "Topic already exists", HttpStatus.BAD_REQUEST);
+	
 	private final int code;
 	private final String message;
 	private final HttpStatusCode statusCode;
