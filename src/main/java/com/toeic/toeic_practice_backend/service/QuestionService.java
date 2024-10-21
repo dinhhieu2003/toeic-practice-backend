@@ -53,6 +53,7 @@ public class QuestionService {
                         } else if (currentGroup != null && "subquestion".equalsIgnoreCase(question.getType())) {
                             questionRepository.save(question);
                             currentGroup.getSubQuestions().add(question);
+                            currentGroup.setQuestionNum(question.getQuestionNum());
                             questionRepository.save(currentGroup);
                         } else {
                             currentGroup = null;
