@@ -2,7 +2,7 @@ server:
   port: 8080
 
 client:
-  url: http://localhost:3000
+  url: ${CLIENT_URL}
  
 spring:
   application:
