@@ -64,10 +64,6 @@ spring-boot-starter/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-# Application properties
-**/src/main/resources/application.yml
-**/src/main/resources/application.properties
-
 # OS generated files
 .DS_Store
 .DS_Store?

@@ -9,15 +9,19 @@ spring:
     name: toeic-practice-backend
   data:
     mongodb:
-      uri:
-      database: 
+      uri: ${MONGODB_URI}
+      database: Toeic
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
   security:
     oauth2:
       client:
         registration:
           google:
-            clientId: 
-            clientSecret: 
+            clientId: ${GOOGLE_CLIENT_ID}
+            clientSecret: ${GOOGLE_CLIENT_SECRET}
             redirectUri: "{baseUrl}/oauth2/callback/{registrationId}"
             scope:
               - email
@@ -41,8 +45,16 @@ toeic-practice-backend:
   authentication:
    jwt:
     # This token must be encoded using Base64 and be at least 256 bits long (you can type `openssl rand -base64 64` on your command line to generate a 512 bits one)
-    base64-secret: 
+    base64-secret: ${JWT_SECRET}
     # Token is valid 24 hours
     token-validity-in-seconds: 86400
     # RefreshToken is valid 7 days
     refreshToken-validity-in-seconds: 604800
+
+# Config azure
+azure:
+  storage:
+    container:
+      name: ${AZURE_STORAGE_CONTAINER_NAME}
+    connection:
+      string: ${AZURE_CONNECTION_STRING}
