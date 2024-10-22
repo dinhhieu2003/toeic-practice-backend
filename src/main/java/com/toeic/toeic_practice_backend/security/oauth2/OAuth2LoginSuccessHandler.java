@@ -14,7 +14,9 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationSu
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.toeic.toeic_practice_backend.domain.entity.Role;
 import com.toeic.toeic_practice_backend.domain.entity.User;
+import com.toeic.toeic_practice_backend.service.RoleService;
 import com.toeic.toeic_practice_backend.service.UserService;
 import com.toeic.toeic_practice_backend.utils.security.JwtTokenUtils;
 
@@ -29,6 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
     private final UserService userService; 
+    private final RoleService roleService;
     private final JwtTokenUtils jwtTokenUtils;
     private final Encoder encoder;
     @Value("${client.url}")
@@ -61,6 +64,8 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
             user.setEmail(email);
             user.setAvatar(avatar);
             user.setActive(true);
+            Role role = roleService.getRoleByName("USER");
+            user.setRole(role);
             this.user = this.userService.saveUser(user);
         });
         if (this.user != null) {
@@ -87,6 +92,7 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
                     .queryParam("token", accessToken)
                     .queryParam("email", this.encoder.encode(this.user.getEmail()))
                     .queryParam("avatar", this.encoder.encode(this.user.getAvatar()))
+                    .queryParam("role", this.user.getRole().getName())
                     .build().toUriString();
             log.info("Login account success: " + email);
         } else {

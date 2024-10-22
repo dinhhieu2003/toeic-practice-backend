@@ -24,7 +24,7 @@ public class Course extends BaseEntity{
     private List<String> topic = new ArrayList<>();  // Array of topic names
     private String format;
     private int difficulty;
-    private Lecture lecture;
+    private List<Lecture> lectures = new ArrayList<>();
     @DBRef(lazy=false)
     private List<Practice> practices;
    
@@ -34,6 +34,5 @@ public class Course extends BaseEntity{
     class Lecture {
         private String title;
         private String content;
-        private String description;
     }
 }

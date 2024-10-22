@@ -49,7 +49,5 @@ public class User extends BaseEntity{
     	@DBRef(lazy=false)
     	private Course courseId;
     	private float percent;
-    	@DBRef(lazy=true)
-    	private List<ResultPractice> resultPractices;
     }
 }

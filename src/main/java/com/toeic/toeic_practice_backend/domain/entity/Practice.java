@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor
 @AllArgsConstructor
-public class Practice {
+public class Practice extends BaseEntity {
 	@Id
 	private String id;
 	private String courseId;

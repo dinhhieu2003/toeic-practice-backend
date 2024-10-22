@@ -66,4 +66,10 @@ public class RoleService {
 		response.setResult(listRoles);
 		return response;
 	}
+	
+	public Role getRoleByName(String name) {
+		Role role = roleRepository.findByName(name)
+				.orElseThrow(() -> new AppException(ErrorCode.INVALID_KEY));
+		return role;
+	}
 }
