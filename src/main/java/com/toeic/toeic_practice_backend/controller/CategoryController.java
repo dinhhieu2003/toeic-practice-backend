@@ -2,6 +2,7 @@ package com.toeic.toeic_practice_backend.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,5 +25,10 @@ public class CategoryController {
 		int year = category.getYear();
 		return ResponseEntity.status(HttpStatus.CREATED)
 				.body(categoryService.addCategory(format, year));
+	}
+	
+	@PostMapping("/{id}")
+	public ResponseEntity<Category> updateCategory(@RequestBody Category category, @PathVariable String id) {
+		return ResponseEntity.ok(categoryService.updateCategory(category, id));
 	}
 }

@@ -24,10 +24,11 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(rollbackFor = {Exception.class})
 public class QuestionService {
     private final QuestionRepository questionRepository;
     private String urlResource = "https://tuine09.blob.core.windows.net/resources/";
-    @Transactional(rollbackFor = {Exception.class})
+    
     public void importQuestions(MultipartFile file, String testId) throws IOException {
         Workbook workbook = null;
         try {
