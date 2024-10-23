@@ -29,7 +29,8 @@ public class Question extends BaseEntity{
     private List<Question> subQuestions = new ArrayList<>();
     private String content;
     private int difficulty;
-    private List<String> topic= new ArrayList<>();  // Array of topics
+    @DBRef(lazy=false)
+    private List<Topic> topic= new ArrayList<>();
     private List<Resource> resources= new ArrayList<>();
     private String transcript;
     private String explanation;

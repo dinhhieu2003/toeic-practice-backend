@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.toeic.toeic_practice_backend.domain.dto.request.test.TestCreationRequest;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.Meta;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
+import com.toeic.toeic_practice_backend.domain.dto.response.test.FullTestResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Test;
 import com.toeic.toeic_practice_backend.exception.AppException;
 import com.toeic.toeic_practice_backend.repository.TestRepository;
@@ -21,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class TestService {
 	private final TestRepository testRepository;
+	private final QuestionService questionService;
 	public Test addTest(TestCreationRequest testCreationRequest) {
 		Optional<Test> testOptional = 
 				testRepository.findByNameAndCategoryId(testCreationRequest.getName(), 
@@ -55,5 +57,12 @@ public class TestService {
 		response.setMeta(meta);
 		response.setResult(result);
 		return response;
+	}
+	
+	public FullTestResponse getQuestionTest(String testId, String listPart) {
+		FullTestResponse fullTestResponse = new FullTestResponse();
+		List<FullTestResponse.Part> parts = questionService.getQuestionByTestIdGroupByPart(testId, listPart);
+		fullTestResponse.setParts(parts);
+		return fullTestResponse;
 	}
 }
