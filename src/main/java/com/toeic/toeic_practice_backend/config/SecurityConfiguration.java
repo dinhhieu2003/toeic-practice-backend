@@ -2,6 +2,7 @@ package com.toeic.toeic_practice_backend.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -16,7 +17,7 @@ import com.toeic.toeic_practice_backend.security.oauth2.OAuth2LoginSuccessHandle
 import lombok.RequiredArgsConstructor;
 
 @Configuration
-@EnableMethodSecurity(securedEnabled = false)
+@EnableMethodSecurity(securedEnabled = true)
 @RequiredArgsConstructor
 public class SecurityConfiguration {
 	
@@ -42,6 +43,7 @@ public class SecurityConfiguration {
 			.authorizeHttpRequests(authz ->
 					authz
 						.requestMatchers(whiteList).permitAll()
+						.requestMatchers(HttpMethod.GET, "/api/v1/categories/**").permitAll()
 						.anyRequest().authenticated()
 			)
 			.oauth2Login(auth -> {
