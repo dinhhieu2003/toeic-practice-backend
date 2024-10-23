@@ -3,6 +3,8 @@ package com.toeic.toeic_practice_backend.controller;
 import java.io.IOException;
 import java.util.List;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.toeic.toeic_practice_backend.domain.dto.request.test.TestCreationRequest;
+import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Test;
 import com.toeic.toeic_practice_backend.service.AzureBlobService;
 import com.toeic.toeic_practice_backend.service.QuestionService;
@@ -74,5 +77,15 @@ public class TestController {
 	@PostMapping("")
 	public ResponseEntity<Test> addTest(@RequestBody TestCreationRequest test) {
 		return ResponseEntity.status(HttpStatus.CREATED).body(testService.addTest(test));
+	}
+	
+	@GetMapping("")
+	public ResponseEntity<PaginationResponse<List<Test>>> getAllTest(
+			@RequestParam(defaultValue = "1") String current,
+			@RequestParam(defaultValue = "5") String pageSize) {
+		int currentInt = Integer.parseInt(current)-1;
+		int pageSizeInt = Integer.parseInt(pageSize);
+		Pageable pageable = PageRequest.of(currentInt, pageSizeInt);
+		return ResponseEntity.ok(testService.getAllTest(pageable));
 	}
 }
