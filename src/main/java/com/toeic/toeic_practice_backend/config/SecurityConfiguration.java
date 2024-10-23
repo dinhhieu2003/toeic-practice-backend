@@ -44,6 +44,7 @@ public class SecurityConfiguration {
 					authz
 						.requestMatchers(whiteList).permitAll()
 						.requestMatchers(HttpMethod.GET, "/api/v1/categories/**").permitAll()
+						.requestMatchers(HttpMethod.GET, "/api/v1/tests/**").permitAll()
 						.anyRequest().authenticated()
 			)
 			.oauth2Login(auth -> {

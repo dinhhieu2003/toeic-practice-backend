@@ -9,5 +9,5 @@ import com.toeic.toeic_practice_backend.domain.entity.Test;
 
 @Repository
 public interface TestRepository extends MongoRepository<Test, String> {
-	Optional<Test> findByNameAndCategory_Id(String name, String categoryId);
+	Optional<Test> findByNameAndCategoryId(String name, String categoryId);
 }
