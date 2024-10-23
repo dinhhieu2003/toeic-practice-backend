@@ -1,10 +1,15 @@
 package com.toeic.toeic_practice_backend.service;
 
+import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.toeic.toeic_practice_backend.domain.dto.response.pagination.Meta;
+import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Category;
 import com.toeic.toeic_practice_backend.exception.AppException;
 import com.toeic.toeic_practice_backend.repository.CategoryRepository;
@@ -50,5 +55,19 @@ public class CategoryService {
         } else {
             throw new AppException(ErrorCode.CATEGORY_ALREADY_EXISTS);
         }
+	}
+	
+	public PaginationResponse<List<Category>> getAllCategory(Pageable pageable) {
+		Page<Category> categoryPage = categoryRepository.findAll(pageable);
+		PaginationResponse<List<Category>> response = new PaginationResponse<List<Category>>();
+		Meta meta = new Meta();
+		meta.setCurrent(pageable.getPageNumber()+1);
+		meta.setPageSize(pageable.getPageSize());
+		meta.setTotalItems(categoryPage.getTotalElements());
+		meta.setTotalPages(categoryPage.getTotalPages());
+		List<Category> result = categoryPage.getContent();
+		response.setMeta(meta);
+		response.setResult(result);
+		return response;
 	}
 }
