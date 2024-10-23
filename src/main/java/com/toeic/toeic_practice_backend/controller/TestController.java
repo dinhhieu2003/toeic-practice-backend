@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.toeic.toeic_practice_backend.domain.dto.request.test.TestCreationRequest;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
+import com.toeic.toeic_practice_backend.domain.dto.response.test.FullTestResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Test;
 import com.toeic.toeic_practice_backend.service.AzureBlobService;
 import com.toeic.toeic_practice_backend.service.QuestionService;
@@ -87,5 +88,15 @@ public class TestController {
 		int pageSizeInt = Integer.parseInt(pageSize);
 		Pageable pageable = PageRequest.of(currentInt, pageSizeInt);
 		return ResponseEntity.ok(testService.getAllTest(pageable));
+	}
+	
+	@GetMapping("/{testId}/full-test")
+	public ResponseEntity<FullTestResponse> getQuestionFullTest(@PathVariable String testId) {
+		return ResponseEntity.ok(testService.getQuestionTest(testId, "1234567"));
+	}
+	
+	@GetMapping("/{testId}/practice")
+	public ResponseEntity<FullTestResponse> getQuestionByParts(@PathVariable String testId, @RequestParam String parts) {
+		return ResponseEntity.ok(testService.getQuestionTest(testId, parts));
 	}
 }

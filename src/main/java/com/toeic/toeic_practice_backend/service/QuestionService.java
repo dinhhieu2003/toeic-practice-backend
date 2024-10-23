@@ -17,7 +17,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.toeic.toeic_practice_backend.domain.dto.response.test.FullTestResponse;
+import com.toeic.toeic_practice_backend.domain.dto.response.test.MultipleChoiceQuestion;
 import com.toeic.toeic_practice_backend.domain.entity.Question;
+import com.toeic.toeic_practice_backend.mapper.QuestionMapper;
 import com.toeic.toeic_practice_backend.repository.QuestionRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -27,6 +30,7 @@ import lombok.RequiredArgsConstructor;
 @Transactional(rollbackFor = {Exception.class})
 public class QuestionService {
     private final QuestionRepository questionRepository;
+    private final QuestionMapper questionMapper;
     private String urlResource = "https://tuine09.blob.core.windows.net/resources/";
     
     public void importQuestions(MultipartFile file, String testId) throws IOException {
@@ -304,5 +308,28 @@ public class QuestionService {
 
     private double getNumericCellValue(Cell cell) {
         return (cell != null) ? cell.getNumericCellValue() : 0;
+    }
+
+    public List<FullTestResponse.Part> getQuestionByTestIdGroupByPart(String testId, String listPart) {
+    	
+    	List<Integer> listPartInt = listPart.chars()
+    			.mapToObj(c -> Character.getNumericValue(c))
+    			.collect(Collectors.toList());
+    	
+    	List<Question> questions = questionRepository.findByTestIdAndTypeIsNotSubquestion(testId, listPartInt);
+
+    	Map<Integer, List<Question>> groupedByPartNum = questions.stream()
+                .collect(Collectors.groupingBy(Question::getPartNum));
+    	
+    	return groupedByPartNum.entrySet().stream()
+                .map(entry -> {
+                    int partNum = entry.getKey();
+                    List<Question> questionsInPart = entry.getValue();
+                    
+                    List<MultipleChoiceQuestion> multipleChoiceQuestions = questionMapper
+                            .toListMultipleChoiceQuestionFromListQuestion(questionsInPart);
+                    return new FullTestResponse.Part(partNum, multipleChoiceQuestions);
+                })
+                .collect(Collectors.toList());
     }
 }
