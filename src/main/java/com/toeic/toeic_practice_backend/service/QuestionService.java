@@ -13,10 +13,14 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.toeic.toeic_practice_backend.domain.dto.response.pagination.Meta;
+import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.test.FullTestResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.test.MultipleChoiceQuestion;
 import com.toeic.toeic_practice_backend.domain.entity.Question;
@@ -33,6 +37,21 @@ public class QuestionService {
     private final QuestionMapper questionMapper;
     private String urlResource = "https://tuine09.blob.core.windows.net/resources/";
     
+    public PaginationResponse<List<Question>> getAllQuestion(Pageable pageable) {
+        Page<Question> questionPage = questionRepository.findAll(pageable);
+        return PaginationResponse.<List<Question>>builder()
+            .meta(
+                Meta.builder()
+                    .current(pageable.getPageNumber()+1)
+                    .pageSize(pageable.getPageSize())
+                    .totalItems(questionPage.getTotalElements())
+                    .totalPages(questionPage.getTotalPages())
+                    .build()
+            )
+            .result(questionPage.getContent())
+            .build();
+    }
+
     public void importQuestions(MultipartFile file, String testId) throws IOException {
         Workbook workbook = null;
         try {

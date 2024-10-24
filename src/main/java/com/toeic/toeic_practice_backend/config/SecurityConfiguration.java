@@ -28,6 +28,8 @@ public class SecurityConfiguration {
 	private final OAuth2AuthenticationFailureHandler failureHandler;
 
 	private String[] whiteList = {"/api/v1/auth/**", "/oauth2/**", "/api/oauth2/**"};
+
+	private String[] getWhiteList = {"/api/v1/categories/**", "/api/v1/tests/**", "/api/v1/questions/**"};
 	
 	@Bean
 	public PasswordEncoder passwordEncoder() {
@@ -43,8 +45,7 @@ public class SecurityConfiguration {
 			.authorizeHttpRequests(authz ->
 					authz
 						.requestMatchers(whiteList).permitAll()
-						.requestMatchers(HttpMethod.GET, "/api/v1/categories/**").permitAll()
-						.requestMatchers(HttpMethod.GET, "/api/v1/tests/**").permitAll()
+						.requestMatchers(HttpMethod.GET, getWhiteList).permitAll()
 						.anyRequest().authenticated()
 			)
 			.oauth2Login(auth -> {
