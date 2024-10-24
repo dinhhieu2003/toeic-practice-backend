@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.Meta;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Category;
+import com.toeic.toeic_practice_backend.domain.entity.Test;
 import com.toeic.toeic_practice_backend.exception.AppException;
 import com.toeic.toeic_practice_backend.repository.CategoryRepository;
 import com.toeic.toeic_practice_backend.utils.constants.ErrorCode;
@@ -22,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 @Transactional(rollbackFor = {Exception.class})
 public class CategoryService {
 	private final CategoryRepository categoryRepository;
+	private final TestService testService;
 	public Category addCategory(String format, int year) {
 		Optional<Category> categoryOptional = categoryRepository.findByFormatAndYear(format, year);
 		Category categoryResponse = new Category();
@@ -69,5 +71,18 @@ public class CategoryService {
 		response.setMeta(meta);
 		response.setResult(result);
 		return response;
+	}
+	
+	public PaginationResponse<List<Test>> getTestsInCategory(
+			String id, Pageable pageable) {
+		return testService.getTestsByCategoryId(id, pageable);
+	}
+	
+	public PaginationResponse<List<Test>> getTestsByFormatAndYear(String format, String year, Pageable pageable) {
+		int yearInt = 0;
+		if(!year.isEmpty()) {
+			yearInt = Integer.parseInt(year);
+		}
+		return testService.getTestsByFormatAndYear(format, yearInt, pageable);
 	}
 }

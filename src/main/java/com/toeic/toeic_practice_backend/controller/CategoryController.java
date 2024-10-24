@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Category;
+import com.toeic.toeic_practice_backend.domain.entity.Test;
 import com.toeic.toeic_practice_backend.service.CategoryService;
 
 import lombok.RequiredArgsConstructor;
@@ -47,5 +48,28 @@ public class CategoryController {
 		int pageSizeInt = Integer.parseInt(pageSize);
 		Pageable pageable = PageRequest.of(currentInt, pageSizeInt);
 		return ResponseEntity.ok(categoryService.getAllCategory(pageable));
+	}
+	
+	@GetMapping("/{categoryId}/tests")
+	public ResponseEntity<PaginationResponse<List<Test>>> getTestsInCategory(
+			@PathVariable String categoryId,
+			@RequestParam(defaultValue = "1") String current,
+			@RequestParam(defaultValue = "5") String pageSize) {
+		int currentInt = Integer.parseInt(current)-1;
+		int pageSizeInt = Integer.parseInt(pageSize);
+		Pageable pageable = PageRequest.of(currentInt, pageSizeInt);
+		return ResponseEntity.ok(categoryService.getTestsInCategory(categoryId, pageable));
+	}
+	
+	@GetMapping("/tests")
+	public ResponseEntity<PaginationResponse<List<Test>>> getTestsByFormatAndYear(
+			@RequestParam(defaultValue = "ETS") String format,
+			@RequestParam(defaultValue = "") String year,
+			@RequestParam(defaultValue = "1") String current,
+			@RequestParam(defaultValue = "5") String pageSize) {
+		int currentInt = Integer.parseInt(current)-1;
+		int pageSizeInt = Integer.parseInt(pageSize);
+		Pageable pageable = PageRequest.of(currentInt, pageSizeInt);
+		return ResponseEntity.ok(categoryService.getTestsByFormatAndYear(format, year, pageable));
 	}
 }
