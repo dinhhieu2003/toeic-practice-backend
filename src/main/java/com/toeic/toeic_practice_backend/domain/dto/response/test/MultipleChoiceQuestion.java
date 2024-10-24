@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
 public class MultipleChoiceQuestion {
 	private String id;
 	private int questionNum;
+	private int partNum;
 	private String type;
 	private List<MultipleChoiceQuestion> subQuestions = new ArrayList<>();
 	private String content;
