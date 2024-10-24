@@ -60,9 +60,7 @@ public class TestService {
 	}
 	
 	public FullTestResponse getQuestionTest(String testId, String listPart) {
-		FullTestResponse fullTestResponse = new FullTestResponse();
-		List<FullTestResponse.Part> parts = questionService.getQuestionByTestIdGroupByPart(testId, listPart);
-		fullTestResponse.setParts(parts);
+		FullTestResponse fullTestResponse = questionService.getQuestionByTestId(testId, listPart);
 		return fullTestResponse;
 	}
 }

@@ -11,14 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FullTestResponse {
-	private List<Part> parts = new ArrayList<>();
-	
-	@Data
-	@NoArgsConstructor
-	@AllArgsConstructor
-	public static class Part {
-		private int partNum;
-		private List<MultipleChoiceQuestion> questionList = new ArrayList<>();
-	}
+	private int totalQuestion;
+	private List<MultipleChoiceQuestion> listMultipleChoiceQuestions = new ArrayList<>();
 			
 }

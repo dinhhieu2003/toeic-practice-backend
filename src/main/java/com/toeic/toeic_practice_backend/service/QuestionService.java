@@ -310,26 +310,27 @@ public class QuestionService {
         return (cell != null) ? cell.getNumericCellValue() : 0;
     }
 
-    public List<FullTestResponse.Part> getQuestionByTestIdGroupByPart(String testId, String listPart) {
+    public FullTestResponse getQuestionByTestId(String testId, String listPart) {
     	
     	List<Integer> listPartInt = listPart.chars()
     			.mapToObj(c -> Character.getNumericValue(c))
     			.collect(Collectors.toList());
     	
     	List<Question> questions = questionRepository.findByTestIdAndTypeIsNotSubquestion(testId, listPartInt);
-
-    	Map<Integer, List<Question>> groupedByPartNum = questions.stream()
-                .collect(Collectors.groupingBy(Question::getPartNum));
     	
-    	return groupedByPartNum.entrySet().stream()
-                .map(entry -> {
-                    int partNum = entry.getKey();
-                    List<Question> questionsInPart = entry.getValue();
-                    
-                    List<MultipleChoiceQuestion> multipleChoiceQuestions = questionMapper
-                            .toListMultipleChoiceQuestionFromListQuestion(questionsInPart);
-                    return new FullTestResponse.Part(partNum, multipleChoiceQuestions);
-                })
-                .collect(Collectors.toList());
+    	List<MultipleChoiceQuestion> multipleChoiceQuestions = questionMapper
+                .toListMultipleChoiceQuestionFromListQuestion(questions);
+    	int totalQuestion = 0;
+    	for(MultipleChoiceQuestion question: multipleChoiceQuestions) {
+    		if(question.getType().equals("group")) {
+    			totalQuestion += question.getSubQuestions().size();
+    		} else if(question.getType().equals("single")) {
+    			totalQuestion++;
+    		}
+    	}
+    	FullTestResponse fullTestResponse = new FullTestResponse();
+    	fullTestResponse.setListMultipleChoiceQuestions(multipleChoiceQuestions);
+    	fullTestResponse.setTotalQuestion(totalQuestion);
+    	return fullTestResponse;
     }
 }
