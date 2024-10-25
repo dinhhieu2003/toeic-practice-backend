@@ -13,6 +13,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,10 +32,11 @@ import lombok.RequiredArgsConstructor;
 public class QuestionService {
     private final QuestionRepository questionRepository;
     private final QuestionMapper questionMapper;
-    private String urlResource = "https://tuine09.blob.core.windows.net/resources/";
+    @Value("${azure.url-resources}")
+    private String urlResource;
     
     public void importQuestions(MultipartFile file, String testId) throws IOException {
-        Workbook workbook = null;
+    	Workbook workbook = null;
         try {
             workbook = new XSSFWorkbook(file.getInputStream());
 

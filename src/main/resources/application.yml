@@ -53,6 +53,7 @@ toeic-practice-backend:
 
 # Config azure
 azure:
+  url-resources: ${AZURE_URL_RESOURCES}
   storage:
     container:
       name: ${AZURE_STORAGE_CONTAINER_NAME}
