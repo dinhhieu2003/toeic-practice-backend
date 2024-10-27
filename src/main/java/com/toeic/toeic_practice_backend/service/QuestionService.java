@@ -14,7 +14,12 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -35,14 +40,50 @@ import lombok.RequiredArgsConstructor;
 public class QuestionService {
     private final QuestionRepository questionRepository;
     private final QuestionMapper questionMapper;
+    private final MongoTemplate mongoTemplate;
     private String urlResource = "https://tuine09.blob.core.windows.net/resources/";
     
-    public PaginationResponse<List<Question>> getAllQuestion(Pageable pageable) {
-        Page<Question> questionPage = questionRepository.findAll(pageable);
+    public PaginationResponse<List<Question>> getAllQuestion(Pageable pageable, Map<String, String> filterParams) {
+        Query query = new Query();
+        filterParams.forEach((key, value) -> {
+            if(value != null && !value.isEmpty()) {
+                switch (key) {
+                    case "DIFFICULTY":
+                        query.addCriteria(Criteria.where("difficulty").is(value));
+                        break;
+                    case "PARTNUM":
+                        query.addCriteria(Criteria.where("partNum").is(Integer.parseInt(value)));
+                        break;
+                    case "TOPIC":
+                        query.addCriteria(Criteria.where("topic").is(value));
+                        break;
+                    default:
+                        break;
+                }
+            }
+        });
+
+        String orderAscBy = filterParams.get("ORDER_ASC_BY");
+        String orderDescBy = filterParams.get("ORDER_DESC_BY");
+
+        if (orderAscBy != null && !orderAscBy.isEmpty()) {
+            query.with(Sort.by(Sort.Direction.ASC, orderAscBy));
+        } else if (orderDescBy != null && !orderDescBy.isEmpty()) {
+            query.with(Sort.by(Sort.Direction.DESC, orderDescBy));
+        }
+
+        query.with(pageable);
+        
+        List<Question> questions = mongoTemplate.find(query, Question.class);
+
+        long totalItems = mongoTemplate.count(query.skip(0).limit(0), Question.class);
+
+        Page<Question> questionPage = new PageImpl<>(questions, pageable, totalItems);
+
         return PaginationResponse.<List<Question>>builder()
             .meta(
                 Meta.builder()
-                    .current(pageable.getPageNumber()+1)
+                    .current(pageable.getPageNumber() + 1)
                     .pageSize(pageable.getPageSize())
                     .totalItems(questionPage.getTotalElements())
                     .totalPages(questionPage.getTotalPages())
@@ -51,7 +92,7 @@ public class QuestionService {
             .result(questionPage.getContent())
             .build();
     }
-
+    
     public void importQuestions(MultipartFile file, String testId) throws IOException {
         Workbook workbook = null;
         try {
