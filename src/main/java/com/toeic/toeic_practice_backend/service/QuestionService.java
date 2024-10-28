@@ -45,6 +45,10 @@ public class QuestionService {
     
     public PaginationResponse<List<Question>> getAllQuestion(Pageable pageable, Map<String, String> filterParams) {
         Query query = new Query();
+
+        // Thêm điều kiện để loại bỏ các câu hỏi có type là "subquestion"
+        query.addCriteria(Criteria.where("type").ne("subquestion"));
+
         filterParams.forEach((key, value) -> {
             if(value != null && !value.isEmpty()) {
                 switch (key) {
