@@ -8,6 +8,7 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -32,7 +33,8 @@ public class User extends BaseEntity{
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    class TestAttempt {
+    @Builder
+    public static class TestAttempt {
         private String testId;
         @DBRef(lazy = false)
         private List<Result> results = new ArrayList<>();
@@ -45,7 +47,7 @@ public class User extends BaseEntity{
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    class LearningProgress {
+    public static class LearningProgress {
     	@DBRef(lazy=false)
     	private Course courseId;
     	private float percent;
