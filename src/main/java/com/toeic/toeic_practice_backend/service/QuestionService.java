@@ -321,4 +321,8 @@ public class QuestionService {
     	List<Question> questions = questionRepository.findByTestIdAndTypeIsNotSubquestion(testId, listPartInt);
     	return questions;
     }
+    
+    public List<Question> getQuestionByIds(List<String> listQuestionId) {
+    	return questionRepository.findByIdIn(listQuestionId);
+    }
 }

@@ -137,20 +137,24 @@ public class TestService {
 	}
 	
 	public TestResultIdResponse submitTest(SubmitTestRequest submitTestRequest) {
+		// Get user id for saving
 		String email = SecurityUtils.getCurrentUserLogin()
 				.orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
 		System.out.println(email);
 		User currentUser = userService.getUserByEmail(email)
 				.orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 		
-		String parts = submitTestRequest.getParts();
-		if(submitTestRequest.getType().equals("fulltest")) {
-			parts = "1234567";
-		}
-		List<Question> questions = questionService
-				.getQuestionByTestId(submitTestRequest.getTestId(), parts);
+		
 		List<AnswerPair> answerPairs = submitTestRequest.getUserAnswer();
-		System.out.println(answerPairs);
+		
+		// Extract list question id for query
+		List<String> listQuestionId = new ArrayList<>();
+		for(AnswerPair answerPair: answerPairs) {
+			listQuestionId.add(answerPair.getQuestionId());
+		}
+		List<Question> questions = questionService.getQuestionByIds(listQuestionId);
+		
+		// hashmap for comparing answer
 		HashMap<String, String> correctAnswerMap = new HashMap<>();
 		HashMap<String, Integer> partNumMap = new HashMap<>();
 		for(Question question: questions) {
@@ -175,7 +179,7 @@ public class TestService {
 				int partNum = partNumMap.get(answerPair.getQuestionId());
 				if(partNum < 5) {
 					totalListeningCorrect++;
-				} else {
+				} else if(partNum > 4) {
 					totalReadingCorrect++;
 				}
 			} else if(!answerPair.getUserAnswer().isEmpty()) {
