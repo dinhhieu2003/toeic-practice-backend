@@ -19,4 +19,6 @@ public class Topic extends BaseEntity {
 	@Id
 	private String id;
 	private String name;
+	private String solution;	// solution for win this topic
+	private String overallSkill;		// grammar, vocab
 }
