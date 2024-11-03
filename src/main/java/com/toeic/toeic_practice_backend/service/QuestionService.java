@@ -312,27 +312,17 @@ public class QuestionService {
         return (cell != null) ? cell.getNumericCellValue() : 0;
     }
 
-    public FullTestResponse getQuestionByTestId(String testId, String listPart) {
+    public List<Question> getQuestionByTestId(String testId, String listPart) {
     	
     	List<Integer> listPartInt = listPart.chars()
     			.mapToObj(c -> Character.getNumericValue(c))
     			.collect(Collectors.toList());
     	
     	List<Question> questions = questionRepository.findByTestIdAndTypeIsNotSubquestion(testId, listPartInt);
-    	
-    	List<MultipleChoiceQuestion> multipleChoiceQuestions = questionMapper
-                .toListMultipleChoiceQuestionFromListQuestion(questions);
-    	int totalQuestion = 0;
-    	for(MultipleChoiceQuestion question: multipleChoiceQuestions) {
-    		if(question.getType().equals("group")) {
-    			totalQuestion += question.getSubQuestions().size();
-    		} else if(question.getType().equals("single")) {
-    			totalQuestion++;
-    		}
-    	}
-    	FullTestResponse fullTestResponse = new FullTestResponse();
-    	fullTestResponse.setListMultipleChoiceQuestions(multipleChoiceQuestions);
-    	fullTestResponse.setTotalQuestion(totalQuestion);
-    	return fullTestResponse;
+    	return questions;
+    }
+    
+    public List<Question> getQuestionByIds(List<String> listQuestionId) {
+    	return questionRepository.findByIdIn(listQuestionId);
     }
 }

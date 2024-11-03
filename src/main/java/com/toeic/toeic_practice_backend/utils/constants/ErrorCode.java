@@ -23,7 +23,10 @@ public enum ErrorCode {
 	TEST_ALREADY_EXISTS(2001, "Test already exists", HttpStatus.BAD_REQUEST),
 	
 //	Topic
-	TOPIC_ALREADY_EXISTS(3001, "Topic already exists", HttpStatus.BAD_REQUEST);
+	TOPIC_ALREADY_EXISTS(3001, "Topic already exists", HttpStatus.BAD_REQUEST),
+	
+//	User
+	USER_NOT_FOUND(4001, "Email not found", HttpStatus.NOT_FOUND);
 	
 	private final int code;
 	private final String message;
