@@ -1,7 +1,6 @@
 package com.toeic.toeic_practice_backend.mapper;
 
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 import org.springframework.stereotype.Component;
 
