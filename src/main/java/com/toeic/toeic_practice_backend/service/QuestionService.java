@@ -20,16 +20,14 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.Meta;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
-import com.toeic.toeic_practice_backend.domain.dto.response.test.FullTestResponse;
-import com.toeic.toeic_practice_backend.domain.dto.response.test.MultipleChoiceQuestion;
 import com.toeic.toeic_practice_backend.domain.entity.Question;
-import com.toeic.toeic_practice_backend.mapper.QuestionMapper;
 import com.toeic.toeic_practice_backend.repository.QuestionRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -39,9 +37,9 @@ import lombok.RequiredArgsConstructor;
 @Transactional(rollbackFor = {Exception.class})
 public class QuestionService {
     private final QuestionRepository questionRepository;
-    private final QuestionMapper questionMapper;
     private final MongoTemplate mongoTemplate;
-    private String urlResource = "https://tuine09.blob.core.windows.net/resources/";
+    @Value("${azure.url-resources}")
+    private String urlResource;
     
     public PaginationResponse<List<Question>> getAllQuestion(Pageable pageable, Map<String, String> filterParams) {
         Query query = new Query();
@@ -98,7 +96,7 @@ public class QuestionService {
     }
     
     public void importQuestions(MultipartFile file, String testId) throws IOException {
-        Workbook workbook = null;
+    	Workbook workbook = null;
         try {
             workbook = new XSSFWorkbook(file.getInputStream());
 
@@ -374,27 +372,17 @@ public class QuestionService {
         return (cell != null) ? cell.getNumericCellValue() : 0;
     }
 
-    public FullTestResponse getQuestionByTestId(String testId, String listPart) {
+    public List<Question> getQuestionByTestId(String testId, String listPart) {
     	
     	List<Integer> listPartInt = listPart.chars()
     			.mapToObj(c -> Character.getNumericValue(c))
     			.collect(Collectors.toList());
     	
     	List<Question> questions = questionRepository.findByTestIdAndTypeIsNotSubquestion(testId, listPartInt);
-    	
-    	List<MultipleChoiceQuestion> multipleChoiceQuestions = questionMapper
-                .toListMultipleChoiceQuestionFromListQuestion(questions);
-    	int totalQuestion = 0;
-    	for(MultipleChoiceQuestion question: multipleChoiceQuestions) {
-    		if(question.getType().equals("group")) {
-    			totalQuestion += question.getSubQuestions().size();
-    		} else if(question.getType().equals("single")) {
-    			totalQuestion++;
-    		}
-    	}
-    	FullTestResponse fullTestResponse = new FullTestResponse();
-    	fullTestResponse.setListMultipleChoiceQuestions(multipleChoiceQuestions);
-    	fullTestResponse.setTotalQuestion(totalQuestion);
-    	return fullTestResponse;
+    	return questions;
+    }
+    
+    public List<Question> getQuestionByIds(List<String> listQuestionId) {
+    	return questionRepository.findByIdIn(listQuestionId);
     }
 }

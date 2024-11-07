@@ -8,6 +8,7 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -17,6 +18,7 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Result extends BaseEntity {
 	@Id
     private String id;
@@ -29,15 +31,17 @@ public class Result extends BaseEntity {
     private int totalIncorrectAnswer;
     private int totalSkipAnswer;
     private String type;  // practice or fulltest
-    private List<Integer> parts = new ArrayList<>();  // Practice parts
+    private String parts;  // Practice parts
     private List<UserAnswer> userAnswers = new ArrayList<>();
     
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    class UserAnswer {
+    public static class UserAnswer {
         private String questionId;
         private String answer;
         private String solution;
+        private boolean isCorrect;
+        private int timeSpent;
     }
 }

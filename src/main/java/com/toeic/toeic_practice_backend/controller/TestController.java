@@ -17,9 +17,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.toeic.toeic_practice_backend.domain.dto.request.test.SubmitTestRequest;
 import com.toeic.toeic_practice_backend.domain.dto.request.test.TestCreationRequest;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.test.FullTestResponse;
+import com.toeic.toeic_practice_backend.domain.dto.response.test.TestResultIdResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Test;
 import com.toeic.toeic_practice_backend.service.AzureBlobService;
 import com.toeic.toeic_practice_backend.service.QuestionService;
@@ -98,5 +100,11 @@ public class TestController {
 	@GetMapping("/{testId}/practice")
 	public ResponseEntity<FullTestResponse> getQuestionByParts(@PathVariable String testId, @RequestParam String parts) {
 		return ResponseEntity.ok(testService.getQuestionTest(testId, parts));
+	}
+	
+	@PostMapping("/submit")
+//	dùng map để chấm bài => lưu vào result => get result => convert từ test sang kiểu khác phù hợp cho frontend(có userAns và isCorrect)
+	public ResponseEntity<TestResultIdResponse> submitTest(@RequestBody SubmitTestRequest submitTestRequest) {
+		return ResponseEntity.ok(testService.submitTest(submitTestRequest));
 	}
 }
