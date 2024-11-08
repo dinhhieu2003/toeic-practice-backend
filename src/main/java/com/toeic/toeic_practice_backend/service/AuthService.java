@@ -1,11 +1,7 @@
 package com.toeic.toeic_practice_backend.service;
 
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import com.toeic.toeic_practice_backend.domain.dto.response.auth.LoginResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.auth.Tokens;
 import com.toeic.toeic_practice_backend.domain.entity.User;
 import com.toeic.toeic_practice_backend.utils.security.JwtTokenUtils;
