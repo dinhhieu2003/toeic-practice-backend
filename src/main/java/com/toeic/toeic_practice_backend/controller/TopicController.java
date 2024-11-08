@@ -1,7 +1,10 @@
 package com.toeic.toeic_practice_backend.controller;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,4 +26,10 @@ public class TopicController {
 		return ResponseEntity.status(HttpStatus.CREATED)
 				.body(topicService.addTopic(topic));
 	}
+	
+	@GetMapping("")
+	public ResponseEntity<List<Topic>> getAllTopics() {
+		return ResponseEntity.ok(topicService.getAllTopics());
+	}
+	
 }

@@ -24,9 +24,13 @@ public enum ErrorCode {
 	
 //	Topic
 	TOPIC_ALREADY_EXISTS(3001, "Topic already exists", HttpStatus.BAD_REQUEST),
+	TOPIC_NOT_FOUND(3002, "Topic not found", HttpStatus.NOT_FOUND),
 	
 //	User
-	USER_NOT_FOUND(4001, "Email not found", HttpStatus.NOT_FOUND);
+	USER_NOT_FOUND(4001, "Email not found", HttpStatus.NOT_FOUND),
+	
+//	Question
+	QUESTION_NOT_FOUND(5001, "Question not found", HttpStatus.NOT_FOUND);
 	
 	private final int code;
 	private final String message;

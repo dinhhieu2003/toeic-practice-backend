@@ -47,7 +47,7 @@ public class TestController {
         }
     }
 	
-	@PostMapping("/upload")
+	@PostMapping("/resources/upload")
     public ResponseEntity<?> uploadFiles(@RequestParam("files") List<MultipartFile> files) {
         if (files == null || files.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Please select images to upload.");
@@ -63,7 +63,7 @@ public class TestController {
         }
     }
 	
-	@DeleteMapping("/delete")
+	@DeleteMapping("/resources/delete")
     public ResponseEntity<?> deleteImages(@RequestBody List<String> urls) {
         for(String url: urls) {
         	boolean canDelete = azureBlobService.deleteFileByUrl(url);
