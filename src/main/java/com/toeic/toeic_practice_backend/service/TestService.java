@@ -80,6 +80,11 @@ public class TestService {
 		return response;
 	}
 	
+	public PaginationResponse<List<Question>> getAllQuestionsInTestByTestId(
+			String testId, Pageable pageable) {
+		return questionService.getAllQuestionsInTestByTestId(testId, pageable);
+	}
+	
 	public PaginationResponse<List<Test>> getTestsByCategoryId(
 			String categoryId, Pageable pageable) {
 		Page<Test> testPage = testRepository.findByCategory_Id(categoryId, pageable);

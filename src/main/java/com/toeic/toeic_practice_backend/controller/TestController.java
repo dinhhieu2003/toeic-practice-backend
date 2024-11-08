@@ -22,6 +22,7 @@ import com.toeic.toeic_practice_backend.domain.dto.request.test.TestCreationRequ
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.test.FullTestResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.test.TestResultIdResponse;
+import com.toeic.toeic_practice_backend.domain.entity.Question;
 import com.toeic.toeic_practice_backend.domain.entity.Test;
 import com.toeic.toeic_practice_backend.service.AzureBlobService;
 import com.toeic.toeic_practice_backend.service.QuestionService;
@@ -106,5 +107,16 @@ public class TestController {
 //	dùng map để chấm bài => lưu vào result => get result => convert từ test sang kiểu khác phù hợp cho frontend(có userAns và isCorrect)
 	public ResponseEntity<TestResultIdResponse> submitTest(@RequestBody SubmitTestRequest submitTestRequest) {
 		return ResponseEntity.ok(testService.submitTest(submitTestRequest));
+	}
+	
+	@GetMapping("/{testId}/questions")
+	public ResponseEntity<PaginationResponse<List<Question>>> getAllQuestionsInTestByTestId(
+			@PathVariable String testId, 
+			@RequestParam(defaultValue = "1") String current,
+			@RequestParam(defaultValue = "5") String pageSize) {
+		int currentInt = Integer.parseInt(current)-1;
+		int pageSizeInt = Integer.parseInt(pageSize);
+		Pageable pageable = PageRequest.of(currentInt, pageSizeInt);
+		return ResponseEntity.ok(testService.getAllQuestionsInTestByTestId(testId, pageable));
 	}
 }

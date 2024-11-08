@@ -101,6 +101,22 @@ public class QuestionService {
             .build();
     }
     
+    public PaginationResponse<List<Question>> getAllQuestionsInTestByTestId(
+    		String testId, Pageable pageable) {
+    	Page<Question> questionPage = questionRepository.findByTestId(testId, pageable);
+    	return PaginationResponse.<List<Question>>builder()
+                .meta(
+                    Meta.builder()
+                        .current(pageable.getPageNumber() + 1)
+                        .pageSize(pageable.getPageSize())
+                        .totalItems(questionPage.getTotalElements())
+                        .totalPages(questionPage.getTotalPages())
+                        .build()
+                )
+                .result(questionPage.getContent())
+                .build();
+    }
+    
     public void importQuestions(MultipartFile file, String testId) throws IOException {
     	Workbook workbook = null;
         try {
