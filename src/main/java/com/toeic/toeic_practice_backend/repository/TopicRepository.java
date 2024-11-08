@@ -1,5 +1,6 @@
 package com.toeic.toeic_practice_backend.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -10,4 +11,5 @@ import com.toeic.toeic_practice_backend.domain.entity.Topic;
 @Repository
 public interface TopicRepository extends MongoRepository<Topic, String> {
 	Optional<Topic> findByName(String name);
+	List<Topic> findByIdIn(List<String> listTopicIds);
 }

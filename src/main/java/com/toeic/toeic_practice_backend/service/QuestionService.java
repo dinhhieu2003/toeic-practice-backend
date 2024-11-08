@@ -21,8 +21,11 @@ import org.springframework.web.multipart.MultipartFile;
 import com.toeic.toeic_practice_backend.domain.dto.response.test.FullTestResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.test.MultipleChoiceQuestion;
 import com.toeic.toeic_practice_backend.domain.entity.Question;
+import com.toeic.toeic_practice_backend.domain.entity.Topic;
+import com.toeic.toeic_practice_backend.exception.AppException;
 import com.toeic.toeic_practice_backend.mapper.QuestionMapper;
 import com.toeic.toeic_practice_backend.repository.QuestionRepository;
+import com.toeic.toeic_practice_backend.utils.constants.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -31,6 +34,7 @@ import lombok.RequiredArgsConstructor;
 @Transactional(rollbackFor = {Exception.class})
 public class QuestionService {
     private final QuestionRepository questionRepository;
+    private final TopicService topicService;
     private final QuestionMapper questionMapper;
     @Value("${azure.url-resources}")
     private String urlResource;
@@ -324,5 +328,24 @@ public class QuestionService {
     
     public List<Question> getQuestionByIds(List<String> listQuestionId) {
     	return questionRepository.findByIdIn(listQuestionId);
+    }
+    
+    public Question getQuestionById(String questionId) {
+    	Question question = questionRepository.findById(questionId)
+    			.orElseThrow(() -> new AppException(ErrorCode.QUESTION_NOT_FOUND));
+    	return question;
+    }
+    
+    public Question saveQuestion(Question question) {
+    	return questionRepository.save(question);
+    }
+    
+    public Question addTopicToQuestion(List<String> topicIds, String questionId) {
+    	List<Topic> listTopicNeedAdd = topicService.getTopicByIds(topicIds);
+    	Question question = getQuestionById(questionId);
+    	List<Topic> listTopic = question.getTopic();
+    	listTopic.addAll(listTopicNeedAdd);
+    	question.setTopic(listTopic);
+    	return saveQuestion(question);
     }
 }
