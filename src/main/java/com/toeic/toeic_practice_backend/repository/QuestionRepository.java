@@ -13,5 +13,6 @@ public interface QuestionRepository extends MongoRepository<Question, String> {
 	@Query(" { 'testId': ?0, 'type': { $in: [ 'single', 'group' ] }, 'partNum': { $in: ?1 }  } ")
 	List<Question> findByTestIdAndTypeIsNotSubquestion(String testId, List<Integer> listPart);
 	List<Question> findByIdIn(List<String> listQuestionIds);
+	@Query("{ 'testId': ?0, 'type': { '$in': ['single', 'group'] } }")
 	Page<Question> findByTestId(String testId, Pageable pageable);
 }
