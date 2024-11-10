@@ -30,7 +30,10 @@ public enum ErrorCode {
 	USER_NOT_FOUND(4001, "Email not found", HttpStatus.NOT_FOUND),
 	
 //	Question
-	QUESTION_NOT_FOUND(5001, "Question not found", HttpStatus.NOT_FOUND);
+	QUESTION_NOT_FOUND(5001, "Question not found", HttpStatus.NOT_FOUND),
+
+//	Result
+	RESULT_NOT_FOUND(6001, "Result not found", HttpStatus.NOT_FOUND);
 	
 	private final int code;
 	private final String message;
