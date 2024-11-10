@@ -22,8 +22,6 @@ public class AzureBlobService {
 
     public AzureBlobService(@Value("${azure.storage.connection.string}") String connectionString,
             @Value("${azure.storage.container.name}") String containerName) {
-    	System.out.println("Container name: " + containerName);
-    	System.out.println("ConnectionString: " + connectionString);
         BlobServiceClient blobServiceClient = new BlobServiceClientBuilder()
                 .connectionString(connectionString)
                 .buildClient();

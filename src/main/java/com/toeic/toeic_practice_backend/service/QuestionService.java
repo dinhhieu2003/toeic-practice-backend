@@ -421,9 +421,7 @@ public class QuestionService {
     public Question addTopicToQuestion(List<String> topicIds, String questionId) {
     	List<Topic> listTopicNeedAdd = topicService.getTopicByIds(topicIds);
     	Question question = getQuestionById(questionId);
-    	List<Topic> listTopic = question.getTopic();
-    	listTopic.addAll(listTopicNeedAdd);
-    	question.setTopic(listTopic);
+    	question.setTopic(listTopicNeedAdd);
     	return saveQuestion(question);
     }
 }
