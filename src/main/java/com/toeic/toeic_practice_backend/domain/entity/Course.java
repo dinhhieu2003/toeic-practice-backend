@@ -21,7 +21,8 @@ public class Course extends BaseEntity{
 	@Id
     private String id;
     private String name;
-    private List<String> topic = new ArrayList<>();  // Array of topic names
+    @DBRef
+    private List<Topic> topic = new ArrayList<>();
     private String format;
     private int difficulty;
     private List<Lecture> lectures = new ArrayList<>();
