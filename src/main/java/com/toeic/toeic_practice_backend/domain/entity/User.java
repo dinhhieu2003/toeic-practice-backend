@@ -27,6 +27,7 @@ public class User extends BaseEntity{
     @DBRef(lazy = false)
     private Role role;
     private int target;
+    private List<String> needUpdateStats = new ArrayList<>(); // list testId bị thay đổi
     private OverallStat overallStat;
     private List<SkillStat> skillStats = new ArrayList<>();
     private List<LearningProgress> learningProgress= new ArrayList<>();

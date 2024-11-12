@@ -225,6 +225,7 @@ public class TestService {
 				.parts(submitTestRequest.getParts())
 				.userAnswers(userAnswers)
 				.build();
+		result.setActive(true);
 		Result newResult = resultService.saveResult(result);
 		TestResultIdResponse testResultIdResponse = new TestResultIdResponse();
 //		TestAttempt testAttempt = TestAttempt.builder()

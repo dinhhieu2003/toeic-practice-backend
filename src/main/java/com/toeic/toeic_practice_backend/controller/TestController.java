@@ -51,7 +51,8 @@ public class TestController {
 	
 	@PostMapping("/resources/upload")
     public ResponseEntity<?> uploadFiles(@RequestParam("files") List<MultipartFile> files) {
-        if (files == null || files.isEmpty()) {
+        System.out.println(files);
+		if (files == null || files.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Please select images to upload.");
         }
 
