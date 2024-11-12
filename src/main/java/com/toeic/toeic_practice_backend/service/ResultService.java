@@ -35,7 +35,16 @@ public class ResultService {
 	public Result saveResult(Result result) {
 		return resultRepository.save(result);
 	}
+	
+	public void saveAllResult(List<Result> results) {
+		resultRepository.saveAll(results);
+	}
 
+	public List<Result> getByTestId(String testId) {
+		List<Result> results = resultRepository.findByTestId(testId);
+		return results;
+	}
+	
 	public PaginationResponse<List<TestResultResponse>> getAllResults(Pageable pageable, Map<String, String> filterParams) {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
