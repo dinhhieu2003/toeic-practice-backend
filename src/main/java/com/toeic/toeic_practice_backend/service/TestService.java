@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,6 +16,7 @@ import com.toeic.toeic_practice_backend.domain.dto.request.test.TestCreationRequ
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.Meta;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.test.FullTestResponse;
+import com.toeic.toeic_practice_backend.domain.dto.response.test.GetTestCardResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.test.MultipleChoiceQuestion;
 import com.toeic.toeic_practice_backend.domain.dto.response.test.TestResultIdResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Category;
@@ -65,6 +67,7 @@ public class TestService {
 		}
 		return testResponse;
 	}
+
 	
 	public PaginationResponse<List<Test>> getAllTest(Pageable pageable) {
 		Page<Test> testPage = testRepository.findAll(pageable);
@@ -100,7 +103,7 @@ public class TestService {
 		return response;
 	}
 	
-	public PaginationResponse<List<Test>> getTestsByFormatAndYear(
+	public PaginationResponse<List<GetTestCardResponse>> getTestsByFormatAndYear(
 			String format, int year, Pageable pageable) {
 		Page<Test> testPage = null;
 		if(year == 0) {
@@ -110,13 +113,24 @@ public class TestService {
 			testPage = testRepository
 					.findByFormatAndYear(format, year, pageable);
 		}
-		PaginationResponse<List<Test>> response = new PaginationResponse<List<Test>>();
+		PaginationResponse<List<GetTestCardResponse>> response = new PaginationResponse<List<GetTestCardResponse>>();
 		Meta meta = new Meta();
 		meta.setCurrent(pageable.getPageNumber()+1);
 		meta.setPageSize(pageable.getPageSize());
 		meta.setTotalItems(testPage.getTotalElements());
 		meta.setTotalPages(testPage.getTotalPages());
-		List<Test> result = testPage.getContent();
+		List<Test> listTest = testPage.getContent();
+		List<GetTestCardResponse> result = listTest.stream()
+                .map(test -> {
+                    GetTestCardResponse testCardResponse = new GetTestCardResponse();
+                    testCardResponse.setId(test.getId());
+                    testCardResponse.setName(test.getName());
+                    testCardResponse.setFormat(test.getCategory().getFormat());
+                    testCardResponse.setYear(test.getCategory().getYear());
+
+                    return testCardResponse;
+                })
+                .collect(Collectors.toList());
 		response.setMeta(meta);
 		response.setResult(result);
 		return response;

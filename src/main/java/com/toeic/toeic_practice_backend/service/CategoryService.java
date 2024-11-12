@@ -2,14 +2,17 @@ package com.toeic.toeic_practice_backend.service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.toeic.toeic_practice_backend.domain.dto.response.category.GetCategoryResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.Meta;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
+import com.toeic.toeic_practice_backend.domain.dto.response.test.GetTestCardResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Category;
 import com.toeic.toeic_practice_backend.domain.entity.Test;
 import com.toeic.toeic_practice_backend.exception.AppException;
@@ -73,12 +76,30 @@ public class CategoryService {
 		return response;
 	}
 	
+	public List<GetCategoryResponse> getAllCategoryNonePage() {
+		List<Category> listCategory = categoryRepository.findAll();
+		List<GetCategoryResponse> listGetCategoryResponse = listCategory.stream()
+		        .collect(Collectors.groupingBy(Category::getFormat))
+		        .entrySet().stream()
+		        .map(entry -> {
+		            GetCategoryResponse responseItem = new GetCategoryResponse();
+		            responseItem.setFormat(entry.getKey());
+		            responseItem.setYear(entry.getValue().stream()
+		                                       .map(Category::getYear)
+		                                       .distinct() // Loại bỏ các năm trùng lặp nếu cần
+		                                       .collect(Collectors.toList()));
+		            return responseItem;
+		        })
+		        .collect(Collectors.toList());
+		return listGetCategoryResponse;
+	}
+	
 	public PaginationResponse<List<Test>> getTestsInCategory(
 			String id, Pageable pageable) {
 		return testService.getTestsByCategoryId(id, pageable);
 	}
 	
-	public PaginationResponse<List<Test>> getTestsByFormatAndYear(String format, String year, Pageable pageable) {
+	public PaginationResponse<List<GetTestCardResponse>> getTestsByFormatAndYear(String format, String year, Pageable pageable) {
 		int yearInt = 0;
 		if(!year.isEmpty()) {
 			yearInt = Integer.parseInt(year);
