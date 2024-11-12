@@ -25,4 +25,6 @@ public interface ResultRepository extends MongoRepository<Result, String> {
 
     @Query(value = "{ 'userId': ?0, 'testId': '' }", fields = "{ 'userAnswers' : 0 }")
     Page<Result> findWithoutUserAnswersByUserIdAndTestIdEmpty(String userId, Pageable pageable);
+    
+    List<Result> findByTestId(String testId);
 }

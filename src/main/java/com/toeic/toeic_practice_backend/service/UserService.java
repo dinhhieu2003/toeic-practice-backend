@@ -1,5 +1,6 @@
 package com.toeic.toeic_practice_backend.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -28,6 +29,14 @@ public class UserService {
 	
 	public User saveUser(User user) {
 		return userRepository.save(user);
+	}
+	
+	public List<User> getAllUserInIds(List<String> listUserIds) {
+		return userRepository.findAllById(listUserIds);
+	}
+	
+	public void saveAllUsers(List<User> users) {
+		userRepository.saveAll(users);
 	}
 	
 	public UserUpdateRoleResponse updateUserRole(String id, String roleId) {

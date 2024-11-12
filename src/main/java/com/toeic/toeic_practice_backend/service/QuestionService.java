@@ -5,9 +5,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.stream.Collectors;
 
+import org.apache.commons.text.similarity.JaroWinklerSimilarity;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -25,10 +28,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.toeic.toeic_practice_backend.domain.dto.request.question.UpdateQuestionRequest;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.Meta;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Question;
+import com.toeic.toeic_practice_backend.domain.entity.Result;
 import com.toeic.toeic_practice_backend.domain.entity.Topic;
+import com.toeic.toeic_practice_backend.domain.entity.User;
 import com.toeic.toeic_practice_backend.exception.AppException;
 import com.toeic.toeic_practice_backend.mapper.QuestionMapper;
 import com.toeic.toeic_practice_backend.repository.QuestionRepository;
@@ -42,10 +48,114 @@ import lombok.RequiredArgsConstructor;
 public class QuestionService {
     private final QuestionRepository questionRepository;
     private final TopicService topicService;
+    private final ResultService resultService;
+    private final UserService userService;
     private final QuestionMapper questionMapper;
     private final MongoTemplate mongoTemplate;
     @Value("${azure.url-resources}")
     private String urlResource;
+    private static final double SIMILARITY_THRESHOLD = 0.9;
+    
+    public Question updateQuestion(UpdateQuestionRequest updateQuestionRequest) {
+    	Question existingQuestion = questionRepository
+    			.findById(updateQuestionRequest.getId())
+    			.orElseThrow(() -> new AppException(ErrorCode.QUESTION_NOT_FOUND));
+    	boolean needsDeactivation = false;
+        boolean needsStatUpdate = false;
+        
+        // check needsDeactive       
+        if (!isSingleStringSimilar(existingQuestion.getContent(), updateQuestionRequest.getContent())
+        		|| !isSingleStringSimilar(existingQuestion.getCorrectAnswer(), updateQuestionRequest.getCorrectAnswer())
+        		|| !isListSimilar(existingQuestion.getAnswers(), updateQuestionRequest.getAnswers())) {
+            needsDeactivation = true;
+        }
+        
+        existingQuestion.setContent(updateQuestionRequest.getContent());
+        existingQuestion.setCorrectAnswer(updateQuestionRequest.getCorrectAnswer());
+        existingQuestion.setAnswers(updateQuestionRequest.getAnswers());
+        
+        List<String> newTopicIds = updateQuestionRequest.getListTopicIds();
+        List<String> currentTopicIds = existingQuestion.getTopic().stream()
+                                            .map(Topic::getId)
+                                            .collect(Collectors.toList());
+
+        if (!currentTopicIds.equals(newTopicIds)) {
+            List<Topic> updatedTopics = topicService.getTopicByIds(newTopicIds);
+            existingQuestion.setTopic(updatedTopics);
+            needsStatUpdate = true;
+        }
+        
+        existingQuestion.setDifficulty(updateQuestionRequest.getDifficulty());
+        existingQuestion.setTranscript(updateQuestionRequest.getTranscript());
+        existingQuestion.setExplanation(updateQuestionRequest.getExplanation());
+        
+        Question updatedQuestion = questionRepository.save(existingQuestion);
+        
+        if (needsDeactivation) {
+            deactivateResults(updatedQuestion.getTestId());
+            setNeedUpdateStatForUsers(updatedQuestion.getTestId());
+        } else if (needsStatUpdate) {
+        	setNeedUpdateStatForUsers(updatedQuestion.getTestId());
+        }
+
+        return updatedQuestion;
+    }
+    
+    private void setNeedUpdateStatForUsers(String testId) {
+    	List<Result> results = resultService.getByTestId(testId);
+    	Set<String> userIds = results.stream()
+                .map(Result::getUserId)
+                .collect(Collectors.toSet());
+    	
+    	List<String> userIdList = new ArrayList<>(userIds);
+    	List<User> users = userService.getAllUserInIds(userIdList);
+    	
+    	// set needUpdateStat for each user
+    	for (User user : users) {
+            if (!user.getNeedUpdateStats().contains(testId)) {
+                user.getNeedUpdateStats().add(testId);
+            }
+        }
+    	
+    	userService.saveAllUsers(users);
+    }
+    
+    private void deactivateResults(String testId) {
+    	List<Result> results = resultService.getByTestId(testId);
+    	results.forEach(result -> result.setActive(false));
+    	resultService.saveAllResult(results);
+    }
+    
+    // check similarity between old and new content
+    private boolean isSingleStringSimilar(String oldContent, String newContent) {
+        if (oldContent == null && newContent == null) 
+        	return true;
+        if (oldContent == null || newContent == null) 
+        	return false;
+        JaroWinklerSimilarity similarity = new JaroWinklerSimilarity();
+        double score = similarity.apply(oldContent, newContent);
+        return score >= SIMILARITY_THRESHOLD;
+    }
+    
+    // check similarity between old list and new list
+    private boolean isListSimilar(List<String> oldList, List<String> newList) {
+    	if (oldList == null || newList == null) {
+            return oldList == newList;
+        }
+        
+        if (oldList.size() != newList.size()) {
+            return false;
+        }
+
+        JaroWinklerSimilarity similarity = new JaroWinklerSimilarity();
+        for (int i = 0; i < oldList.size(); i++) {
+            double score = similarity.apply(oldList.get(i), newList.get(i));
+            if (score < SIMILARITY_THRESHOLD) {
+                return false;
+            }
+        }
+        return true;
+    }
     
     public PaginationResponse<List<Question>> getAllQuestion(Pageable pageable, Map<String, String> filterParams) {
         Query query = new Query();
@@ -135,6 +245,7 @@ public class QuestionService {
                     if (question != null) {
                         question.setTestId(testId);
                         question.setPartNum(Integer.parseInt(partNum));
+                        question.setActive(true);
 
                         if ("group".equalsIgnoreCase(question.getType())) {
                             currentGroup = question;
