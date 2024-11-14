@@ -20,7 +20,7 @@ import com.toeic.toeic_practice_backend.service.ResultService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/v1/result")
+@RequestMapping("/api/v1/results")
 @RequiredArgsConstructor
 public class ResultController {
     

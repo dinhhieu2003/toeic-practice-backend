@@ -2,6 +2,7 @@ package com.toeic.toeic_practice_backend.service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,10 +13,12 @@ import org.springframework.stereotype.Service;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.Meta;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.test.TestResultResponse;
+import com.toeic.toeic_practice_backend.domain.entity.Question;
 import com.toeic.toeic_practice_backend.domain.entity.Result;
 import com.toeic.toeic_practice_backend.domain.entity.User;
 import com.toeic.toeic_practice_backend.exception.AppException;
 import com.toeic.toeic_practice_backend.mapper.ResultMapper;
+import com.toeic.toeic_practice_backend.repository.QuestionRepository;
 import com.toeic.toeic_practice_backend.repository.ResultRepository;
 import com.toeic.toeic_practice_backend.repository.UserRepository;
 import com.toeic.toeic_practice_backend.utils.constants.ErrorCode;
@@ -27,6 +30,8 @@ import lombok.RequiredArgsConstructor;
 public class ResultService {
 
 	private final ResultRepository resultRepository;
+
+	private final QuestionRepository questionRepository;
 	
 	private final UserRepository userRepository;
 
@@ -69,7 +74,7 @@ public class ResultService {
 					resultPage  = resultRepository.findWithoutUserAnswersByUserIdAndTypePractice(user.getId(), pageable);
 					break;
 				case "QUESTION":
-					resultPage  = resultRepository.findWithoutUserAnswersByUserIdAndTestIdEmpty(user.getId(), pageable);
+					resultPage  = resultRepository.findByUserIdAndTestIdEmpty(user.getId(), pageable);
 					break;
 				default:
 					resultPage  = resultRepository.findWithoutUserAnswersByUserId(user.getId(), pageable);
@@ -99,8 +104,24 @@ public class ResultService {
 	}
 
 	public TestResultResponse getById(String ResultId) {
+		Result result = resultRepository.findById(ResultId).orElseThrow(() -> new AppException(ErrorCode.RESULT_NOT_FOUND));
+
+		List<String> questionIds = result.getUserAnswers().stream()
+            .map(Result.UserAnswer::getQuestionId)
+            .distinct()
+            .collect(Collectors.toList());
+
+		List<Question> questions = questionRepository.findAllById(questionIds);
+
+        Map<String, Question> questionMap = questions.stream()
+                .collect(Collectors.toMap(Question::getId, question -> question));
+
+        result.getUserAnswers().forEach(userAnswer -> 
+            userAnswer.setQuestion(questionMap.get(userAnswer.getQuestionId()))
+        );
+
 		return resultMapper.toTestResultResponse(
-			resultRepository.findById(ResultId).orElseThrow(() -> new AppException(ErrorCode.RESULT_NOT_FOUND))
+			result
 		);
 	}
 }
