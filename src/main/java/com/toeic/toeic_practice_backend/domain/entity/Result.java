@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.AllArgsConstructor;
@@ -42,5 +43,8 @@ public class Result extends BaseEntity {
         private String solution;
         private boolean isCorrect;
         private int timeSpent;
+
+        @Transient
+        private Question question;
     }
 }
