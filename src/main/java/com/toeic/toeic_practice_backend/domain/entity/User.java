@@ -29,6 +29,7 @@ public class User extends BaseEntity{
     private int target;
     private List<String> needUpdateStats = new ArrayList<>(); // list testId bị thay đổi
     private OverallStat overallStat;
+    private List<TopicStat> topicStats = new ArrayList<>();
     private List<SkillStat> skillStats = new ArrayList<>();
     private List<LearningProgress> learningProgress= new ArrayList<>();
     
@@ -38,9 +39,13 @@ public class User extends BaseEntity{
     @Builder
     public static class OverallStat {
     	private int averageListeningScore;
+    	private int listeningScoreCount;
     	private int averageReadingScore;
+    	private int readingScoreCount;
         private int averageTotalScore;
+        private int totalScoreCount;
         private double averageTime;
+        private int timeCount;
         private int highestScore;
     }
     
@@ -48,15 +53,25 @@ public class User extends BaseEntity{
     @AllArgsConstructor
     @NoArgsConstructor
     @Builder
-    public static class SkillStat {
+    public static class TopicStat {
     	@DBRef
     	private Topic topic;
-    	private String testSkill;	// listening, reading
-    	private String overallSkill;	// grammar, vocab
     	private int totalCorrect;
     	private int totalIncorrect;
     	private double averageTime;
-    	private double totalTime;
+    	private int timeCount;
+    	private int totalTime;
+    }
+    
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    public static class SkillStat {
+    	private String skill;	// listening, reading
+    	private int totalCorrect;
+    	private int totalIncorrect;
+    	private int totalTime;
     }
     
     @Data

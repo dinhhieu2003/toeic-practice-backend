@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.toeic.toeic_practice_backend.domain.dto.request.test.SubmitTestRequest;
 import com.toeic.toeic_practice_backend.domain.dto.request.test.SubmitTestRequest.AnswerPair;
@@ -23,7 +24,11 @@ import com.toeic.toeic_practice_backend.domain.entity.Category;
 import com.toeic.toeic_practice_backend.domain.entity.Question;
 import com.toeic.toeic_practice_backend.domain.entity.Result;
 import com.toeic.toeic_practice_backend.domain.entity.Result.UserAnswer;
+import com.toeic.toeic_practice_backend.domain.entity.User.OverallStat;
+import com.toeic.toeic_practice_backend.domain.entity.User.SkillStat;
+import com.toeic.toeic_practice_backend.domain.entity.User.TopicStat;
 import com.toeic.toeic_practice_backend.domain.entity.Test;
+import com.toeic.toeic_practice_backend.domain.entity.Topic;
 import com.toeic.toeic_practice_backend.domain.entity.User;
 import com.toeic.toeic_practice_backend.exception.AppException;
 import com.toeic.toeic_practice_backend.mapper.QuestionMapper;
@@ -43,7 +48,9 @@ public class TestService {
 	private final QuestionService questionService;
 	private final QuestionMapper questionMapper;
 	private final ResultService resultService;
+	private final TopicService topicService;
 	private final UserService userService;
+	
 	public Test addTest(TestCreationRequest testCreationRequest) {
 		Optional<Test> testOptional = 
 				testRepository.findByNameAndCategory_Id(testCreationRequest.getName(), 
@@ -154,6 +161,7 @@ public class TestService {
 		return fullTestResponse;
 	}
 	
+	@Transactional(rollbackFor = {Exception.class})
 	public TestResultIdResponse submitTest(SubmitTestRequest submitTestRequest) {
 		// Get user id for saving
 		String email = SecurityUtils.getCurrentUserLogin()
@@ -161,8 +169,19 @@ public class TestService {
 		System.out.println(email);
 		User currentUser = userService.getUserByEmail(email)
 				.orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-		
-		
+		List<TopicStat> topicStats = currentUser.getTopicStats();
+		List<TopicStat> newTopicStats = new ArrayList<>();
+		HashMap<String, TopicStat> topicStatMap = new HashMap<>();
+		for(TopicStat topicStat : topicStats) {
+			topicStatMap.put(topicStat.getTopic().getId(), topicStat);
+		}
+		List<SkillStat> skillStats = currentUser.getSkillStats();
+		List<SkillStat> newSkillStats = new ArrayList<>();
+		HashMap<String, SkillStat> skillStatMap = new HashMap<>();
+		for(SkillStat skillStat : skillStats) {
+			skillStatMap.put(skillStat.getSkill(), skillStat);
+		}
+		boolean isFulltest = submitTestRequest.getType().equals("fulltest");
 		List<AnswerPair> answerPairs = submitTestRequest.getUserAnswer();
 		
 		// Extract list question id for query
@@ -171,14 +190,23 @@ public class TestService {
 			listQuestionId.add(answerPair.getQuestionId());
 		}
 		List<Question> questions = questionService.getQuestionByIds(listQuestionId);
-		
+		List<Topic> topics = topicService.getAllTopics();
 		// hashmap for comparing answer
 		HashMap<String, String> correctAnswerMap = new HashMap<>();
 		HashMap<String, Integer> partNumMap = new HashMap<>();
+		HashMap<String, List<String>> topicIdMap = new HashMap<>();
 		for(Question question: questions) {
 			correctAnswerMap.put(question.getId(), question.getCorrectAnswer());
 			partNumMap.put(question.getId(), question.getPartNum());
+			topicIdMap.put(question.getId(), question.getTopic().stream()
+					.map(Topic::getId)
+					.collect(Collectors.toList()));
 		}
+		HashMap<String, Topic> topicMap = new HashMap<>();
+		for(Topic topic: topics) {
+			topicMap.put(topic.getId(), topic);
+		}
+		
 		// Score board
 		ScoreBoard scoreBoard = ScoreBoard.getInstance();
 		// Member variable in result
@@ -190,29 +218,72 @@ public class TestService {
 		List<UserAnswer> userAnswers = new ArrayList<>();
 		for(AnswerPair answerPair: answerPairs) {
 			String correctAnswer = correctAnswerMap.get(answerPair.getQuestionId());
+			List<String> listTopicIds = topicIdMap.get(answerPair.getQuestionId());
+			
 			boolean isCorrect = false;
+			boolean isSkip = false;
+			String testSkill = "";
+			int partNum = partNumMap.get(answerPair.getQuestionId());
+			if(partNum < 5) {
+				testSkill = "listening";
+			} else if(partNum > 4) {
+				testSkill = "reading";
+			}
 			if(answerPair.getUserAnswer().equals(correctAnswer)) {
 				isCorrect = true;
 				totalCorrectAnswer++;
-				int partNum = partNumMap.get(answerPair.getQuestionId());
-				if(partNum < 5) {
-					totalListeningCorrect++;
-				} else if(partNum > 4) {
+				if(testSkill.equals("reading")) {
 					totalReadingCorrect++;
+				} else if(testSkill.equals("listening")) {
+					totalListeningCorrect++;
 				}
+				
 			} else if(!answerPair.getUserAnswer().isEmpty()) {
 				totalInCorrectAnswer++;
 			} else {
+				isSkip = true;
 				totalSkipAnswer++;
 			}
+			
+			skillStatMap.putIfAbsent(testSkill, new SkillStat());
+			SkillStat skillStat = skillStatMap.get(testSkill);
+			if(isCorrect) {
+				skillStat.setTotalCorrect(skillStat.getTotalCorrect() + 1);
+			} else if(!isSkip) {
+				skillStat.setTotalIncorrect(skillStat.getTotalIncorrect() + 1);
+			}
+			skillStat.setTotalTime(skillStat.getTotalTime() + answerPair.getTimeSpent());
+			skillStat.setSkill(testSkill);
+			skillStatMap.put(testSkill, skillStat);
+			
+			for(String topicId : listTopicIds) {
+				topicStatMap.putIfAbsent(topicId, new TopicStat());
+				TopicStat stat = topicStatMap.get(topicId);
+				stat.setTopic(topicMap.get(topicId));
+				if(isCorrect) {
+					stat.setTotalCorrect(stat.getTotalCorrect() + 1);
+				} else if(!isSkip) {
+					stat.setTotalIncorrect(stat.getTotalIncorrect() +  1);
+				}
+				
+				int currentTimeCount = stat.getTimeCount();
+				double avgTime = (stat.getAverageTime() * currentTimeCount + answerPair.getTimeSpent()) /(currentTimeCount + 1);
+				stat.setAverageTime(avgTime);
+				stat.setTimeCount(currentTimeCount + 1);
+				stat.setTotalTime(stat.getTotalTime() + answerPair.getTimeSpent());
+				topicStatMap.put(topicId, stat);
+			}
+			
 			UserAnswer userAnswer = new UserAnswer();
 			userAnswer.setQuestionId(answerPair.getQuestionId());
+			userAnswer.setListTopicIds(listTopicIds);
 			userAnswer.setCorrect(isCorrect);
 			userAnswer.setAnswer(answerPair.getUserAnswer());
 			userAnswer.setSolution("Hãy học course này");
 			userAnswer.setTimeSpent(answerPair.getTimeSpent());
 			userAnswers.add(userAnswer);
 		}
+		
 		Result result = Result.builder().testId(submitTestRequest.getTestId())
 				.userId(currentUser.getId())
 				.totalTime(submitTestRequest.getTotalSeconds())
@@ -228,9 +299,60 @@ public class TestService {
 		result.setActive(true);
 		Result newResult = resultService.saveResult(result);
 		TestResultIdResponse testResultIdResponse = new TestResultIdResponse();
-//		TestAttempt testAttempt = TestAttempt.builder()
-//				.testId(submitTestRequest.getTestId())
-//				.totalAttempt(currentUser.getTe)
+		
+		// update overall stat when fulltest
+		if(isFulltest) {
+			OverallStat overallStat = currentUser.getOverallStat();
+			if(overallStat == null) {
+				overallStat = new OverallStat();
+			}
+			// listening, reading score
+			int currentListeningCount = overallStat.getListeningScoreCount();
+			int currentReadingCount = overallStat.getReadingScoreCount();
+			int currentAvgListeningScore = overallStat.getAverageListeningScore();
+			int currentAvgReadingScore = overallStat.getAverageReadingScore();
+			int listeningScore = scoreBoard.getListeningScore(totalListeningCorrect);
+			int readingScore = scoreBoard.getReadingScore(totalReadingCorrect);
+			int newAvgListeningScore = 
+					((currentAvgListeningScore * currentListeningCount) + listeningScore) / (currentListeningCount + 1);
+			int newAvgReadingScore = 
+					((currentAvgReadingScore * currentReadingCount) + readingScore) / (currentReadingCount + 1);
+			overallStat.setAverageListeningScore(newAvgListeningScore);
+			overallStat.setAverageReadingScore(newAvgReadingScore);
+			overallStat.setListeningScoreCount(currentListeningCount + 1);
+			overallStat.setReadingScoreCount(currentReadingCount + 1);
+			// time
+			int currentTimeCount = overallStat.getTimeCount();
+			double currentAvgTime = overallStat.getAverageTime();
+			double newAvgTime = 
+					((currentAvgTime * currentTimeCount) + submitTestRequest.getTotalSeconds()) / (currentTimeCount + 1);
+			overallStat.setTimeCount(currentTimeCount + 1);
+			overallStat.setAverageTime(newAvgTime);
+			
+			// total
+			int totalScore = listeningScore + readingScore;
+			int currentTotalScoreCount = overallStat.getTotalScoreCount();
+			int currentAvgTotalScore = overallStat.getAverageTotalScore();
+			int newAvgTotalScore =
+					((currentAvgTotalScore * currentTotalScoreCount) + totalScore) / (currentTotalScoreCount + 1);
+			overallStat.setAverageTotalScore(newAvgTotalScore);
+			overallStat.setTotalScoreCount(currentTotalScoreCount + 1);
+			// highest
+			if(totalScore > overallStat.getHighestScore()) {
+				overallStat.setHighestScore(totalScore);
+			}
+			currentUser.setOverallStat(overallStat);
+			topicStatMap.forEach((key, topicStat) -> {
+				newTopicStats.add(topicStat);
+			});
+			currentUser.setTopicStats(newTopicStats);
+			skillStatMap.forEach((key, skillStat) -> {
+				newSkillStats.add(skillStat);
+			});
+			currentUser.setSkillStats(newSkillStats);
+			userService.saveUser(currentUser);
+		}
+		
 		testResultIdResponse.setResultId(newResult.getId());
 		return testResultIdResponse;
 	}
