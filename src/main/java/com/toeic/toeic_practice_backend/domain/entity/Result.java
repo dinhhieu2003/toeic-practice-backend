@@ -39,6 +39,7 @@ public class Result extends BaseEntity {
     @NoArgsConstructor
     public static class UserAnswer {
         private String questionId;
+        private List<String> listTopicIds = new ArrayList<>();
         private String answer;
         private String solution;
         private boolean isCorrect;

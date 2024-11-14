@@ -21,6 +21,7 @@ import com.toeic.toeic_practice_backend.domain.dto.request.test.SubmitTestReques
 import com.toeic.toeic_practice_backend.domain.dto.request.test.TestCreationRequest;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.test.FullTestResponse;
+import com.toeic.toeic_practice_backend.domain.dto.response.test.GetTestCardResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.test.TestResultIdResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Question;
 import com.toeic.toeic_practice_backend.domain.entity.Test;
@@ -50,7 +51,8 @@ public class TestController {
 	
 	@PostMapping("/resources/upload")
     public ResponseEntity<?> uploadFiles(@RequestParam("files") List<MultipartFile> files) {
-        if (files == null || files.isEmpty()) {
+        System.out.println(files);
+		if (files == null || files.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Please select images to upload.");
         }
 

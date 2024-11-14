@@ -14,7 +14,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.toeic.toeic_practice_backend.domain.dto.response.category.GetCategoryResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
+import com.toeic.toeic_practice_backend.domain.dto.response.test.GetTestCardResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Category;
 import com.toeic.toeic_practice_backend.domain.entity.Test;
 import com.toeic.toeic_practice_backend.service.CategoryService;
@@ -50,6 +52,11 @@ public class CategoryController {
 		return ResponseEntity.ok(categoryService.getAllCategory(pageable));
 	}
 	
+	@GetMapping("/none-page")
+	public ResponseEntity<List<GetCategoryResponse>> getAllCategoryNonePage() {
+		return ResponseEntity.ok(categoryService.getAllCategoryNonePage());
+	}
+	
 	@GetMapping("/{categoryId}/tests")
 	public ResponseEntity<PaginationResponse<List<Test>>> getTestsInCategory(
 			@PathVariable String categoryId,
@@ -62,7 +69,7 @@ public class CategoryController {
 	}
 	
 	@GetMapping("/tests")
-	public ResponseEntity<PaginationResponse<List<Test>>> getTestsByFormatAndYear(
+	public ResponseEntity<PaginationResponse<List<GetTestCardResponse>>> getTestsByFormatAndYear(
 			@RequestParam(defaultValue = "ETS") String format,
 			@RequestParam(defaultValue = "") String year,
 			@RequestParam(defaultValue = "1") String current,

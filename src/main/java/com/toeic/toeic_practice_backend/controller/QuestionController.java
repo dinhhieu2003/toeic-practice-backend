@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.toeic.toeic_practice_backend.domain.dto.request.question.AddTopicToQuestionRequest;
+import com.toeic.toeic_practice_backend.domain.dto.request.question.UpdateQuestionRequest;
+
 import java.util.Map;
 
 import org.apache.commons.collections4.map.HashedMap;
@@ -54,5 +56,10 @@ public class QuestionController {
 		filterParams.put("ORDER_ASC_BY", orderAscBy);
     	filterParams.put("ORDER_DESC_BY", orderDescBy);
 		return ResponseEntity.ok(questionService.getAllQuestion(pageable, filterParams));
+	}
+	
+	@PostMapping()
+	public ResponseEntity<Question> updateQuestion(@RequestBody UpdateQuestionRequest updateQuestionRequest) {
+		return ResponseEntity.ok(questionService.updateQuestion(updateQuestionRequest));
 	}
 }

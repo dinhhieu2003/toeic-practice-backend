@@ -1,6 +1,7 @@
 package com.toeic.toeic_practice_backend.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -9,7 +10,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.toeic.toeic_practice_backend.domain.dto.request.user.UserUpdateRoleRequest;
 import com.toeic.toeic_practice_backend.domain.dto.response.user.UserUpdateRoleResponse;
+import com.toeic.toeic_practice_backend.domain.entity.User;
+import com.toeic.toeic_practice_backend.exception.AppException;
 import com.toeic.toeic_practice_backend.service.UserService;
+import com.toeic.toeic_practice_backend.utils.constants.ErrorCode;
+import com.toeic.toeic_practice_backend.utils.security.SecurityUtils;
 
 import lombok.RequiredArgsConstructor;
 

@@ -5,9 +5,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.stream.Collectors;
 
+import org.apache.commons.text.similarity.JaroWinklerSimilarity;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -25,10 +28,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.toeic.toeic_practice_backend.domain.dto.request.question.UpdateQuestionRequest;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.Meta;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Question;
+import com.toeic.toeic_practice_backend.domain.entity.Result;
 import com.toeic.toeic_practice_backend.domain.entity.Topic;
+import com.toeic.toeic_practice_backend.domain.entity.User;
 import com.toeic.toeic_practice_backend.exception.AppException;
 import com.toeic.toeic_practice_backend.mapper.QuestionMapper;
 import com.toeic.toeic_practice_backend.repository.QuestionRepository;
@@ -42,10 +48,114 @@ import lombok.RequiredArgsConstructor;
 public class QuestionService {
     private final QuestionRepository questionRepository;
     private final TopicService topicService;
+    private final ResultService resultService;
+    private final UserService userService;
     private final QuestionMapper questionMapper;
     private final MongoTemplate mongoTemplate;
     @Value("${azure.url-resources}")
     private String urlResource;
+    private static final double SIMILARITY_THRESHOLD = 0.9;
+    
+    public Question updateQuestion(UpdateQuestionRequest updateQuestionRequest) {
+    	Question existingQuestion = questionRepository
+    			.findById(updateQuestionRequest.getId())
+    			.orElseThrow(() -> new AppException(ErrorCode.QUESTION_NOT_FOUND));
+    	boolean needsDeactivation = false;
+        boolean needsStatUpdate = false;
+        
+        // check needsDeactive       
+        if (!isSingleStringSimilar(existingQuestion.getContent(), updateQuestionRequest.getContent())
+        		|| !isSingleStringSimilar(existingQuestion.getCorrectAnswer(), updateQuestionRequest.getCorrectAnswer())
+        		|| !isListSimilar(existingQuestion.getAnswers(), updateQuestionRequest.getAnswers())) {
+            needsDeactivation = true;
+        }
+        
+        existingQuestion.setContent(updateQuestionRequest.getContent());
+        existingQuestion.setCorrectAnswer(updateQuestionRequest.getCorrectAnswer());
+        existingQuestion.setAnswers(updateQuestionRequest.getAnswers());
+        
+        List<String> newTopicIds = updateQuestionRequest.getListTopicIds();
+        List<String> currentTopicIds = existingQuestion.getTopic().stream()
+                                            .map(Topic::getId)
+                                            .collect(Collectors.toList());
+
+        if (!currentTopicIds.equals(newTopicIds)) {
+            List<Topic> updatedTopics = topicService.getTopicByIds(newTopicIds);
+            existingQuestion.setTopic(updatedTopics);
+            needsStatUpdate = true;
+        }
+        
+        existingQuestion.setDifficulty(updateQuestionRequest.getDifficulty());
+        existingQuestion.setTranscript(updateQuestionRequest.getTranscript());
+        existingQuestion.setExplanation(updateQuestionRequest.getExplanation());
+        
+        Question updatedQuestion = questionRepository.save(existingQuestion);
+        
+        if (needsDeactivation) {
+            deactivateResults(updatedQuestion.getTestId());
+            setNeedUpdateStatForUsers(updatedQuestion.getTestId());
+        } else if (needsStatUpdate) {
+        	setNeedUpdateStatForUsers(updatedQuestion.getTestId());
+        }
+
+        return updatedQuestion;
+    }
+    
+    private void setNeedUpdateStatForUsers(String testId) {
+    	List<Result> results = resultService.getByTestId(testId);
+    	Set<String> userIds = results.stream()
+                .map(Result::getUserId)
+                .collect(Collectors.toSet());
+    	
+    	List<String> userIdList = new ArrayList<>(userIds);
+    	List<User> users = userService.getAllUserInIds(userIdList);
+    	
+    	// set needUpdateStat for each user
+    	for (User user : users) {
+            if (!user.getNeedUpdateStats().contains(testId)) {
+                user.getNeedUpdateStats().add(testId);
+            }
+        }
+    	
+    	userService.saveAllUsers(users);
+    }
+    
+    private void deactivateResults(String testId) {
+    	List<Result> results = resultService.getByTestId(testId);
+    	results.forEach(result -> result.setActive(false));
+    	resultService.saveAllResult(results);
+    }
+    
+    // check similarity between old and new content
+    private boolean isSingleStringSimilar(String oldContent, String newContent) {
+        if (oldContent == null && newContent == null) 
+        	return true;
+        if (oldContent == null || newContent == null) 
+        	return false;
+        JaroWinklerSimilarity similarity = new JaroWinklerSimilarity();
+        double score = similarity.apply(oldContent, newContent);
+        return score >= SIMILARITY_THRESHOLD;
+    }
+    
+    // check similarity between old list and new list
+    private boolean isListSimilar(List<String> oldList, List<String> newList) {
+    	if (oldList == null || newList == null) {
+            return oldList == newList;
+        }
+        
+        if (oldList.size() != newList.size()) {
+            return false;
+        }
+
+        JaroWinklerSimilarity similarity = new JaroWinklerSimilarity();
+        for (int i = 0; i < oldList.size(); i++) {
+            double score = similarity.apply(oldList.get(i), newList.get(i));
+            if (score < SIMILARITY_THRESHOLD) {
+                return false;
+            }
+        }
+        return true;
+    }
     
     public PaginationResponse<List<Question>> getAllQuestion(Pageable pageable, Map<String, String> filterParams) {
         Query query = new Query();
@@ -119,45 +229,40 @@ public class QuestionService {
     
     public void importQuestions(MultipartFile file, String testId) throws IOException {
     	Workbook workbook = null;
-        try {
-            workbook = new XSSFWorkbook(file.getInputStream());
+        workbook = new XSSFWorkbook(file.getInputStream());
 
-            for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
-                Sheet sheet = workbook.getSheetAt(i);
-                String partNum = sheet.getSheetName();
-                Iterator<Row> rows = sheet.iterator();
-                rows.next(); // Skip header row
+        for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
+            Sheet sheet = workbook.getSheetAt(i);
+            String partNum = sheet.getSheetName();
+            Iterator<Row> rows = sheet.iterator();
+            rows.next(); // Skip header row
 
-                Question currentGroup = null;
-                while (rows.hasNext()) {
-                    Row currentRow = rows.next();
-                    Question question = parseRowByPart(currentRow, partNum);
-                    if (question != null) {
-                        question.setTestId(testId);
-                        question.setPartNum(Integer.parseInt(partNum));
+            Question currentGroup = null;
+            while (rows.hasNext()) {
+                Row currentRow = rows.next();
+                Question question = parseRowByPart(currentRow, partNum);
+                if (question != null) {
+                    question.setTestId(testId);
+                    question.setPartNum(Integer.parseInt(partNum));
+                    question.setActive(true);
 
-                        if ("group".equalsIgnoreCase(question.getType())) {
-                            currentGroup = question;
-                            questionRepository.save(currentGroup);
-                        } else if (currentGroup != null && "subquestion".equalsIgnoreCase(question.getType())) {
-                            questionRepository.save(question);
-                            currentGroup.getSubQuestions().add(question);
-                            currentGroup.setQuestionNum(question.getQuestionNum());
-                            questionRepository.save(currentGroup);
-                        } else {
-                            currentGroup = null;
-                            questionRepository.save(question);
-                        }
+                    if ("group".equalsIgnoreCase(question.getType())) {
+                        currentGroup = question;
+                        questionRepository.save(currentGroup);
+                    } else if (currentGroup != null && "subquestion".equalsIgnoreCase(question.getType())) {
+                        questionRepository.save(question);
+                        currentGroup.getSubQuestions().add(question);
+                        currentGroup.setQuestionNum(question.getQuestionNum());
+                        questionRepository.save(currentGroup);
+                    } else {
+                        currentGroup = null;
+                        questionRepository.save(question);
                     }
                 }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return;
-        } finally {
-            if (workbook != null) {
-                workbook.close();
-            }
+        }
+        if (workbook != null) {
+            workbook.close();
         }
     }
 
@@ -183,207 +288,176 @@ public class QuestionService {
     }
 
     private Question parsePart1(Row row) {
-        try {
-            Question question = new Question();
-            question.setType(getCellValue(row.getCell(0)));
-            question.setQuestionNum((int) getNumericCellValue(row.getCell(1)));
+        Question question = new Question();
+        question.setType(getCellValue(row.getCell(0)));
+        question.setQuestionNum((int) getNumericCellValue(row.getCell(1)));
 
-            // Handle resources if available
-            String imageName = getCellValue(row.getCell(2));
-            String audioName = getCellValue(row.getCell(3));
-            List<Question.Resource> resources = new ArrayList<>();
-            if (imageName != null && !imageName.isEmpty()) {
-                resources.add(new Question.Resource("image", urlResource + imageName));
-            }
-            if (audioName != null && !audioName.isEmpty()) {
-                resources.add(new Question.Resource("audio", urlResource + audioName));
-            }
-            question.setResources(resources);
-            // Extract options
-            List<String> answers = new ArrayList<>();
-            for (int i = 4; i <= 7; i++) {
-                answers.add(getCellValue(row.getCell(i)));
-            }
-            question.setAnswers(answers);
-            question.setCorrectAnswer(getCellValue(row.getCell(8)));
-
-            question.setTranscript(getCellValue(row.getCell(9)));
-            question.setExplanation(getCellValue(row.getCell(10)));
-            question.setDifficulty((int) getNumericCellValue(row.getCell(11)));
-
-            return question;
-        } catch (Exception e) {
-            // Log error and return null to skip this row
-            System.err.println("Error parsing row for Part 1: " + e.getMessage());
-            return null;
+        // Handle resources if available
+        String imageName = getCellValue(row.getCell(2));
+        String audioName = getCellValue(row.getCell(3));
+        List<Question.Resource> resources = new ArrayList<>();
+        if (imageName != null && !imageName.isEmpty()) {
+            resources.add(new Question.Resource("image", urlResource + imageName));
         }
+        if (audioName != null && !audioName.isEmpty()) {
+            resources.add(new Question.Resource("audio", urlResource + audioName));
+        }
+        question.setResources(resources);
+        // Extract options
+        List<String> answers = new ArrayList<>();
+        for (int i = 4; i <= 7; i++) {
+            answers.add(getCellValue(row.getCell(i)));
+        }
+        question.setAnswers(answers);
+        question.setCorrectAnswer(getCellValue(row.getCell(8)));
+
+        question.setTranscript(getCellValue(row.getCell(9)));
+        question.setExplanation(getCellValue(row.getCell(10)));
+        question.setDifficulty((int) getNumericCellValue(row.getCell(11)));
+
+        return question;
     }
 
     private Question parsePart2(Row row) {
-        try {
-            Question question = new Question();
-            question.setType(getCellValue(row.getCell(0)));
-            question.setQuestionNum((int) getNumericCellValue(row.getCell(1)));
-            question.setContent(getCellValue(row.getCell(2)));
+        Question question = new Question();
+        question.setType(getCellValue(row.getCell(0)));
+        question.setQuestionNum((int) getNumericCellValue(row.getCell(1)));
+        question.setContent(getCellValue(row.getCell(2)));
 
-            // Handle resources if available
-            String audioName = getCellValue(row.getCell(3));
-            List<Question.Resource> resources = new ArrayList<>();
-            if (audioName != null && !audioName.isEmpty()) {
-                resources.add(new Question.Resource("audio", urlResource + audioName));
-            }
-            question.setResources(resources);
-
-            // Extract options
-            List<String> answers = new ArrayList<>();
-            for (int i = 4; i <= 6; i++) {
-                answers.add(getCellValue(row.getCell(i)));
-            }
-            question.setAnswers(answers);
-            question.setCorrectAnswer(getCellValue(row.getCell(7)));
-
-            question.setTranscript(getCellValue(row.getCell(8)));
-            question.setExplanation(getCellValue(row.getCell(9)));
-            question.setDifficulty((int) getNumericCellValue(row.getCell(10)));
-            return question;
-        } catch (Exception e) {
-            // Log error and return null to skip this row
-            System.err.println("Error parsing row for Part 2: " + e.getMessage());
-            return null;
+        // Handle resources if available
+        String audioName = getCellValue(row.getCell(3));
+        List<Question.Resource> resources = new ArrayList<>();
+        if (audioName != null && !audioName.isEmpty()) {
+            resources.add(new Question.Resource("audio", urlResource + audioName));
         }
+        question.setResources(resources);
+
+        // Extract options
+        List<String> answers = new ArrayList<>();
+        for (int i = 4; i <= 6; i++) {
+            answers.add(getCellValue(row.getCell(i)));
+        }
+        question.setAnswers(answers);
+        question.setCorrectAnswer(getCellValue(row.getCell(7)));
+
+        question.setTranscript(getCellValue(row.getCell(8)));
+        question.setExplanation(getCellValue(row.getCell(9)));
+        question.setDifficulty((int) getNumericCellValue(row.getCell(10)));
+        return question;
     }
 
     private Question parsePart3(Row row) {
         Question question = new Question();
-        try {
-            question.setType(getCellValue(row.getCell(0)));
-            if (!"group".equalsIgnoreCase(question.getType())) {
-                question.setQuestionNum((int) getNumericCellValue(row.getCell(1)));
-            }
-            question.setContent(getCellValue(row.getCell(2)));
-
-            // Handle resources if available
-            String imageName = getCellValue(row.getCell(3));
-            String audioName = getCellValue(row.getCell(4));
-            List<Question.Resource> resources = new ArrayList<>();
-            if (imageName != null && !imageName.isEmpty()) {
-                resources.add(new Question.Resource("image", urlResource + imageName));
-            }
-            if (audioName != null && !audioName.isEmpty()) {
-                resources.add(new Question.Resource("audio", urlResource + audioName));
-            }
-            question.setResources(resources);
-
-            // Extract options
-            List<String> answers = new ArrayList<>();
-            for (int i = 5; i <= 8; i++) {
-                answers.add(getCellValue(row.getCell(i)));
-            }
-            question.setAnswers(answers);
-            question.setCorrectAnswer(getCellValue(row.getCell(9)));
-
-            question.setTranscript(getCellValue(row.getCell(10)));
-            question.setExplanation(getCellValue(row.getCell(11)));
-            question.setDifficulty((int) getNumericCellValue(row.getCell(12)));
-
-            return question;
-        } catch (Exception e) {
-            System.out.println(question.getType());
-            // Log error and return null to skip this row
-            System.err.println("Error parsing row for Part 3: " + e.getMessage());
-            return null;
+        question.setType(getCellValue(row.getCell(0)));
+        if (!"group".equalsIgnoreCase(question.getType())) {
+            question.setQuestionNum((int) getNumericCellValue(row.getCell(1)));
         }
+        question.setContent(getCellValue(row.getCell(2)));
+
+        // Handle resources if available
+        String imageName = getCellValue(row.getCell(3));
+        String audioName = getCellValue(row.getCell(4));
+        List<Question.Resource> resources = new ArrayList<>();
+        if (imageName != null && !imageName.isEmpty()) {
+            resources.add(new Question.Resource("image", urlResource + imageName));
+        }
+        if (audioName != null && !audioName.isEmpty()) {
+            resources.add(new Question.Resource("audio", urlResource + audioName));
+        }
+        question.setResources(resources);
+
+        // Extract options
+        List<String> answers = new ArrayList<>();
+        for (int i = 5; i <= 8; i++) {
+            answers.add(getCellValue(row.getCell(i)));
+        }
+        question.setAnswers(answers);
+        question.setCorrectAnswer(getCellValue(row.getCell(9)));
+
+        question.setTranscript(getCellValue(row.getCell(10)));
+        question.setExplanation(getCellValue(row.getCell(11)));
+        question.setDifficulty((int) getNumericCellValue(row.getCell(12)));
+
+        return question;
     }
 
     private Question parsePart5(Row row) {
         Question question = new Question();
-        try {
-            question.setType(getCellValue(row.getCell(0)));
-            question.setQuestionNum((int) getNumericCellValue(row.getCell(1)));
-            question.setContent(getCellValue(row.getCell(2)));
+        question.setType(getCellValue(row.getCell(0)));
+        question.setQuestionNum((int) getNumericCellValue(row.getCell(1)));
+        question.setContent(getCellValue(row.getCell(2)));
 
-            // Extract options
-            List<String> answers = new ArrayList<>();
-            for (int i = 3; i <= 6; i++) {
-                answers.add(getCellValue(row.getCell(i)));
-            }
-            question.setAnswers(answers);
-            question.setCorrectAnswer(getCellValue(row.getCell(7)));
-            question.setExplanation(getCellValue(row.getCell(8)));
-            question.setDifficulty((int) getNumericCellValue(row.getCell(9)));
-
-            return question;
-        } catch (Exception e) {
-            // Log error and return null to skip this row
-            System.err.println("Error parsing row for Part 5: " + e.getMessage());
-            return null;
+        // Extract options
+        List<String> answers = new ArrayList<>();
+        for (int i = 3; i <= 6; i++) {
+            answers.add(getCellValue(row.getCell(i)));
         }
+        question.setAnswers(answers);
+        question.setCorrectAnswer(getCellValue(row.getCell(7)));
+        question.setExplanation(getCellValue(row.getCell(8)));
+        question.setDifficulty((int) getNumericCellValue(row.getCell(9)));
+
+        return question;
+       
     }
 
     private Question parsePart6(Row row) {
-        try {
-            Question question = new Question();
-            question.setType(getCellValue(row.getCell(0)));
-            if (!"group".equalsIgnoreCase(question.getType())) {
-                question.setQuestionNum((int) getNumericCellValue(row.getCell(1)));
-            }
-            question.setContent(getCellValue(row.getCell(2)));
-
-            // Handle paragraph texts and their order
-            String paragraphTexts = getCellValue(row.getCell(3));
-            String paragraphOrders = getCellValue(row.getCell(4));
-            String imageNames = getCellValue(row.getCell(5));
-            String imageOrders = getCellValue(row.getCell(6));
-
-            Map<Integer, String> resourceOrderMap = new HashMap<>();
-
-            // Parse paragraph texts and their order
-            if (paragraphTexts != null && !paragraphTexts.isEmpty() && paragraphOrders != null && !paragraphOrders.isEmpty()) {
-                String[] paragraphs = paragraphTexts.split("\\(\\*\\)");
-                String[] paragraphOrderArray = paragraphOrders.split(",");
-                for (int i = 0; i < paragraphs.length; i++) {
-                    resourceOrderMap.put(Integer.parseInt(paragraphOrderArray[i]), "paragraph:" + paragraphs[i].trim());
-                }
-            }
-
-            // Parse image names and their order
-            if (imageNames != null && !imageNames.isEmpty() && imageOrders != null && !imageOrders.isEmpty()) {
-                String[] images = imageNames.split(";");
-                String[] imageOrderArray = imageOrders.split(",");
-                for (int i = 0; i < images.length; i++) {
-                    resourceOrderMap.put(Integer.parseInt(imageOrderArray[i]), "image:" + urlResource + images[i].trim());
-                }
-            }
-
-            // Sort resources based on their order and create resource list
-            List<Question.Resource> orderedResources = resourceOrderMap.entrySet().stream()
-                    .sorted(Map.Entry.comparingByKey())
-                    .map(entry -> {
-                        String[] typeAndContent = entry.getValue().split(":", 2);
-                        return new Question.Resource(typeAndContent[0], typeAndContent[1]);
-                    })
-                    .collect(Collectors.toList());
-
-            question.setResources(orderedResources);
-
-            // Extract options
-            List<String> answers = new ArrayList<>();
-            for (int i = 7; i <= 10; i++) {
-                answers.add(getCellValue(row.getCell(i)));
-            }
-            question.setAnswers(answers);
-            question.setCorrectAnswer(getCellValue(row.getCell(11)));
-            question.setTranscript(getCellValue(row.getCell(12)));
-            question.setExplanation(getCellValue(row.getCell(13)));
-            question.setDifficulty((int) getNumericCellValue(row.getCell(14)));
-
-            return question;
-        } catch (Exception e) {
-        	System.out.println(row.getRowNum());
-            // Log error and return null to skip this row
-            System.err.println("Error parsing row for Part 6: " + e.getMessage());
-            return null;
-        }
+	    Question question = new Question();
+	    question.setType(getCellValue(row.getCell(0)));
+	    if (!"group".equalsIgnoreCase(question.getType())) {
+	        question.setQuestionNum((int) getNumericCellValue(row.getCell(1)));
+	    }
+	    question.setContent(getCellValue(row.getCell(2)));
+	
+	    // Handle paragraph texts and their order
+	    String paragraphTexts = getCellValue(row.getCell(3));
+	    String paragraphOrders = getCellValue(row.getCell(4));
+	    String imageNames = getCellValue(row.getCell(5));
+	    String imageOrders = getCellValue(row.getCell(6));
+	
+	    Map<Integer, String> resourceOrderMap = new HashMap<>();
+	
+	    // Parse paragraph texts and their order
+	    if (paragraphTexts != null && !paragraphTexts.isEmpty() && paragraphOrders != null && !paragraphOrders.isEmpty()) {
+	        String[] paragraphs = paragraphTexts.split("\\(\\*\\)");
+	        String[] paragraphOrderArray = paragraphOrders.split(",");
+	        for (int i = 0; i < paragraphs.length; i++) {
+	            resourceOrderMap.put(Integer.parseInt(paragraphOrderArray[i]), "paragraph:" + paragraphs[i].trim());
+	        }
+	    }
+	
+	    // Parse image names and their order
+	    if (imageNames != null && !imageNames.isEmpty() && imageOrders != null && !imageOrders.isEmpty()) {
+	        String[] images = imageNames.split(";");
+	        String[] imageOrderArray = imageOrders.split(",");
+	        for (int i = 0; i < images.length; i++) {
+	            resourceOrderMap.put(Integer.parseInt(imageOrderArray[i]), "image:" + urlResource + images[i].trim());
+	        }
+	    }
+	
+	    // Sort resources based on their order and create resource list
+	    List<Question.Resource> orderedResources = resourceOrderMap.entrySet().stream()
+	            .sorted(Map.Entry.comparingByKey())
+	            .map(entry -> {
+	                String[] typeAndContent = entry.getValue().split(":", 2);
+	                return new Question.Resource(typeAndContent[0], typeAndContent[1]);
+	            })
+	            .collect(Collectors.toList());
+	
+	    question.setResources(orderedResources);
+	
+	    // Extract options
+	    List<String> answers = new ArrayList<>();
+	    for (int i = 7; i <= 10; i++) {
+	        answers.add(getCellValue(row.getCell(i)));
+	    }
+	    question.setAnswers(answers);
+	    question.setCorrectAnswer(getCellValue(row.getCell(11)));
+	    question.setTranscript(getCellValue(row.getCell(12)));
+	    question.setExplanation(getCellValue(row.getCell(13)));
+	    question.setDifficulty((int) getNumericCellValue(row.getCell(14)));
+	
+	    return question;
     }
 
     private String getCellValue(Cell cell) {
