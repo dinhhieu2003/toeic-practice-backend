@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 public class Practice extends BaseEntity {
 	@Id
 	private String id;
-	private String courseId;
+	private String lectureId;
 	private int required;
 	private int totalQuestion;
 }

@@ -27,4 +27,6 @@ public interface ResultRepository extends MongoRepository<Result, String> {
     Page<Result> findWithoutUserAnswersByUserIdAndTestIdEmpty(String userId, Pageable pageable);
     
     List<Result> findByTestId(String testId);
+    
+    List<Result> findByUserIdAndTestIdIn(String userId, List<String> testIds);
 }
