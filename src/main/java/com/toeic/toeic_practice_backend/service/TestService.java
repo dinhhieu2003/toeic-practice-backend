@@ -356,4 +356,15 @@ public class TestService {
 		testResultIdResponse.setResultId(newResult.getId());
 		return testResultIdResponse;
 	}
+	
+//	public void reCalculateStats(User currentUser, List<String> listTestIds) {
+//		// Lay duoc toan bo result theo userId va testId
+//		String userId = currentUser.getId();
+//		List<Result> listResult = resultService.getByUserIdAndListTestId(userId, listTestIds);
+//		// Lay het questionId ra
+//		List<String> listQuestionId = new ArrayList<>();
+//		for(Result result : listResult) {
+//			
+//		}
+//	}
 }

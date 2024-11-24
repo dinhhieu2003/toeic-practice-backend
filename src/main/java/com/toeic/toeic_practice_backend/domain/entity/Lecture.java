@@ -12,28 +12,18 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-@Document(collection = "courses")
+@Document(collection = "lectures")
 @Data
 @EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor
 @AllArgsConstructor
-public class Course extends BaseEntity{
+public class Lecture extends BaseEntity{
 	@Id
     private String id;
     private String name;
+    private String content;
     @DBRef
     private List<Topic> topic = new ArrayList<>();
-    private String format;
-    private int difficulty;
-    private List<Lecture> lectures = new ArrayList<>();
     @DBRef(lazy=false)
     private List<Practice> practices;
-   
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-    class Lecture {
-        private String title;
-        private String content;
-    }
 }

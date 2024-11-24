@@ -79,7 +79,7 @@ public class User extends BaseEntity{
     @NoArgsConstructor
     public static class LearningProgress {
     	@DBRef(lazy=false)
-    	private Course courseId;
+    	private Lecture lectureId;
     	private float percent;
     }
 }
