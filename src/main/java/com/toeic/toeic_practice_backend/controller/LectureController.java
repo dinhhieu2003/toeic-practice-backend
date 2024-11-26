@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.toeic.toeic_practice_backend.domain.dto.request.lecture.LectureRequest;
+import com.toeic.toeic_practice_backend.domain.dto.request.lecture.PracticeRequest;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Lecture;
 import com.toeic.toeic_practice_backend.service.LectureService;
@@ -52,5 +53,13 @@ public class LectureController {
     @PostMapping
     public ResponseEntity<Lecture> saveLecture(@RequestBody LectureRequest request) {
         return ResponseEntity.ok(lectureService.saveLecture(request));
+    }
+
+    @PostMapping("{lectureId}/createPractice")
+    public ResponseEntity<Lecture> createLecturePractice(
+        @PathVariable String lectureId,
+        @RequestBody PracticeRequest request
+    ) {
+        return ResponseEntity.ok(lectureService.saveLecturePractice(request));
     }
 }

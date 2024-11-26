@@ -1,5 +1,6 @@
 package com.toeic.toeic_practice_backend.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -9,7 +10,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.toeic.toeic_practice_backend.domain.dto.request.lecture.LectureRequest;
-import com.toeic.toeic_practice_backend.domain.dto.request.lecture.LectureRequest.LecturePractice;
+import com.toeic.toeic_practice_backend.domain.dto.request.lecture.PracticeRequest;
+import com.toeic.toeic_practice_backend.domain.dto.request.lecture.PracticeRequest.PracticeQuestion;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.Meta;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Lecture;
@@ -33,7 +35,7 @@ public class LectureService {
     private final TopicService topicService;
 
     public PaginationResponse<List<Lecture>> getAllLectures(Pageable pageable, Map<String, String> filterParams) {
-        Page<Lecture> lecturePage = lectureRepository.findAll(pageable);
+        Page<Lecture> lecturePage = lectureRepository.findAllWithoutPractice(pageable);
 
         return PaginationResponse.<List<Lecture>>builder()
             .meta(
@@ -54,22 +56,28 @@ public class LectureService {
 
     public Lecture saveLecture(LectureRequest request) {
         List<Topic> topics = topicService.getTopicByIds(request.getTopicIds());
-        List<Question> questions = request.getPracticeQuestions().stream().map(practiceQuestion -> 
-            convertPracticeToQuestion(practiceQuestion)
-        ).collect(Collectors.toList());
-        List<Question> savedQuestion = questionRepository.saveAll(questions);
         return lectureRepository.save(
             Lecture
                 .builder()
                 .name(request.getName())
                 .content(request.getContent())
                 .topic(topics)
-                .practiceQuestions(savedQuestion)
+                .practiceQuestions(new ArrayList<>())
                 .build()
         );
     }
 
-    public Question convertPracticeToQuestion(LecturePractice practice) {
+    public Lecture saveLecturePractice(PracticeRequest request) {
+        Lecture existedLecture = lectureRepository.findById(request.getLectureId()).orElseThrow(()-> new AppException(ErrorCode.LECTURE_NOT_FOUND));
+        List<Question> questions = request.getPracticeQuestions().stream().map(practiceQuestion -> 
+            convertPracticeToQuestion(practiceQuestion)
+        ).collect(Collectors.toList());
+        List<Question> savedQuestion = questionRepository.saveAll(questions);
+        existedLecture.setPracticeQuestions(savedQuestion);
+        return lectureRepository.save(existedLecture);
+    }
+
+    private Question convertPracticeToQuestion(PracticeQuestion practice) {
         return Question.builder()
             .type(practice.getType())
             .subQuestions(practice.getSubQuestions().size() > 0 ? 
