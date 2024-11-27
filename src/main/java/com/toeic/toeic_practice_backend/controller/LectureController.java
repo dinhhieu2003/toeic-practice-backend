@@ -34,12 +34,21 @@ public class LectureController {
     public ResponseEntity<PaginationResponse<List<Lecture>>> getAllLectures(
         @RequestParam(defaultValue = "1") String current,
         @RequestParam(defaultValue = "5") String pageSize,
-        @RequestParam(required = false) String type
+        @RequestParam(required = false) boolean info,
+        @RequestParam(required = false) boolean content,
+        @RequestParam(required = false) boolean practice,
+        @RequestParam(required = false) boolean orderAsc,
+        @RequestParam(required = false) boolean orderDesc
     ) {
         int currentInt = Integer.parseInt(current)-1;
 		int pageSizeInt = Integer.parseInt(pageSize);
 		Pageable pageable = PageRequest.of(currentInt, pageSizeInt);
-        Map<String, String> filterParams = new HashedMap<>();
+        Map<String, Boolean> filterParams = new HashedMap<>();
+        filterParams.put("INFO", info);
+        filterParams.put("CONTENT", content);
+        filterParams.put("PRACTICE", practice);
+        filterParams.put("ORDER_ASC", info);
+        filterParams.put("ORDER_DESC", info);
         return ResponseEntity.ok(lectureService.getAllLectures(pageable, filterParams));
     }
 
@@ -55,8 +64,16 @@ public class LectureController {
         return ResponseEntity.ok(lectureService.saveLecture(request));
     }
 
-    @PostMapping("{lectureId}/createPractice")
-    public ResponseEntity<Lecture> createLecturePractice(
+    @PostMapping("{lectureId}/saveContent")
+    public ResponseEntity<Lecture> saveLectureContent(
+        @PathVariable String lectureId,
+        @RequestBody String request
+    ) {
+        return ResponseEntity.ok(lectureService.saveLectureContent(request));
+    }
+
+    @PostMapping("{lectureId}/savePractice")
+    public ResponseEntity<Lecture> saveLecturePractice(
         @PathVariable String lectureId,
         @RequestBody PracticeRequest request
     ) {

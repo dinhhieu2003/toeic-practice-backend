@@ -6,7 +6,11 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import com.toeic.toeic_practice_backend.domain.dto.request.lecture.LectureRequest;
@@ -34,19 +38,60 @@ public class LectureService {
 
     private final TopicService topicService;
 
-    public PaginationResponse<List<Lecture>> getAllLectures(Pageable pageable, Map<String, String> filterParams) {
-        Page<Lecture> lecturePage = lectureRepository.findAllWithoutPractice(pageable);
+    private MongoTemplate mongoTemplate;
 
+    public PaginationResponse<List<Lecture>> getAllLectures(Pageable pageable, Map<String, Boolean> filterParams) {
+        // Tạo một đối tượng Query mới
+        Query query = new Query();
+
+        // Áp dụng các bộ lọc từ filterParams
+        if (filterParams.containsKey("name") && !filterParams.get("name")) {
+            query.fields().exclude("name");
+        } else if (filterParams.containsKey("name") && filterParams.get("name")) {
+            query.fields().include("name");
+        }
+
+        if (filterParams.containsKey("content") && !filterParams.get("content")) {
+            query.fields().exclude("content");
+        } else if (filterParams.containsKey("content") && filterParams.get("content")) {
+            query.fields().include("content");
+        }
+
+        if (filterParams.containsKey("practiceQuestions") && !filterParams.get("practiceQuestions")) {
+            query.fields().exclude("practiceQuestions");
+        } else if (filterParams.containsKey("practiceQuestions") && filterParams.get("practiceQuestions")) {
+            query.fields().include("practiceQuestions");
+        }
+
+        Boolean orderAsc = filterParams.get("ORDER_ASC");
+        Boolean orderDesc = filterParams.get("ORDER_DESC");
+
+        if (orderAsc) {
+            query.with(Sort.by(Sort.Direction.ASC));
+        } else if (orderDesc) {
+            query.with(Sort.by(Sort.Direction.DESC));
+        }
+
+        query.with(pageable);
+
+        // Thực thi truy vấn với phân trang
+        List<Lecture> lectures = mongoTemplate.find(query, Lecture.class);
+
+        long totalItems = mongoTemplate.count(query.skip(0).limit(0), Lecture.class);
+
+        Page<Lecture> lecturePage = new PageImpl<>(lectures, pageable, totalItems);
+
+        // Trả về kết quả với phân trang
         return PaginationResponse.<List<Lecture>>builder()
             .meta(
                 Meta.builder()
-                    .current(pageable.getPageNumber() + 1)
-                    .pageSize(pageable.getPageSize())
-                    .totalItems(lecturePage.getTotalElements())
-                    .totalPages(lecturePage.getTotalPages())
+                    .current(pageable.getPageNumber() + 1)  // Số trang hiện tại (bắt đầu từ 1)
+                    .pageSize(pageable.getPageSize())       // Kích thước trang
+                    .totalItems(lecturePage.getTotalElements())  // Tổng số phần tử
+                    .totalPages(lecturePage.getTotalPages())  // Tổng số trang
                     .build()
             )
-            .result(lecturePage.getContent())
+            .result(lecturePage.getContent())  // Danh sách các bài giảng
             .build();
     }
 
@@ -60,11 +105,17 @@ public class LectureService {
             Lecture
                 .builder()
                 .name(request.getName())
-                .content(request.getContent())
+                .content("")
                 .topic(topics)
                 .practiceQuestions(new ArrayList<>())
                 .build()
         );
+    }
+
+    public Lecture saveLectureContent(String content) {
+        Lecture existedLecture = lectureRepository.findById(request.getLectureId()).orElseThrow(()-> new AppException(ErrorCode.LECTURE_NOT_FOUND));
+        existedLecture.setContent(content);
+        return lectureRepository.save(existedLecture);
     }
 
     public Lecture saveLecturePractice(PracticeRequest request) {
