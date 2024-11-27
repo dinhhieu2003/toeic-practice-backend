@@ -112,14 +112,14 @@ public class LectureService {
         );
     }
 
-    public Lecture saveLectureContent(String content) {
-        Lecture existedLecture = lectureRepository.findById(request.getLectureId()).orElseThrow(()-> new AppException(ErrorCode.LECTURE_NOT_FOUND));
+    public Lecture saveLectureContent(String lectureId ,String content) {
+        Lecture existedLecture = lectureRepository.findById(lectureId).orElseThrow(()-> new AppException(ErrorCode.LECTURE_NOT_FOUND));
         existedLecture.setContent(content);
         return lectureRepository.save(existedLecture);
     }
 
-    public Lecture saveLecturePractice(PracticeRequest request) {
-        Lecture existedLecture = lectureRepository.findById(request.getLectureId()).orElseThrow(()-> new AppException(ErrorCode.LECTURE_NOT_FOUND));
+    public Lecture saveLecturePractice(String lectureId, PracticeRequest request) {
+        Lecture existedLecture = lectureRepository.findById(lectureId).orElseThrow(()-> new AppException(ErrorCode.LECTURE_NOT_FOUND));
         List<Question> questions = request.getPracticeQuestions().stream().map(practiceQuestion -> 
             convertPracticeToQuestion(practiceQuestion)
         ).collect(Collectors.toList());

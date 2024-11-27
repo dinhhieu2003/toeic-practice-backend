@@ -69,7 +69,7 @@ public class LectureController {
         @PathVariable String lectureId,
         @RequestBody String request
     ) {
-        return ResponseEntity.ok(lectureService.saveLectureContent(request));
+        return ResponseEntity.ok(lectureService.saveLectureContent(lectureId, request));
     }
 
     @PostMapping("{lectureId}/savePractice")
@@ -77,6 +77,6 @@ public class LectureController {
         @PathVariable String lectureId,
         @RequestBody PracticeRequest request
     ) {
-        return ResponseEntity.ok(lectureService.saveLecturePractice(request));
+        return ResponseEntity.ok(lectureService.saveLecturePractice(lectureId, request));
     }
 }
