@@ -13,7 +13,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class LectureRequest {
-    private String id;
     private String name;
     private String content;
     private List<String> topicIds = new ArrayList<>();

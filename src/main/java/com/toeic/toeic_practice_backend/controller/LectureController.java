@@ -7,9 +7,11 @@ import org.apache.commons.collections4.map.HashedMap;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -34,29 +36,36 @@ public class LectureController {
     public ResponseEntity<PaginationResponse<List<Lecture>>> getAllLectures(
         @RequestParam(defaultValue = "1") String current,
         @RequestParam(defaultValue = "5") String pageSize,
-        @RequestParam(required = false) boolean info,
-        @RequestParam(required = false) boolean content,
-        @RequestParam(required = false) boolean practice,
-        @RequestParam(required = false) boolean orderAsc,
-        @RequestParam(required = false) boolean orderDesc
+        @RequestParam(required = false) Boolean info,
+        @RequestParam(required = false) Boolean content,
+        @RequestParam(required = false) Boolean practice,
+        @RequestParam(required = false) Boolean orderAsc,
+        @RequestParam(required = false) Boolean orderDesc
     ) {
         int currentInt = Integer.parseInt(current)-1;
 		int pageSizeInt = Integer.parseInt(pageSize);
 		Pageable pageable = PageRequest.of(currentInt, pageSizeInt);
         Map<String, Boolean> filterParams = new HashedMap<>();
-        filterParams.put("INFO", info);
-        filterParams.put("CONTENT", content);
-        filterParams.put("PRACTICE", practice);
-        filterParams.put("ORDER_ASC", info);
-        filterParams.put("ORDER_DESC", info);
+        filterParams.put("INFO", info != null ? info : false);
+        filterParams.put("CONTENT", content != null ? content : false);
+        filterParams.put("PRACTICE", practice != null ? practice : false);
+        filterParams.put("ORDER_ASC", orderAsc != null ? orderAsc : false);
+        filterParams.put("ORDER_DESC", orderDesc != null ? orderDesc : false);
         return ResponseEntity.ok(lectureService.getAllLectures(pageable, filterParams));
     }
 
     @GetMapping("{lectureId}")
     public ResponseEntity<Lecture> getLectureById(
-        @PathVariable String lectureId
+        @PathVariable String lectureId,
+        @RequestParam(required = false) Boolean info,
+        @RequestParam(required = false) Boolean content,
+        @RequestParam(required = false) Boolean practice
     ) {
-        return ResponseEntity.ok(lectureService.getLectureById(lectureId));
+        Map<String, Boolean> filterParams = new HashedMap<>();
+        filterParams.put("INFO", info != null ? info : false);
+        filterParams.put("CONTENT", content != null ? content : false);
+        filterParams.put("PRACTICE", practice != null ? practice : false);
+        return ResponseEntity.ok(lectureService.getLectureById(lectureId, filterParams));
     }
     
     @PostMapping
@@ -78,5 +87,20 @@ public class LectureController {
         @RequestBody PracticeRequest request
     ) {
         return ResponseEntity.ok(lectureService.saveLecturePractice(lectureId, request));
+    }
+
+    @PutMapping("{lectureId}")
+    public ResponseEntity<Lecture> updateLecture(
+        @PathVariable String lectureId,
+        @RequestBody LectureRequest request
+    ) {
+        return ResponseEntity.ok(lectureService.updateLecture(lectureId, request));
+    }
+
+    @DeleteMapping("{lectureId}")
+    public ResponseEntity<String> deleteLecturePractice(
+        @PathVariable String lectureId
+    ) {
+        return ResponseEntity.ok(lectureService.deleteLecturePractice(lectureId));
     }
 }

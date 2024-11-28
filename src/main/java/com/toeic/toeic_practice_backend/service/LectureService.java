@@ -10,6 +10,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
@@ -38,29 +39,24 @@ public class LectureService {
 
     private final TopicService topicService;
 
-    private MongoTemplate mongoTemplate;
+    private final MongoTemplate mongoTemplate;
 
     public PaginationResponse<List<Lecture>> getAllLectures(Pageable pageable, Map<String, Boolean> filterParams) {
         // Tạo một đối tượng Query mới
         Query query = new Query();
 
         // Áp dụng các bộ lọc từ filterParams
-        if (filterParams.containsKey("name") && !filterParams.get("name")) {
+        if (filterParams.containsKey("INFO") && !filterParams.get("INFO")) {
             query.fields().exclude("name");
-        } else if (filterParams.containsKey("name") && filterParams.get("name")) {
-            query.fields().include("name");
+            query.fields().exclude("topic");
         }
 
-        if (filterParams.containsKey("content") && !filterParams.get("content")) {
+        if (filterParams.containsKey("CONTENT") && !filterParams.get("CONTENT")) {
             query.fields().exclude("content");
-        } else if (filterParams.containsKey("content") && filterParams.get("content")) {
-            query.fields().include("content");
         }
 
-        if (filterParams.containsKey("practiceQuestions") && !filterParams.get("practiceQuestions")) {
+        if (filterParams.containsKey("PRACTICE") && !filterParams.get("PRACTICE")) {
             query.fields().exclude("practiceQuestions");
-        } else if (filterParams.containsKey("practiceQuestions") && filterParams.get("practiceQuestions")) {
-            query.fields().include("practiceQuestions");
         }
 
         Boolean orderAsc = filterParams.get("ORDER_ASC");
@@ -95,8 +91,30 @@ public class LectureService {
             .build();
     }
 
-    public Lecture getLectureById(String lectureId) {
-        return lectureRepository.findById(lectureId).orElseThrow(()-> new AppException(ErrorCode.LECTURE_NOT_FOUND));
+    public Lecture getLectureById(String lectureId, Map<String, Boolean> filterParams) {
+        Query query = new Query();
+
+        // Áp dụng các bộ lọc từ filterParams
+        if (filterParams.containsKey("INFO") && !filterParams.get("INFO")) {
+            query.fields().exclude("name");
+            query.fields().exclude("topic");
+        }
+
+        if (filterParams.containsKey("CONTENT") && !filterParams.get("CONTENT")) {
+            query.fields().exclude("content");
+        }
+
+        if (filterParams.containsKey("PRACTICE") && !filterParams.get("PRACTICE")) {
+            query.fields().exclude("practiceQuestions");
+        }
+
+        Lecture lecture = mongoTemplate.findOne(query.addCriteria(Criteria.where("_id").is(lectureId)), Lecture.class);
+        
+        if (lecture == null) {
+            throw new AppException(ErrorCode.LECTURE_NOT_FOUND);
+        }
+
+        return lecture;
     }
 
     public Lecture saveLecture(LectureRequest request) {
@@ -146,9 +164,22 @@ public class LectureService {
             .build();
     }
 
-    // public Lecture updateLecture(LectureRequest request) {
-    //     Lecture existLecture = lectureRepository.findById(request.getId()).orElseThrow(()-> new AppException(ErrorCode.LECTURE_NOT_FOUND));
-    //     List<Topic> topics = topicService.getTopicByIds(request.getTopicIds());
-    //     return lectureRepository.save(existLecture);
+    public Lecture updateLecture(String lectureId, LectureRequest request) {
+        Lecture existLecture = lectureRepository.findById(request.getId()).orElseThrow(()-> new AppException(ErrorCode.LECTURE_NOT_FOUND));
+        List<Topic> topics = topicService.getTopicByIds(request.getTopicIds());
+        existLecture.setName(request.getName());
+        existLecture.setContent(request.getContent());
+        existLecture.setTopic(topics);
+        return lectureRepository.save(existLecture);
+    }
+
+    // public Lecture updateLecturePractice(String lectureId) {
+
     // }
+
+    public String deleteLecturePractice(String practiceId) {
+        Lecture lecture = lectureRepository.findById(practiceId).orElseThrow(()-> new AppException(ErrorCode.LECTURE_NOT_FOUND));
+        lectureRepository.delete(lecture);
+        return lecture.getId();
+    }
 }
