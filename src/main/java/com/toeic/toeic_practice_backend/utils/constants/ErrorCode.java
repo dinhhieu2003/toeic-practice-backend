@@ -33,7 +33,10 @@ public enum ErrorCode {
 	QUESTION_NOT_FOUND(5001, "Question not found", HttpStatus.NOT_FOUND),
 
 //	Result
-	RESULT_NOT_FOUND(6001, "Result not found", HttpStatus.NOT_FOUND);
+	RESULT_NOT_FOUND(6001, "Result not found", HttpStatus.NOT_FOUND),
+
+//  Lecture
+	LECTURE_NOT_FOUND(7001, "Lecture not found", HttpStatus.NOT_FOUND);
 	
 	private final int code;
 	private final String message;

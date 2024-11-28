@@ -27,9 +27,18 @@ public class SecurityConfiguration {
 
 	private final OAuth2AuthenticationFailureHandler failureHandler;
 
-	private String[] whiteList = {"/api/v1/auth/**", "/oauth2/**", "/api/oauth2/**"};
+	private String[] whiteList = {
+		"/api/v1/auth/**",
+		"/oauth2/**",
+		"/api/oauth2/**",
+	};
 
-	private String[] getWhiteList = {"/api/v1/categories/**", "/api/v1/tests/**", "/api/v1/questions/**"};
+	private String[] getWhiteList = {
+		"/api/v1/categories/**",
+		"/api/v1/tests/**",
+		"/api/v1/questions/**",
+		"/api/v1/lectures/**"
+	};
 	
 	@Bean
 	public PasswordEncoder passwordEncoder() {
