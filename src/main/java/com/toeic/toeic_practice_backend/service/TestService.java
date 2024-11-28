@@ -1,9 +1,11 @@
 package com.toeic.toeic_practice_backend.service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -169,12 +171,14 @@ public class TestService {
 		System.out.println(email);
 		User currentUser = userService.getUserByEmail(email)
 				.orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+		// initial TopicStat
 		List<TopicStat> topicStats = currentUser.getTopicStats();
 		List<TopicStat> newTopicStats = new ArrayList<>();
 		HashMap<String, TopicStat> topicStatMap = new HashMap<>();
 		for(TopicStat topicStat : topicStats) {
 			topicStatMap.put(topicStat.getTopic().getId(), topicStat);
 		}
+		// initial SkillStat
 		List<SkillStat> skillStats = currentUser.getSkillStats();
 		List<SkillStat> newSkillStats = new ArrayList<>();
 		HashMap<String, SkillStat> skillStatMap = new HashMap<>();
@@ -194,12 +198,17 @@ public class TestService {
 		// hashmap for comparing answer
 		HashMap<String, String> correctAnswerMap = new HashMap<>();
 		HashMap<String, Integer> partNumMap = new HashMap<>();
+		HashMap<String, Question> questionMap = new HashMap<>();
 		HashMap<String, List<String>> topicIdMap = new HashMap<>();
+		HashMap<String, List<Topic>> topicQuestionMap = new HashMap<>();
 		for(Question question: questions) {
 			correctAnswerMap.put(question.getId(), question.getCorrectAnswer());
 			partNumMap.put(question.getId(), question.getPartNum());
+			questionMap.put(question.getId(), question);
 			topicIdMap.put(question.getId(), question.getTopic().stream()
 					.map(Topic::getId)
+					.collect(Collectors.toList()));
+			topicQuestionMap.put(question.getId(), question.getTopic().stream()
 					.collect(Collectors.toList()));
 		}
 		HashMap<String, Topic> topicMap = new HashMap<>();
@@ -219,8 +228,9 @@ public class TestService {
 		for(AnswerPair answerPair: answerPairs) {
 			String correctAnswer = correctAnswerMap.get(answerPair.getQuestionId());
 			List<String> listTopicIds = topicIdMap.get(answerPair.getQuestionId());
-			
-			boolean isCorrect = false;
+			List<Topic> listTopics = topicQuestionMap.get(answerPair.getQuestionId());
+			Question currentQuestion = questionMap.get(answerPair.getQuestionId());
+ 			boolean isCorrect = false;
 			boolean isSkip = false;
 			String testSkill = "";
 			int partNum = partNumMap.get(answerPair.getQuestionId());
@@ -245,6 +255,7 @@ public class TestService {
 				totalSkipAnswer++;
 			}
 			
+			// update SkillStat
 			skillStatMap.putIfAbsent(testSkill, new SkillStat());
 			SkillStat skillStat = skillStatMap.get(testSkill);
 			if(isCorrect) {
@@ -256,6 +267,7 @@ public class TestService {
 			skillStat.setSkill(testSkill);
 			skillStatMap.put(testSkill, skillStat);
 			
+			// update TopicStat
 			for(String topicId : listTopicIds) {
 				topicStatMap.putIfAbsent(topicId, new TopicStat());
 				TopicStat stat = topicStatMap.get(topicId);
@@ -276,14 +288,80 @@ public class TestService {
 			
 			UserAnswer userAnswer = new UserAnswer();
 			userAnswer.setQuestionId(answerPair.getQuestionId());
-			userAnswer.setListTopicIds(listTopicIds);
+			userAnswer.setParentId(currentQuestion.getParentId());
+			userAnswer.setListTopics(listTopics);
 			userAnswer.setCorrect(isCorrect);
-			userAnswer.setAnswer(answerPair.getUserAnswer());
+			userAnswer.setUserAnswer(answerPair.getUserAnswer());
 			userAnswer.setSolution("Hãy học course này");
 			userAnswer.setTimeSpent(answerPair.getTimeSpent());
+			userAnswer.setQuestionNum(currentQuestion.getQuestionNum());
+			userAnswer.setPartNum(currentQuestion.getPartNum());
+			userAnswer.setType(currentQuestion.getType());
+			userAnswer.setContent(currentQuestion.getContent());
+			userAnswer.setDifficulty(currentQuestion.getDifficulty());
+			userAnswer.setResources(currentQuestion.getResources());
+			userAnswer.setTranscript(currentQuestion.getTranscript());
+			userAnswer.setExplanation(currentQuestion.getExplanation());
+			userAnswer.setAnswers(currentQuestion.getAnswers());
+			userAnswer.setCorrectAnswer(currentQuestion.getCorrectAnswer());
 			userAnswers.add(userAnswer);
 		}
 		
+		// Filter subquestions
+		List<UserAnswer> subUserAnswers = userAnswers.stream()
+		    .filter(userAnswer -> "subquestion".equals(userAnswer.getType()))
+		    .collect(Collectors.toList());
+		
+		// Get all group question IDs (parentIds of subquestions)
+		Set<String> groupQuestionIds = subUserAnswers.stream()
+		    .map(UserAnswer::getParentId)
+		    .collect(Collectors.toSet());
+		
+		// Query all group questions by their IDs
+		List<Question> groupQuestions = questionService.getQuestionByIds(new ArrayList<>(groupQuestionIds));
+		
+		// Map group question IDs to their corresponding questions
+		HashMap<String, Question> groupQuestionMap = new HashMap<>();
+		for (Question groupQuestion : groupQuestions) {
+		    groupQuestionMap.put(groupQuestion.getId(), groupQuestion);
+		}
+		
+		// Map parentId to their subquestions
+		HashMap<String, List<UserAnswer>> subUserAnswerMap = new HashMap<>();
+		for (UserAnswer subUserAnswer : subUserAnswers) {
+		    subUserAnswerMap
+		        .computeIfAbsent(subUserAnswer.getParentId(), k -> new ArrayList<>())
+		        .add(subUserAnswer);
+		}
+		
+		// Initialize UserAnswer groups with subquestions
+		List<UserAnswer> groupedUserAnswers = new ArrayList<>();
+		for (Question groupQuestion : groupQuestions) {
+		    UserAnswer groupUserAnswer = new UserAnswer();
+		    groupUserAnswer.setQuestionId(groupQuestion.getId());
+		    groupUserAnswer.setParentId(null); // Group itself has no parent
+		    groupUserAnswer.setType("group");
+		    groupUserAnswer.setQuestionNum(groupQuestion.getQuestionNum());
+		    groupUserAnswer.setPartNum(groupQuestion.getPartNum());
+		    groupUserAnswer.setListTopics(groupQuestion.getTopic());
+		    groupUserAnswer.setContent(groupQuestion.getContent());
+		    groupUserAnswer.setDifficulty(groupQuestion.getDifficulty());
+		    groupUserAnswer.setResources(groupQuestion.getResources());
+		    groupUserAnswer.setTranscript(groupQuestion.getTranscript());
+		    groupUserAnswer.setExplanation(groupQuestion.getExplanation());
+		    groupUserAnswer.setAnswers(groupQuestion.getAnswers());
+		    groupUserAnswer.setCorrectAnswer(groupQuestion.getCorrectAnswer());
+		    groupUserAnswer.setSubUserAnswer(subUserAnswerMap.getOrDefault(groupQuestion.getId(), new ArrayList<>()));
+
+		    groupedUserAnswers.add(groupUserAnswer);
+		}
+		
+		// Add grouped user answers (with subquestions)
+		userAnswers.addAll(groupedUserAnswers);
+		
+		// Sort by questionNum
+		userAnswers.sort(Comparator.comparingInt(UserAnswer::getQuestionNum));
+
 		Result result = Result.builder().testId(submitTestRequest.getTestId())
 				.userId(currentUser.getId())
 				.totalTime(submitTestRequest.getTotalSeconds())

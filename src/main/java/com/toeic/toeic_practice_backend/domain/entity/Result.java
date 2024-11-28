@@ -4,8 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import com.toeic.toeic_practice_backend.domain.entity.Question.Resource;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -39,13 +40,22 @@ public class Result extends BaseEntity {
     @NoArgsConstructor
     public static class UserAnswer {
         private String questionId;
-        private List<String> listTopicIds = new ArrayList<>();
-        private String answer;
+        private String parentId;	// id of group
+        private List<Topic> listTopics = new ArrayList<>();
+        private String userAnswer;
         private String solution;
         private boolean isCorrect;
         private int timeSpent;
-
-        @Transient
-        private Question question;
+        private int questionNum;
+        private int partNum;
+        private String type;
+        private String content;
+        private int difficulty;
+        private List<Resource> resources= new ArrayList<>();
+        private String transcript;
+        private String explanation;
+        private List<String> answers= new ArrayList<>();
+        private String correctAnswer;
+        private List<UserAnswer> subUserAnswer = new ArrayList<>();
     }
 }

@@ -3,9 +3,15 @@ package com.toeic.toeic_practice_backend.service;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.toeic.toeic_practice_backend.domain.dto.response.pagination.Meta;
+import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
+import com.toeic.toeic_practice_backend.domain.dto.response.user.UserInfoResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.user.UserUpdateRoleResponse;
+import com.toeic.toeic_practice_backend.domain.dto.response.user.UserUpdateStatusResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Role;
 import com.toeic.toeic_practice_backend.domain.entity.User;
 import com.toeic.toeic_practice_backend.exception.AppException;
@@ -48,6 +54,30 @@ public class UserService {
 		newUser = userRepository.save(newUser);
 		UserUpdateRoleResponse userUpdateRoleDto = userMapper.toUserUpdateRoleResponseFromUser(newUser);
 		return userUpdateRoleDto;
+	}
+	
+	public PaginationResponse<List<UserInfoResponse>> getAllUser(Pageable pageable) {
+		Page<User> userPage = userRepository.findAll(pageable);
+		PaginationResponse<List<UserInfoResponse>> response = new PaginationResponse<List<UserInfoResponse>>();
+		Meta meta = new Meta();
+		meta.setCurrent(pageable.getPageNumber()+1);
+		meta.setPageSize(pageable.getPageSize());
+		meta.setTotalItems(userPage.getTotalElements());
+		meta.setTotalPages(userPage.getTotalPages());
+		List<User> listUser = userPage.getContent();
+		List<UserInfoResponse> result = userMapper.toListUserInfoResponseFromListUser(listUser);
+		response.setMeta(meta);
+		response.setResult(result);
+		return response;
+	}
+	
+	public UserUpdateStatusResponse updateUserStatus(String id, boolean isActive) {
+		User newUser = userRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.INVALID_KEY));
+		newUser.setActive(isActive);
+		newUser = userRepository.save(newUser);
+		UserUpdateStatusResponse userUpdateStatusDto = userMapper.toUserUpdateStatusResponseFromUser(newUser);
+		return userUpdateStatusDto;
 	}
 	
 	public Optional<User> findUserByEmailAndRefreshToken(String email, String refreshToken) {

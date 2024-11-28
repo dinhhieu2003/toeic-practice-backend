@@ -14,7 +14,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
+import com.toeic.toeic_practice_backend.domain.dto.response.result.ResultSummaryResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.test.TestResultResponse;
+import com.toeic.toeic_practice_backend.domain.entity.Result.UserAnswer;
 import com.toeic.toeic_practice_backend.service.ResultService;
 
 import lombok.RequiredArgsConstructor;
@@ -39,11 +41,25 @@ public class ResultController {
 		filterParams.put("TYPE", type);
         return ResponseEntity.ok(resultService.getAllResults(pageable, filterParams));
     } 
-
+    
     @GetMapping("{resultId}")
-    public ResponseEntity<TestResultResponse> getResultById(
+    public ResponseEntity<ResultSummaryResponse> getResultById(
         @PathVariable String resultId
     ) {
         return ResponseEntity.ok(resultService.getById(resultId));
     }
+    
+    @GetMapping("{resultId}/review")
+    public ResponseEntity<List<UserAnswer>> getReviewByResultId(
+        @PathVariable String resultId
+    ) {
+        return ResponseEntity.ok(resultService.getReview(resultId));
+    }
+
+//    @GetMapping("{resultId}")
+//    public ResponseEntity<TestResultResponse> getResultById(
+//        @PathVariable String resultId
+//    ) {
+//        return ResponseEntity.ok(resultService.getById(resultId));
+//    }
 }

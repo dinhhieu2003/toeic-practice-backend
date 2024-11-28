@@ -24,6 +24,7 @@ public class Question extends BaseEntity{
     private String id;
 	private String testId;
 	private String practiceId;
+	private String parentId;	// id of group (question)
     private int questionNum;
     private int partNum;
     private String type;  // single, group, or subquestion

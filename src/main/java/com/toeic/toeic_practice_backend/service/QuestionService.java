@@ -250,7 +250,8 @@ public class QuestionService {
                         currentGroup = question;
                         questionRepository.save(currentGroup);
                     } else if (currentGroup != null && "subquestion".equalsIgnoreCase(question.getType())) {
-                        questionRepository.save(question);
+                        question.setParentId(currentGroup.getId());
+                    	questionRepository.save(question);
                         currentGroup.getSubQuestions().add(question);
                         currentGroup.setQuestionNum(question.getQuestionNum());
                         questionRepository.save(currentGroup);
