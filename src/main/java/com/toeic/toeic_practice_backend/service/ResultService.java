@@ -6,8 +6,6 @@ import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.Meta;
@@ -20,8 +18,8 @@ import com.toeic.toeic_practice_backend.exception.AppException;
 import com.toeic.toeic_practice_backend.mapper.ResultMapper;
 import com.toeic.toeic_practice_backend.repository.QuestionRepository;
 import com.toeic.toeic_practice_backend.repository.ResultRepository;
-import com.toeic.toeic_practice_backend.repository.UserRepository;
 import com.toeic.toeic_practice_backend.utils.constants.ErrorCode;
+import com.toeic.toeic_practice_backend.utils.security.SecurityUtils;
 
 import lombok.RequiredArgsConstructor;
 
@@ -32,9 +30,9 @@ public class ResultService {
 	private final ResultRepository resultRepository;
 
 	private final QuestionRepository questionRepository;
-	
-	private final UserRepository userRepository;
 
+	private final UserService userService;
+	
 	private final ResultMapper resultMapper;
 
 	public List<Result> getByUserIdAndListTestId(String userId, List<String> listTestId) {
@@ -55,15 +53,10 @@ public class ResultService {
 	}
 	
 	public PaginationResponse<List<TestResultResponse>> getAllResults(Pageable pageable, Map<String, String> filterParams) {
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = SecurityUtils.getCurrentUserLogin()
+				.orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
 
-        if (authentication == null || !authentication.isAuthenticated()) {
-	        throw new AppException(ErrorCode.UNAUTHORIZED);
-	    }
-
-        String email = authentication.getName();
-
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        User user = userService.getUserByEmail(email).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
 		Page<Result> resultPage;
 

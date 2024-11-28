@@ -23,7 +23,7 @@ public class Question extends BaseEntity{
 	@Id
     private String id;
 	private String testId;
-	private String practiceId;
+	// private String practiceId;
     private int questionNum;
     private int partNum;
     private String type;  // single, group, or subquestion
