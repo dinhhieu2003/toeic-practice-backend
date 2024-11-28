@@ -165,7 +165,7 @@ public class LectureService {
     }
 
     public Lecture updateLecture(String lectureId, LectureRequest request) {
-        Lecture existLecture = lectureRepository.findById(request.getId()).orElseThrow(()-> new AppException(ErrorCode.LECTURE_NOT_FOUND));
+        Lecture existLecture = lectureRepository.findById(lectureId).orElseThrow(()-> new AppException(ErrorCode.LECTURE_NOT_FOUND));
         List<Topic> topics = topicService.getTopicByIds(request.getTopicIds());
         existLecture.setName(request.getName());
         existLecture.setContent(request.getContent());
