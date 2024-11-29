@@ -98,9 +98,10 @@ public class LectureController {
     }
 
     @DeleteMapping("{lectureId}")
-    public ResponseEntity<String> deleteLecturePractice(
+    public ResponseEntity<?> deleteLecturePractice(
         @PathVariable String lectureId
     ) {
-        return ResponseEntity.ok(lectureService.deleteLecturePractice(lectureId));
+        lectureService.deleteLecturePractice(lectureId);
+        return ResponseEntity.ok(null);
     }
 }
