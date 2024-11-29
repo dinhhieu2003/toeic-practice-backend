@@ -108,7 +108,7 @@ public class ResultService {
 		Result result = resultRepository.findById(resultId).orElseThrow(() -> new AppException(ErrorCode.RESULT_NOT_FOUND));
 		List<UserAnswer> userAnswers = result.getUserAnswers();
 		userAnswers = userAnswers.stream()
-				.filter(userAnswer -> "subquestion".equals(userAnswer.getType()))
+				.filter(userAnswer -> !"subquestion".equals(userAnswer.getType()))
 			    .collect(Collectors.toList());
 		result.setUserAnswers(userAnswers);
 		return result;
