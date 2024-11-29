@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.result.ResultSummaryResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.test.TestResultResponse;
+import com.toeic.toeic_practice_backend.domain.entity.Result;
 import com.toeic.toeic_practice_backend.domain.entity.Result.UserAnswer;
 import com.toeic.toeic_practice_backend.service.ResultService;
 
@@ -48,6 +49,13 @@ public class ResultController {
     ) {
         return ResponseEntity.ok(resultService.getById(resultId));
     }
+    
+    @GetMapping("mobile/{resultId}")
+    public ResponseEntity<Result> getResultByIdMobile(
+            @PathVariable String resultId
+        ) {
+            return ResponseEntity.ok(resultService.getByIdMobile(resultId));
+        }
     
     @GetMapping("{resultId}/review")
     public ResponseEntity<List<UserAnswer>> getReviewByResultId(

@@ -104,19 +104,33 @@ public class ResultService {
 			.build();
 	}
 	
+	public Result getByIdMobile(String resultId) {
+		Result result = resultRepository.findById(resultId).orElseThrow(() -> new AppException(ErrorCode.RESULT_NOT_FOUND));
+		List<UserAnswer> userAnswers = result.getUserAnswers();
+		userAnswers = userAnswers.stream()
+				.filter(userAnswer -> "subquestion".equals(userAnswer.getType()))
+			    .collect(Collectors.toList());
+		result.setUserAnswers(userAnswers);
+		return result;
+	}
+	
 	public ResultSummaryResponse getById(String resultId) {
 		Result result = resultRepository.findById(resultId).orElseThrow(() -> new AppException(ErrorCode.RESULT_NOT_FOUND));
 		List<UserAnswerResult> userAnswerResults = new ArrayList<>();
 		List<UserAnswer> userAnswers = result.getUserAnswers();
 		for(UserAnswer userAnswer : userAnswers) {
-			UserAnswerResult userAnswerResult =
-					UserAnswerResult.builder()
-						.questionId(userAnswer.getQuestionId())
-						.answer(userAnswer.getUserAnswer())
-						.solution(userAnswer.getSolution())
-						.timeSpent(userAnswer.getTimeSpent())
-						.correct(userAnswer.isCorrect()).build();
-			userAnswerResults.add(userAnswerResult);
+			if(!userAnswer.getType().equals("group")) {
+				UserAnswerResult userAnswerResult =
+						UserAnswerResult.builder()
+							.questionId(userAnswer.getQuestionId())
+							.questionNum(userAnswer.getQuestionNum())
+							.answer(userAnswer.getUserAnswer())
+							.solution(userAnswer.getSolution())
+							.timeSpent(userAnswer.getTimeSpent())
+							.correct(userAnswer.isCorrect()).build();
+				userAnswerResults.add(userAnswerResult);
+			}
+			
 		}
 		ResultSummaryResponse resultSummaryResponse = 
 				ResultSummaryResponse.builder()

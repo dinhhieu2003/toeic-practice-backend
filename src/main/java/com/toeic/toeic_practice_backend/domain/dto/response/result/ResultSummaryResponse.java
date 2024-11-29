@@ -31,6 +31,7 @@ public class ResultSummaryResponse {
     @Builder
     public static class UserAnswerResult {
     	private String questionId;
+    	private int questionNum;
     	private String answer;
     	private String solution;
     	private int timeSpent;
