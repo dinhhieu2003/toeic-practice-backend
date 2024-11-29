@@ -177,9 +177,8 @@ public class LectureService {
 
     // }
 
-    public String deleteLecturePractice(String practiceId) {
+    public void deleteLecturePractice(String practiceId) {
         Lecture lecture = lectureRepository.findById(practiceId).orElseThrow(()-> new AppException(ErrorCode.LECTURE_NOT_FOUND));
         lectureRepository.delete(lecture);
-        return lecture.getId();
     }
 }
