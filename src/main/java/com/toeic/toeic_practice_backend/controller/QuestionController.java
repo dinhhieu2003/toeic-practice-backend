@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.toeic.toeic_practice_backend.domain.dto.request.question.AddTopicToQuestionRequest;
 import com.toeic.toeic_practice_backend.domain.dto.request.question.UpdateQuestionRequest;
+import com.toeic.toeic_practice_backend.domain.dto.request.question.UpdateResourceQuestionRequest;
 
 import java.util.Map;
 
@@ -17,10 +18,13 @@ import org.apache.commons.collections4.map.HashedMap;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
+import com.toeic.toeic_practice_backend.domain.dto.response.question.UpdateResourceQuestionResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Question;
+import com.toeic.toeic_practice_backend.domain.entity.Question.Resource;
 import com.toeic.toeic_practice_backend.service.QuestionService;
 
 import lombok.RequiredArgsConstructor;
@@ -35,6 +39,11 @@ public class QuestionController {
 		List<String> listTopicIds = request.getListTopicIds();
 		String questionId = request.getQuestionId();
 		return ResponseEntity.ok(questionService.addTopicToQuestion(listTopicIds, questionId));
+	}
+	
+	@PostMapping("/{questionId}/update/resource")
+	public ResponseEntity<UpdateResourceQuestionResponse> updateResourceQuestion(@RequestBody UpdateResourceQuestionRequest res, @PathVariable String questionId) {
+		return ResponseEntity.ok(questionService.updateResourceQuestion(res.getRes(), questionId));
 	}
 	
 	@GetMapping()

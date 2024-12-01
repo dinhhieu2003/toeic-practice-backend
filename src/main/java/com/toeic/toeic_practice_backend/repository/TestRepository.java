@@ -1,5 +1,6 @@
 package com.toeic.toeic_practice_backend.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -19,4 +20,6 @@ public interface TestRepository extends MongoRepository<Test, String> {
 
     @Query("{ 'category.format': ?0 }")
     Page<Test> findByFormatOnly(String format, Pageable pageable);
+    
+    List<Test> findTestByIdIn(List<String> testIds);
 }

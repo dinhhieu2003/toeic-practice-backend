@@ -1,5 +1,6 @@
 package com.toeic.toeic_practice_backend.controller;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.http.HttpHeaders;
@@ -14,11 +15,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.toeic.toeic_practice_backend.domain.dto.response.auth.AccountResponse;
+import com.toeic.toeic_practice_backend.domain.dto.response.auth.AccountResponse.ResultOverview;
 import com.toeic.toeic_practice_backend.domain.dto.response.auth.LoginResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.auth.Tokens;
 import com.toeic.toeic_practice_backend.domain.entity.User;
 import com.toeic.toeic_practice_backend.exception.AppException;
+import com.toeic.toeic_practice_backend.service.AccountService;
 import com.toeic.toeic_practice_backend.service.AuthService;
+import com.toeic.toeic_practice_backend.service.ResultService;
 import com.toeic.toeic_practice_backend.service.UserService;
 import com.toeic.toeic_practice_backend.utils.constants.ErrorCode;
 import com.toeic.toeic_practice_backend.utils.security.JwtTokenUtils;
@@ -33,9 +38,10 @@ public class AuthController {
 	private final UserService userService;
 	private final JwtTokenUtils jwtTokenUtils;
 	private final AuthService authService;
+	private final AccountService accountService;
 	
 	@GetMapping("/account")
-	public ResponseEntity<User> getCurrentAccount() {
+	public ResponseEntity<AccountResponse> getCurrentAccount() {
 		// Lấy thông tin Authentication hiện tại từ SecurityContextHolder
 	    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 	    
@@ -46,13 +52,24 @@ public class AuthController {
 	    
 	    // Lấy email từ Authentication
 	    String email = authentication.getName();
-	    System.out.println("Email: " + email);
-	    System.out.println(authentication);
 	    // Tìm kiếm người dùng theo email
 	    Optional<User> userOptional = userService.getUserByEmail(email);
 	    if (userOptional.isPresent()) {
 	        User user = userOptional.get();
-	        return ResponseEntity.ok(user);
+	        List<ResultOverview> listResultOverview = accountService.getResultOverview(user.getId());
+	        AccountResponse accountResponse = AccountResponse.builder()
+	        		.id(user.getId())
+	                .email(user.getEmail())
+	                .avatar(user.getAvatar())
+	                .role(user.getRole())
+	                .target(user.getTarget())
+	                .overallStat(user.getOverallStat())
+	                .topicStats(user.getTopicStats())
+	                .skillStats(user.getSkillStats())
+	                .learningProgress(user.getLearningProgress())
+	                .results(listResultOverview)
+	                .build();
+	        return ResponseEntity.ok(accountResponse);
 	    } else {
 	        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 	    }

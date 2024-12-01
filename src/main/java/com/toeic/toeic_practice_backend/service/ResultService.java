@@ -14,13 +14,11 @@ import com.toeic.toeic_practice_backend.domain.dto.response.pagination.Paginatio
 import com.toeic.toeic_practice_backend.domain.dto.response.result.ResultSummaryResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.result.ResultSummaryResponse.UserAnswerResult;
 import com.toeic.toeic_practice_backend.domain.dto.response.test.TestResultResponse;
-import com.toeic.toeic_practice_backend.domain.entity.Question;
 import com.toeic.toeic_practice_backend.domain.entity.Result;
 import com.toeic.toeic_practice_backend.domain.entity.Result.UserAnswer;
 import com.toeic.toeic_practice_backend.domain.entity.User;
 import com.toeic.toeic_practice_backend.exception.AppException;
 import com.toeic.toeic_practice_backend.mapper.ResultMapper;
-import com.toeic.toeic_practice_backend.repository.QuestionRepository;
 import com.toeic.toeic_practice_backend.repository.ResultRepository;
 import com.toeic.toeic_practice_backend.utils.constants.ErrorCode;
 import com.toeic.toeic_practice_backend.utils.security.SecurityUtils;
@@ -32,8 +30,6 @@ import lombok.RequiredArgsConstructor;
 public class ResultService {
 
 	private final ResultRepository resultRepository;
-
-	private final QuestionRepository questionRepository;
 
 	private final UserService userService;
 	
@@ -157,26 +153,8 @@ public class ResultService {
 			    .collect(Collectors.toList());
 		return finalUserAnswers;
 	}
-
-//	public TestResultResponse getById(String ResultId) {
-//		Result result = resultRepository.findById(ResultId).orElseThrow(() -> new AppException(ErrorCode.RESULT_NOT_FOUND));
-//
-//		List<String> questionIds = result.getUserAnswers().stream()
-//            .map(Result.UserAnswer::getQuestionId)
-//            .distinct()
-//            .collect(Collectors.toList());
-//
-//		List<Question> questions = questionRepository.findAllById(questionIds);
-//
-//        Map<String, Question> questionMap = questions.stream()
-//                .collect(Collectors.toMap(Question::getId, question -> question));
-//
-//        result.getUserAnswers().forEach(userAnswer -> 
-//            userAnswer.setQuestion(questionMap.get(userAnswer.getQuestionId()))
-//        );
-//
-//		return resultMapper.toTestResultResponse(
-//			result
-//		);
-//	}
+	
+	public List<Result> getResultsByUserId(String userId) {
+		return resultRepository.findByUserId(userId);
+	}
 }

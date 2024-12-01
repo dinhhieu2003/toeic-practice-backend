@@ -77,6 +77,9 @@ public class TestService {
 		return testResponse;
 	}
 
+	public List<Test> getTestByIdIn(List<String> testIds) {
+		return testRepository.findTestByIdIn(testIds);
+	}
 	
 	public PaginationResponse<List<Test>> getAllTest(Pageable pageable) {
 		Page<Test> testPage = testRepository.findAll(pageable);

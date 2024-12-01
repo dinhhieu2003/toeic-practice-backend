@@ -63,11 +63,4 @@ public class ResultController {
     ) {
         return ResponseEntity.ok(resultService.getReview(resultId));
     }
-
-//    @GetMapping("{resultId}")
-//    public ResponseEntity<TestResultResponse> getResultById(
-//        @PathVariable String resultId
-//    ) {
-//        return ResponseEntity.ok(resultService.getById(resultId));
-//    }
 }

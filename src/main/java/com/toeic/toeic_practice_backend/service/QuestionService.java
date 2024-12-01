@@ -30,7 +30,9 @@ import org.springframework.web.multipart.MultipartFile;
 import com.toeic.toeic_practice_backend.domain.dto.request.question.UpdateQuestionRequest;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.Meta;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
+import com.toeic.toeic_practice_backend.domain.dto.response.question.UpdateResourceQuestionResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Question;
+import com.toeic.toeic_practice_backend.domain.entity.Question.Resource;
 import com.toeic.toeic_practice_backend.domain.entity.Result;
 import com.toeic.toeic_practice_backend.domain.entity.Topic;
 import com.toeic.toeic_practice_backend.domain.entity.User;
@@ -497,5 +499,17 @@ public class QuestionService {
     	Question question = getQuestionById(questionId);
     	question.setTopic(listTopicNeedAdd);
     	return saveQuestion(question);
+    }
+    
+    public UpdateResourceQuestionResponse updateResourceQuestion(List<Resource> res, String questionId) {
+    	Question question = questionRepository
+    			.findById(questionId)
+    			.orElseThrow(() -> new AppException(ErrorCode.QUESTION_NOT_FOUND));
+    	question.setResources(res);
+    	UpdateResourceQuestionResponse updateResourceQuestionResponse
+    		= new UpdateResourceQuestionResponse();
+    	updateResourceQuestionResponse.setQuestionId(questionId);
+    	updateResourceQuestionResponse.setResources(res);
+    	return updateResourceQuestionResponse;
     }
 }
