@@ -3,6 +3,8 @@ package com.toeic.toeic_practice_backend.domain.dto.request.lecture;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.toeic.toeic_practice_backend.domain.entity.Question.Resource;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -30,14 +32,5 @@ public class PracticeRequest {
         private String explanation;
         private List<String> answers= new ArrayList<>();
         private String correctAnswer;
-    }
-
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
-    public static class Resource {
-        private String type;  // paragraph, image, or audio
-        private String content;
     }
 }
