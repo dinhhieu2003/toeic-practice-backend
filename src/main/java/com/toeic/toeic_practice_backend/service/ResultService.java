@@ -35,6 +35,10 @@ public class ResultService {
 	
 	private final ResultMapper resultMapper;
 
+	public List<Result> getByUserIdAndTestId(String userId, String testId) {
+		return resultRepository.findByUserIdAndTestId(userId, testId);
+	}
+	
 	public List<Result> getByUserIdAndListTestId(String userId, List<String> listTestId) {
 		return resultRepository.findByUserIdAndTestIdIn(userId, listTestId);
 	}

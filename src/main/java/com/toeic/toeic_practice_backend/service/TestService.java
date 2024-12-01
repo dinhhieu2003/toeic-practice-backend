@@ -3,7 +3,9 @@ package com.toeic.toeic_practice_backend.service;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -21,7 +23,10 @@ import com.toeic.toeic_practice_backend.domain.dto.response.pagination.Paginatio
 import com.toeic.toeic_practice_backend.domain.dto.response.test.FullTestResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.test.GetTestCardResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.test.MultipleChoiceQuestion;
+import com.toeic.toeic_practice_backend.domain.dto.response.test.TestInfoResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.test.TestResultIdResponse;
+import com.toeic.toeic_practice_backend.domain.dto.response.test.TestInfoResponse.ResultOverview;
+import com.toeic.toeic_practice_backend.domain.dto.response.test.TestInfoResponse.TopicOverview;
 import com.toeic.toeic_practice_backend.domain.entity.Category;
 import com.toeic.toeic_practice_backend.domain.entity.Question;
 import com.toeic.toeic_practice_backend.domain.entity.Result;
@@ -75,6 +80,70 @@ public class TestService {
 			throw new AppException(ErrorCode.TEST_ALREADY_EXISTS);
 		}
 		return testResponse;
+	}
+	
+	public TestInfoResponse getTestInfo(String testId, String userId) {
+		Test test = new Test();
+		TestInfoResponse testInfoInfoResponse = new TestInfoResponse();
+		List<Question> listQuestion = questionService.getQuestionInTestNonPage(testId);
+		HashMap<Integer, Set<String>> topicNamesByPartNumMap = new HashMap<>();
+		for(Question question: listQuestion) {
+			int partNum = question.getPartNum();
+			List<String> topicNames = question.getTopic()
+					.stream()
+					.map(Topic::getName)
+					.collect(Collectors.toList());
+			topicNamesByPartNumMap.putIfAbsent(partNum, new HashSet<>());
+			topicNamesByPartNumMap.get(partNum).addAll(topicNames);
+		}
+		List<TopicOverview> topicsOverview = new ArrayList<>();
+		for(Map.Entry<Integer, Set<String>> entry: topicNamesByPartNumMap.entrySet()) {
+			int partNum = entry.getKey();
+			Set<String> topicNames = entry.getValue();
+			TopicOverview topicOverview = new TopicOverview();
+			topicOverview.setPartNum(partNum);
+			topicOverview.setTopicNames(new ArrayList<>(topicNames));
+			topicsOverview.add(topicOverview);
+		}
+		test = testRepository.findById(testId)
+				.orElseThrow(() -> new AppException(ErrorCode.TEST_NOT_FOUND));
+		testInfoInfoResponse = TestInfoResponse
+				.builder()
+				.id(testId)
+				.name(test.getName())
+				.totalUserAttempt(test.getTotalUserAttempt())
+				.totalQuestion(test.getTotalQuestion())
+				.totalScore(test.getTotalScore())
+				.limitTime(test.getLimitTime())
+				.topicsOverview(topicsOverview)
+				.build();
+		List<ResultOverview> listResultOverview = new ArrayList<>();
+		if(userId != null) {
+			List<Result> listResult = resultService.getByUserIdAndTestId(userId, testId);
+			for(Result result: listResult) {
+				int totalQuestion = (int) result.getUserAnswers()
+						.stream()
+						.filter(userAnswer -> !"group".equals(userAnswer.getType()))
+						.count();
+				String score = result.getTotalCorrectAnswer() + "/" + totalQuestion;
+				ResultOverview resultOverview = ResultOverview
+					.builder()
+					.createdAt(result.getCreatedAt())
+					.result(score)
+					.totalTime(result.getTotalTime())
+				    .totalReadingScore(result.getTotalReadingScore())
+				    .totalListeningScore(result.getTotalListeningScore())
+				    .totalCorrectAnswer(result.getTotalCorrectAnswer())
+				    .totalIncorrectAnswer(result.getTotalIncorrectAnswer())
+				    .totalSkipAnswer(result.getTotalSkipAnswer())
+				    .type(result.getType())
+				    .parts(result.getParts())
+				    .build();
+				listResultOverview.add(resultOverview);
+			}
+			testInfoInfoResponse.setResultsOverview(listResultOverview);
+		}
+		return testInfoInfoResponse;
 	}
 
 	public List<Test> getTestByIdIn(List<String> testIds) {

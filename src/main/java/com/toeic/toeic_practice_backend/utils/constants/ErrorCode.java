@@ -21,6 +21,7 @@ public enum ErrorCode {
 	
 //	Test 
 	TEST_ALREADY_EXISTS(2001, "Test already exists", HttpStatus.BAD_REQUEST),
+	TEST_NOT_FOUND(2002, "Test not found", HttpStatus.NOT_FOUND),
 	
 //	Topic
 	TOPIC_ALREADY_EXISTS(3001, "Topic already exists", HttpStatus.BAD_REQUEST),

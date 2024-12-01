@@ -2,11 +2,14 @@ package com.toeic.toeic_practice_backend.controller;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,12 +24,15 @@ import com.toeic.toeic_practice_backend.domain.dto.request.test.SubmitTestReques
 import com.toeic.toeic_practice_backend.domain.dto.request.test.TestCreationRequest;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.test.FullTestResponse;
+import com.toeic.toeic_practice_backend.domain.dto.response.test.TestInfoResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.test.TestResultIdResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Question;
 import com.toeic.toeic_practice_backend.domain.entity.Test;
+import com.toeic.toeic_practice_backend.domain.entity.User;
 import com.toeic.toeic_practice_backend.service.AzureBlobService;
 import com.toeic.toeic_practice_backend.service.QuestionService;
 import com.toeic.toeic_practice_backend.service.TestService;
+import com.toeic.toeic_practice_backend.service.UserService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -37,6 +43,7 @@ public class TestController {
 	private final TestService testService;
 	private final AzureBlobService azureBlobService;
 	private final QuestionService questionService;
+	private final UserService userService;
 	
 	@PostMapping("{testId}/import")
     public ResponseEntity<?> importQuestions(@RequestParam("file") MultipartFile file, @PathVariable String testId) {
@@ -102,6 +109,22 @@ public class TestController {
 	@GetMapping("/{testId}/practice")
 	public ResponseEntity<FullTestResponse> getQuestionByParts(@PathVariable String testId, @RequestParam String parts) {
 		return ResponseEntity.ok(testService.getQuestionTest(testId, parts));
+	}
+	
+	@GetMapping("/{testId}/info")
+	public ResponseEntity<TestInfoResponse> getTestInfo(@PathVariable String testId) {
+		// Lấy thông tin Authentication hiện tại từ SecurityContextHolder
+	    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+	    // Lấy email từ Authentication
+	    String email = authentication.getName();
+	    // Tìm kiếm người dùng theo email
+	    Optional<User> userOptional = userService.getUserByEmail(email);
+	    String userId = null;
+	    if (userOptional.isPresent()) {
+	    	userId = userOptional.get().getId();
+	    }
+	    System.out.println(userId);
+	    return ResponseEntity.ok(testService.getTestInfo(testId, userId));
 	}
 	
 	@PostMapping("/submit")

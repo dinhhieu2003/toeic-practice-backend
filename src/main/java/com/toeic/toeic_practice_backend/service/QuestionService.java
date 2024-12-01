@@ -158,6 +158,10 @@ public class QuestionService {
         return true;
     }
     
+    public List<Question> getQuestionInTestNonPage(String testId) {
+    	return questionRepository.findByTestId(testId);
+    }
+    
     public PaginationResponse<List<Question>> getAllQuestion(Pageable pageable, Map<String, String> filterParams) {
         Query query = new Query();
 
