@@ -514,6 +514,7 @@ public class QuestionService {
     		= new UpdateResourceQuestionResponse();
     	updateResourceQuestionResponse.setQuestionId(questionId);
     	updateResourceQuestionResponse.setResources(res);
+    	questionRepository.save(question);
     	return updateResourceQuestionResponse;
     }
 }
