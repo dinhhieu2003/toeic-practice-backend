@@ -161,6 +161,7 @@ public class LectureService {
             .explanation(practice.getExplanation())
             .answers(practice.getAnswers())
             .correctAnswer(practice.getCorrectAnswer())
+            .resources(practice.getResources())
             .build();
     }
 
