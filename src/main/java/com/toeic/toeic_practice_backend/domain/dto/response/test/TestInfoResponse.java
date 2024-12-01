@@ -30,6 +30,7 @@ public class TestInfoResponse {
     @AllArgsConstructor
     @Builder
     public static class ResultOverview {
+    	private String resultId;
     	private Instant createdAt;
     	private String result;	// x/200, x/30
     	private int totalTime;

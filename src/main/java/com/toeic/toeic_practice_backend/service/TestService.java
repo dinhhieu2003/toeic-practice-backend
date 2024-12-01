@@ -129,6 +129,7 @@ public class TestService {
 				ResultOverview resultOverview = ResultOverview
 					.builder()
 					.createdAt(result.getCreatedAt())
+					.resultId(result.getId())
 					.result(score)
 					.totalTime(result.getTotalTime())
 				    .totalReadingScore(result.getTotalReadingScore())

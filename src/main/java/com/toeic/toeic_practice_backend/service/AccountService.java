@@ -41,6 +41,8 @@ public class AccountService {
 			ResultOverview resultOverview = ResultOverview
 					.builder()
 					.createdAt(result.getCreatedAt())
+					.testId(result.getTestId())
+					.resultId(result.getId())
 					.testName(testNameMap.get(result.getTestId()))
 					.result(score)
 					.totalTime(result.getTotalTime())

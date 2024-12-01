@@ -39,6 +39,8 @@ public class AccountResponse {
     @Builder
     public static class ResultOverview {
     	private Instant createdAt;
+    	private String testId;
+    	private String resultId;
     	private String testName;
     	private String result;	// x/200, x/30
     	private int totalTime;
