@@ -86,17 +86,14 @@ public class TestService {
 		Optional<Test> existingTest = testRepository.findByName(testUpdateRequest.getName());
 		Test testResponse = new Test();
 		if(existingTest.isEmpty() || existingTest.get().getId().equals(testId)) {
-			System.out.println("true");
 			Optional<Test> testOptional = 
 					testRepository.findById(testId);
 			if(!testOptional.isEmpty()) {
 				Test updatedTest = testOptional.get();
-				System.out.println("Active: " + testUpdateRequest.isActive());
 				updatedTest.setName(testUpdateRequest.getName());
 				updatedTest.setTotalQuestion(testUpdateRequest.getTotalQuestion());
 				updatedTest.setTotalScore(testUpdateRequest.getTotalScore());
 				updatedTest.setLimitTime(testUpdateRequest.getLimitTime());
-				updatedTest.setActive(testUpdateRequest.isActive());
 				testResponse = testRepository.save(updatedTest);
 			} else {
 				throw new AppException(ErrorCode.TEST_NOT_FOUND);
