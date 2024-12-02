@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.toeic.toeic_practice_backend.domain.dto.request.test.SubmitTestRequest;
-import com.toeic.toeic_practice_backend.domain.dto.request.test.TestAdditionRequest;
+import com.toeic.toeic_practice_backend.domain.dto.request.test.TestUdateRequest;
 import com.toeic.toeic_practice_backend.domain.dto.request.test.SubmitTestRequest.AnswerPair;
 import com.toeic.toeic_practice_backend.domain.dto.request.test.TestCreationRequest;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.Meta;
@@ -82,18 +82,19 @@ public class TestService {
 		return testResponse;
 	}
 	
-	public Test updateTest(TestAdditionRequest testAdditionRequest, String testId) {
-		Optional<Test> existingTest = testRepository.findByName(testAdditionRequest.getName());
+	public Test updateTest(TestUdateRequest testUpdateRequest, String testId) {
+		Optional<Test> existingTest = testRepository.findByName(testUpdateRequest.getName());
 		Test testResponse = new Test();
-		if(existingTest.isEmpty()) {
+		if(existingTest.isEmpty() || existingTest.get().getId().equals(testId)) {
 			Optional<Test> testOptional = 
 					testRepository.findById(testId);
 			if(testOptional.isEmpty()) {
 				Test updatedTest = testOptional.get();
-				updatedTest.setName(testAdditionRequest.getName());
-				updatedTest.setTotalQuestion(testAdditionRequest.getTotalQuestion());
-				updatedTest.setTotalScore(testAdditionRequest.getTotalScore());
-				updatedTest.setLimitTime(testAdditionRequest.getLimitTime());
+				updatedTest.setName(testUpdateRequest.getName());
+				updatedTest.setTotalQuestion(testUpdateRequest.getTotalQuestion());
+				updatedTest.setTotalScore(testUpdateRequest.getTotalScore());
+				updatedTest.setLimitTime(testUpdateRequest.getLimitTime());
+				updatedTest.setActive(testUpdateRequest.isActive());
 				testResponse = testRepository.save(updatedTest);
 			} else {
 				throw new AppException(ErrorCode.TEST_NOT_FOUND);
@@ -102,20 +103,6 @@ public class TestService {
 			throw new AppException(ErrorCode.TEST_ALREADY_EXISTS);
 		}
 		
-		return testResponse;
-	}
-	
-	public Test updateTestStatus(boolean isActive, String testId) {
-		Optional<Test> testOptional = 
-				testRepository.findById(testId);
-		Test testResponse = new Test();
-		if(testOptional.isEmpty()) {
-			Test updatedTest = testOptional.get();
-			updatedTest.setActive(isActive);
-			testResponse = testRepository.save(updatedTest);
-		} else {
-			throw new AppException(ErrorCode.TEST_NOT_FOUND);
-		}
 		return testResponse;
 	}
 	

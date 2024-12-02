@@ -7,6 +7,10 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class TestStatusUpdateRequest {
-	private boolean isActive;
+public class TestUdateRequest {
+	private String name;
+    private int totalQuestion;
+    private int totalScore;
+    private int limitTime;
+    private boolean isActive;
 }

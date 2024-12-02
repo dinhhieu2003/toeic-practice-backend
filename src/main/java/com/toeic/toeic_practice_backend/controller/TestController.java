@@ -21,9 +21,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.toeic.toeic_practice_backend.domain.dto.request.test.SubmitTestRequest;
-import com.toeic.toeic_practice_backend.domain.dto.request.test.TestAdditionRequest;
+import com.toeic.toeic_practice_backend.domain.dto.request.test.TestUdateRequest;
 import com.toeic.toeic_practice_backend.domain.dto.request.test.TestCreationRequest;
-import com.toeic.toeic_practice_backend.domain.dto.request.test.TestStatusUpdateRequest;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.test.FullTestResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.test.TestInfoResponse;
@@ -94,13 +93,8 @@ public class TestController {
 	}
 	
 	@PostMapping("{testId}")
-	public ResponseEntity<Test> updateTest(@RequestBody TestAdditionRequest test, @PathVariable String testId) {
+	public ResponseEntity<Test> updateTest(@RequestBody TestUdateRequest test, @PathVariable String testId) {
 		return ResponseEntity.ok(testService.updateTest(test, testId));
-	}
-	
-	@PostMapping("{testId}/status")
-	public ResponseEntity<Test> updateTestStatus(@RequestBody TestStatusUpdateRequest test, @PathVariable String testId) {
-		return ResponseEntity.ok(testService.updateTestStatus(test.isActive(), testId));
 	}
 	
 	@GetMapping("")
