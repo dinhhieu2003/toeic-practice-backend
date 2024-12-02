@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.springframework.data.mongodb.core.mapping.DBRef;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.toeic.toeic_practice_backend.domain.entity.Role;
 import com.toeic.toeic_practice_backend.domain.entity.User.LearningProgress;
 import com.toeic.toeic_practice_backend.domain.entity.User.OverallStat;
@@ -30,6 +31,7 @@ public class AccountResponse {
     private OverallStat overallStat;
     private List<TopicStat> topicStats = new ArrayList<>();
     private List<SkillStat> skillStats = new ArrayList<>();
+    @JsonIgnore
     private List<LearningProgress> learningProgress= new ArrayList<>();
     private List<ResultOverview> results;
     
