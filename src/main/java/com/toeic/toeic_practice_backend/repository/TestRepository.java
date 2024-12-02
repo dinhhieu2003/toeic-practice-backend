@@ -14,6 +14,7 @@ import com.toeic.toeic_practice_backend.domain.entity.Test;
 @Repository
 public interface TestRepository extends MongoRepository<Test, String> {
 	Optional<Test> findByNameAndCategory_Id(String name, String categoryId);
+	Optional<Test> findByName(String name);
 	Page<Test> findByCategory_Id(String categoryId, Pageable pageable);
 	@Query("{ 'category.format': ?0, 'category.year': ?1 }")
     Page<Test> findByFormatAndYear(String format, int year, Pageable pageable);

@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.toeic.toeic_practice_backend.domain.dto.request.test.SubmitTestRequest;
+import com.toeic.toeic_practice_backend.domain.dto.request.test.TestAdditionRequest;
 import com.toeic.toeic_practice_backend.domain.dto.request.test.TestCreationRequest;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.test.FullTestResponse;
@@ -89,6 +90,11 @@ public class TestController {
 	@PostMapping("")
 	public ResponseEntity<Test> addTest(@RequestBody TestCreationRequest test) {
 		return ResponseEntity.status(HttpStatus.CREATED).body(testService.addTest(test));
+	}
+	
+	@PostMapping("{testId}")
+	public ResponseEntity<Test> updateTest(@RequestBody TestAdditionRequest test) {
+		return ResponseEntity.ok(testService.updateTest(test));
 	}
 	
 	@GetMapping("")

@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.toeic.toeic_practice_backend.domain.dto.request.test.SubmitTestRequest;
+import com.toeic.toeic_practice_backend.domain.dto.request.test.TestAdditionRequest;
 import com.toeic.toeic_practice_backend.domain.dto.request.test.SubmitTestRequest.AnswerPair;
 import com.toeic.toeic_practice_backend.domain.dto.request.test.TestCreationRequest;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.Meta;
@@ -60,8 +61,7 @@ public class TestService {
 	
 	public Test addTest(TestCreationRequest testCreationRequest) {
 		Optional<Test> testOptional = 
-				testRepository.findByNameAndCategory_Id(testCreationRequest.getName(), 
-						testCreationRequest.getCategoryId());
+				testRepository.findByName(testCreationRequest.getName());
 		Test testResponse = new Test();
 		if(testOptional.isEmpty()) {
 			Category category = categoryRepository
@@ -76,6 +76,23 @@ public class TestService {
 			newTest.setLimitTime(testCreationRequest.getLimitTime());
 			newTest.setCategory(category);
 			testResponse = testRepository.save(newTest);
+		} else {
+			throw new AppException(ErrorCode.TEST_ALREADY_EXISTS);
+		}
+		return testResponse;
+	}
+	
+	public Test updateTest(TestAdditionRequest testAdditionRequest) {
+		Optional<Test> testOptional = 
+				testRepository.findByName(testAdditionRequest.getName());
+		Test testResponse = new Test();
+		if(testOptional.isEmpty()) {
+			Test updatedTest = new Test();
+			updatedTest.setName(testAdditionRequest.getName());
+			updatedTest.setTotalQuestion(testAdditionRequest.getTotalQuestion());
+			updatedTest.setTotalScore(testAdditionRequest.getTotalScore());
+			updatedTest.setLimitTime(testAdditionRequest.getLimitTime());
+			testResponse = testRepository.save(updatedTest);
 		} else {
 			throw new AppException(ErrorCode.TEST_ALREADY_EXISTS);
 		}
