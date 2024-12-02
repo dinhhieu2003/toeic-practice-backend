@@ -83,19 +83,25 @@ public class TestService {
 	}
 	
 	public Test updateTest(TestAdditionRequest testAdditionRequest, String testId) {
-		Optional<Test> testOptional = 
-				testRepository.findById(testId);
+		Optional<Test> existingTest = testRepository.findByName(testAdditionRequest.getName());
 		Test testResponse = new Test();
-		if(testOptional.isEmpty()) {
-			Test updatedTest = testOptional.get();
-			updatedTest.setName(testAdditionRequest.getName());
-			updatedTest.setTotalQuestion(testAdditionRequest.getTotalQuestion());
-			updatedTest.setTotalScore(testAdditionRequest.getTotalScore());
-			updatedTest.setLimitTime(testAdditionRequest.getLimitTime());
-			testResponse = testRepository.save(updatedTest);
+		if(existingTest.isEmpty()) {
+			Optional<Test> testOptional = 
+					testRepository.findById(testId);
+			if(testOptional.isEmpty()) {
+				Test updatedTest = testOptional.get();
+				updatedTest.setName(testAdditionRequest.getName());
+				updatedTest.setTotalQuestion(testAdditionRequest.getTotalQuestion());
+				updatedTest.setTotalScore(testAdditionRequest.getTotalScore());
+				updatedTest.setLimitTime(testAdditionRequest.getLimitTime());
+				testResponse = testRepository.save(updatedTest);
+			} else {
+				throw new AppException(ErrorCode.TEST_NOT_FOUND);
+			}
 		} else {
 			throw new AppException(ErrorCode.TEST_ALREADY_EXISTS);
 		}
+		
 		return testResponse;
 	}
 	
@@ -108,7 +114,7 @@ public class TestService {
 			updatedTest.setActive(isActive);
 			testResponse = testRepository.save(updatedTest);
 		} else {
-			throw new AppException(ErrorCode.TEST_ALREADY_EXISTS);
+			throw new AppException(ErrorCode.TEST_NOT_FOUND);
 		}
 		return testResponse;
 	}
