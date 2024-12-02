@@ -530,16 +530,20 @@ public class TestService {
 				overallStat.setHighestScore(totalScore);
 			}
 			currentUser.setOverallStat(overallStat);
-			topicStatMap.forEach((key, topicStat) -> {
-				newTopicStats.add(topicStat);
-			});
-			currentUser.setTopicStats(newTopicStats);
-			skillStatMap.forEach((key, skillStat) -> {
-				newSkillStats.add(skillStat);
-			});
-			currentUser.setSkillStats(newSkillStats);
-			userService.saveUser(currentUser);
 		}
+		
+		// save topic stat
+		topicStatMap.forEach((key, topicStat) -> {
+			newTopicStats.add(topicStat);
+		});
+		currentUser.setTopicStats(newTopicStats);
+		
+		// save skill stat
+		skillStatMap.forEach((key, skillStat) -> {
+			newSkillStats.add(skillStat);
+		});
+		currentUser.setSkillStats(newSkillStats);
+		userService.saveUser(currentUser);
 		
 		testResultIdResponse.setResultId(newResult.getId());
 		return testResultIdResponse;
