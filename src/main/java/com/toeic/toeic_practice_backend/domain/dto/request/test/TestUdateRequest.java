@@ -12,5 +12,5 @@ public class TestUdateRequest {
     private int totalQuestion;
     private int totalScore;
     private int limitTime;
-    private boolean isActive;
+    private boolean isActive = true;
 }

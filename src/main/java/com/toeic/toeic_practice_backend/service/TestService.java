@@ -86,10 +86,12 @@ public class TestService {
 		Optional<Test> existingTest = testRepository.findByName(testUpdateRequest.getName());
 		Test testResponse = new Test();
 		if(existingTest.isEmpty() || existingTest.get().getId().equals(testId)) {
+			System.out.println("true");
 			Optional<Test> testOptional = 
 					testRepository.findById(testId);
-			if(testOptional.isEmpty()) {
+			if(!testOptional.isEmpty()) {
 				Test updatedTest = testOptional.get();
+				System.out.println("Active: " + testUpdateRequest.isActive());
 				updatedTest.setName(testUpdateRequest.getName());
 				updatedTest.setTotalQuestion(testUpdateRequest.getTotalQuestion());
 				updatedTest.setTotalScore(testUpdateRequest.getTotalScore());
