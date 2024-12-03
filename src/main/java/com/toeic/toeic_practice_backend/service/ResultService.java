@@ -14,6 +14,7 @@ import com.toeic.toeic_practice_backend.domain.dto.response.pagination.Paginatio
 import com.toeic.toeic_practice_backend.domain.dto.response.result.ResultSummaryResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.result.ResultSummaryResponse.UserAnswerResult;
 import com.toeic.toeic_practice_backend.domain.dto.response.test.TestResultResponse;
+import com.toeic.toeic_practice_backend.domain.entity.Question;
 import com.toeic.toeic_practice_backend.domain.entity.Result;
 import com.toeic.toeic_practice_backend.domain.entity.Result.UserAnswer;
 import com.toeic.toeic_practice_backend.domain.entity.User;
@@ -112,42 +113,6 @@ public class ResultService {
 			    .collect(Collectors.toList());
 		result.setUserAnswers(userAnswers);
 		return result;
-	}
-	
-	public ResultSummaryResponse getById(String resultId) {
-		Result result = resultRepository.findById(resultId).orElseThrow(() -> new AppException(ErrorCode.RESULT_NOT_FOUND));
-		List<UserAnswerResult> userAnswerResults = new ArrayList<>();
-		List<UserAnswer> userAnswers = result.getUserAnswers();
-		for(UserAnswer userAnswer : userAnswers) {
-			if(!userAnswer.getType().equals("group")) {
-				UserAnswerResult userAnswerResult =
-						UserAnswerResult.builder()
-							.questionId(userAnswer.getQuestionId())
-							.questionNum(userAnswer.getQuestionNum())
-							.partNum(userAnswer.getPartNum())
-							.answer(userAnswer.getUserAnswer())
-							.solution(userAnswer.getSolution())
-							.timeSpent(userAnswer.getTimeSpent())
-							.correct(userAnswer.isCorrect()).build();
-				userAnswerResults.add(userAnswerResult);
-			}
-			
-		}
-		ResultSummaryResponse resultSummaryResponse = 
-				ResultSummaryResponse.builder()
-				.id(resultId)
-				.testId(result.getTestId())
-				.totalTime(result.getTotalTime())
-				.totalReadingScore(result.getTotalReadingScore())
-				.totalListeningScore(result.getTotalListeningScore())
-				.totalCorrectAnswer(result.getTotalCorrectAnswer())
-				.totalIncorrectAnswer(result.getTotalIncorrectAnswer())
-				.totalSkipAnswer(result.getTotalSkipAnswer())
-				.type(result.getType())
-				.parts(result.getParts())
-				.build();
-		resultSummaryResponse.setUserAnswers(userAnswerResults);
-		return resultSummaryResponse;
 	}
 	
 	public List<UserAnswer> getReview(String resultId) {

@@ -18,6 +18,7 @@ import com.toeic.toeic_practice_backend.domain.dto.response.result.ResultSummary
 import com.toeic.toeic_practice_backend.domain.dto.response.test.TestResultResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Result;
 import com.toeic.toeic_practice_backend.domain.entity.Result.UserAnswer;
+import com.toeic.toeic_practice_backend.service.ResultQuestionService;
 import com.toeic.toeic_practice_backend.service.ResultService;
 
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,7 @@ import lombok.RequiredArgsConstructor;
 public class ResultController {
     
     private final ResultService resultService;
+    private final ResultQuestionService resultQuestionService;
 
     @GetMapping
     public ResponseEntity<PaginationResponse<List<TestResultResponse>>> getAllResults(
@@ -44,10 +46,10 @@ public class ResultController {
     } 
     
     @GetMapping("{resultId}")
-    public ResponseEntity<ResultSummaryResponse> getResultById(
+    public ResponseEntity<ResultSummaryResponse> getResultSummaryById(
         @PathVariable String resultId
     ) {
-        return ResponseEntity.ok(resultService.getById(resultId));
+        return ResponseEntity.ok(resultQuestionService.getResultSummaryById(resultId));
     }
     
     @GetMapping("mobile/{resultId}")
