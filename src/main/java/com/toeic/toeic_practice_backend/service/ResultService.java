@@ -124,6 +124,7 @@ public class ResultService {
 						UserAnswerResult.builder()
 							.questionId(userAnswer.getQuestionId())
 							.questionNum(userAnswer.getQuestionNum())
+							.partNum(userAnswer.getPartNum())
 							.answer(userAnswer.getUserAnswer())
 							.solution(userAnswer.getSolution())
 							.timeSpent(userAnswer.getTimeSpent())

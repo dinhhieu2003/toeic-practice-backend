@@ -32,6 +32,7 @@ public class ResultSummaryResponse {
     public static class UserAnswerResult {
     	private String questionId;
     	private int questionNum;
+    	private int partNum;
     	private String answer;
     	private String solution;
     	private int timeSpent;
