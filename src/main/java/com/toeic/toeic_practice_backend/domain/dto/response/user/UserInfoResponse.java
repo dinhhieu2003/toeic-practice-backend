@@ -14,4 +14,5 @@ public class UserInfoResponse {
     private String email;
     private Role role;
     private int target;
+    private boolean isActive;
 }
