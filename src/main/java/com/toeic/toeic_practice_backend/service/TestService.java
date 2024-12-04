@@ -170,6 +170,12 @@ public class TestService {
 		return testInfoInfoResponse;
 	}
 
+	public Test getTestById(String testId) {
+		Test test = testRepository.findById(testId)
+				.orElseThrow(() -> new AppException(ErrorCode.TEST_NOT_FOUND));
+		return test;
+	}
+	
 	public List<Test> getTestByIdIn(List<String> testIds) {
 		return testRepository.findTestByIdIn(testIds);
 	}

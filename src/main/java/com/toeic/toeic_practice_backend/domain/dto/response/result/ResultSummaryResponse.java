@@ -18,6 +18,7 @@ import lombok.NoArgsConstructor;
 public class ResultSummaryResponse {
 	private String id;
     private String testId;
+    private String testName;
     private int totalTime;
     private int totalReadingScore;
     private int totalListeningScore;

@@ -22,11 +22,15 @@ import lombok.RequiredArgsConstructor;
 public class ResultQuestionService {
 	private final QuestionService questionService;
 	private final ResultRepository resultRepository;
+	private final TestService testService;
 	
 	public ResultSummaryResponse getResultSummaryById(String resultId) {
 	    Result result = resultRepository.findById(resultId)
 	        .orElseThrow(() -> new AppException(ErrorCode.RESULT_NOT_FOUND));
-
+	    
+	    // get test name
+	    String testName = testService.getTestById(result.getTestId()).getName();
+	    
 	    // get userAnswer
 	    List<UserAnswer> userAnswers = result.getUserAnswers();
 	    List<String> questionIds = userAnswers.stream()
@@ -83,6 +87,7 @@ public class ResultQuestionService {
 	    ResultSummaryResponse resultSummaryResponse = ResultSummaryResponse.builder()
 	        .id(resultId)
 	        .testId(result.getTestId())
+	        .testName(testName)
 	        .totalTime(result.getTotalTime())
 	        .totalReadingScore(result.getTotalReadingScore())
 	        .totalListeningScore(result.getTotalListeningScore())
