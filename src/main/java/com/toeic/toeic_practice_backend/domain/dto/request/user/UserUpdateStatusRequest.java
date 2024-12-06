@@ -8,5 +8,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserUpdateStatusRequest {
-	private boolean isActive;
+	private boolean active;
 }
