@@ -33,6 +33,10 @@ public class UserService {
 		return userRepository.findByEmail(email);
 	}
 	
+	public Optional<User> getUserByEmailWithoutStats(String email) {
+		return userRepository.findByEmailWithoutStat(email);
+	}
+	
 	public User saveUser(User user) {
 		return userRepository.save(user);
 	}
@@ -57,17 +61,16 @@ public class UserService {
 	}
 	
 	public PaginationResponse<List<UserInfoResponse>> getAllUser(Pageable pageable) {
-		Page<User> userPage = userRepository.findAll(pageable);
+		Page<UserInfoResponse> userPage = userRepository.findAllUserInfo(pageable);
+	    
 		PaginationResponse<List<UserInfoResponse>> response = new PaginationResponse<List<UserInfoResponse>>();
 		Meta meta = new Meta();
 		meta.setCurrent(pageable.getPageNumber()+1);
 		meta.setPageSize(pageable.getPageSize());
 		meta.setTotalItems(userPage.getTotalElements());
 		meta.setTotalPages(userPage.getTotalPages());
-		List<User> listUser = userPage.getContent();
-		List<UserInfoResponse> result = userMapper.toListUserInfoResponseFromListUser(listUser);
 		response.setMeta(meta);
-		response.setResult(result);
+		response.setResult(userPage.getContent());
 		return response;
 	}
 	
