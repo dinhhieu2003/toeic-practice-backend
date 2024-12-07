@@ -124,7 +124,7 @@ public class TestController {
 	    // Lấy email từ Authentication
 	    String email = authentication.getName();
 	    // Tìm kiếm người dùng theo email
-	    Optional<User> userOptional = userService.getUserByEmail(email);
+	    Optional<User> userOptional = userService.getUserByEmailWithoutStat(email);
 	    String userId = null;
 	    if (userOptional.isPresent()) {
 	    	userId = userOptional.get().getId();

@@ -158,8 +158,10 @@ public class QuestionService {
         return true;
     }
     
-    public List<Question> getQuestionInTestNonPage(String testId) {
-    	return questionRepository.findByTestId(testId);
+    public List<Question> getQuestionForTestInfo(String testId) {
+    	Query query = new Query(Criteria.where("testId").is(testId));
+        query.fields().include("id").include("topic").include("partNum");
+        return mongoTemplate.find(query, Question.class);
     }
     
     public PaginationResponse<List<Question>> getAllQuestion(Pageable pageable, Map<String, String> filterParams) {

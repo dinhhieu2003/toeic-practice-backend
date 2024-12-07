@@ -106,69 +106,107 @@ public class TestService {
 	}
 	
 	public TestInfoResponse getTestInfo(String testId, String userId) {
-		Test test = new Test();
-		TestInfoResponse testInfoInfoResponse = new TestInfoResponse();
-		List<Question> listQuestion = questionService.getQuestionInTestNonPage(testId);
-		HashMap<Integer, Set<String>> topicNamesByPartNumMap = new HashMap<>();
-		for(Question question: listQuestion) {
-			int partNum = question.getPartNum();
-			List<String> topicNames = question.getTopic()
-					.stream()
-					.map(Topic::getName)
-					.collect(Collectors.toList());
-			topicNamesByPartNumMap.putIfAbsent(partNum, new HashSet<>());
-			topicNamesByPartNumMap.get(partNum).addAll(topicNames);
-		}
-		List<TopicOverview> topicsOverview = new ArrayList<>();
-		for(Map.Entry<Integer, Set<String>> entry: topicNamesByPartNumMap.entrySet()) {
-			int partNum = entry.getKey();
-			Set<String> topicNames = entry.getValue();
-			TopicOverview topicOverview = new TopicOverview();
-			topicOverview.setPartNum(partNum);
-			topicOverview.setTopicNames(new ArrayList<>(topicNames));
-			topicsOverview.add(topicOverview);
-		}
-		test = testRepository.findById(testId)
-				.orElseThrow(() -> new AppException(ErrorCode.TEST_NOT_FOUND));
-		testInfoInfoResponse = TestInfoResponse
-				.builder()
-				.id(testId)
-				.name(test.getName())
-				.totalUserAttempt(test.getTotalUserAttempt())
-				.totalQuestion(test.getTotalQuestion())
-				.totalScore(test.getTotalScore())
-				.limitTime(test.getLimitTime())
-				.topicsOverview(topicsOverview)
-				.build();
-		List<ResultOverview> listResultOverview = new ArrayList<>();
-		if(userId != null) {
-			List<Result> listResult = resultService.getByUserIdAndTestId(userId, testId);
-			for(Result result: listResult) {
-				int totalQuestion = (int) result.getUserAnswers()
-						.stream()
-						.filter(userAnswer -> !"group".equals(userAnswer.getType()))
-						.count();
-				String score = result.getTotalCorrectAnswer() + "/" + totalQuestion;
-				ResultOverview resultOverview = ResultOverview
-					.builder()
-					.createdAt(result.getCreatedAt())
-					.resultId(result.getId())
-					.result(score)
-					.totalTime(result.getTotalTime())
-				    .totalReadingScore(result.getTotalReadingScore())
-				    .totalListeningScore(result.getTotalListeningScore())
-				    .totalCorrectAnswer(result.getTotalCorrectAnswer())
-				    .totalIncorrectAnswer(result.getTotalIncorrectAnswer())
-				    .totalSkipAnswer(result.getTotalSkipAnswer())
-				    .type(result.getType())
-				    .parts(result.getParts())
-				    .build();
-				listResultOverview.add(resultOverview);
-			}
-			testInfoInfoResponse.setResultsOverview(listResultOverview);
-		}
-		return testInfoInfoResponse;
+	    // Record start time for the entire method
+	    long startTime = System.nanoTime();
+
+	    Test test = new Test();
+	    TestInfoResponse testInfoInfoResponse = new TestInfoResponse();
+
+	    // Time for getting questions
+	    long startQuestionsTime = System.nanoTime();
+	    List<Question> listQuestion = questionService.getQuestionForTestInfo(testId);
+	    long endQuestionsTime = System.nanoTime();
+	    long questionsQueryTime = endQuestionsTime - startQuestionsTime;
+	    System.out.println("Time to fetch questions: " + questionsQueryTime / 1000000 + " ms");
+
+	    HashMap<Integer, Set<String>> topicNamesByPartNumMap = new HashMap<>();
+	    for (Question question : listQuestion) {
+	        int partNum = question.getPartNum();
+	        List<String> topicNames = question.getTopic()
+	                .stream()
+	                .map(Topic::getName)
+	                .collect(Collectors.toList());
+	        topicNamesByPartNumMap.putIfAbsent(partNum, new HashSet<>());
+	        topicNamesByPartNumMap.get(partNum).addAll(topicNames);
+	    }
+
+	    // Time for processing topics
+	    long startTopicsTime = System.nanoTime();
+	    List<TopicOverview> topicsOverview = new ArrayList<>();
+	    for (Map.Entry<Integer, Set<String>> entry : topicNamesByPartNumMap.entrySet()) {
+	        int partNum = entry.getKey();
+	        Set<String> topicNames = entry.getValue();
+	        TopicOverview topicOverview = new TopicOverview();
+	        topicOverview.setPartNum(partNum);
+	        topicOverview.setTopicNames(new ArrayList<>(topicNames));
+	        topicsOverview.add(topicOverview);
+	    }
+	    long endTopicsTime = System.nanoTime();
+	    long topicsProcessingTime = endTopicsTime - startTopicsTime;
+	    System.out.println("Time to process topics: " + topicsProcessingTime / 1000000 + " ms");
+
+	    // Time for fetching test details
+	    long startTestTime = System.nanoTime();
+	    test = testRepository.findById(testId)
+	            .orElseThrow(() -> new AppException(ErrorCode.TEST_NOT_FOUND));
+	    long endTestTime = System.nanoTime();
+	    long testQueryTime = endTestTime - startTestTime;
+	    System.out.println("Time to fetch test details: " + testQueryTime / 1000000 + " ms");
+
+	    // Construct TestInfoResponse
+	    testInfoInfoResponse = TestInfoResponse
+	            .builder()
+	            .id(testId)
+	            .name(test.getName())
+	            .totalUserAttempt(test.getTotalUserAttempt())
+	            .totalQuestion(test.getTotalQuestion())
+	            .totalScore(test.getTotalScore())
+	            .limitTime(test.getLimitTime())
+	            .topicsOverview(topicsOverview)
+	            .build();
+
+	    List<ResultOverview> listResultOverview = new ArrayList<>();
+	    if (userId != null) {
+	        // Time for fetching results
+	        long startResultTime = System.nanoTime();
+	        List<Result> listResult = resultService.getByUserIdAndTestId(userId, testId);
+	        long endResultTime = System.nanoTime();
+	        long resultQueryTime = endResultTime - startResultTime;
+	        System.out.println("Time to fetch results: " + resultQueryTime / 1000000 + " ms");
+
+	        for (Result result : listResult) {
+	            int totalQuestion = (int) result.getUserAnswers()
+	                    .stream()
+	                    .filter(userAnswer -> !"group".equals(userAnswer.getType()))
+	                    .count();
+	            String score = result.getTotalCorrectAnswer() + "/" + totalQuestion;
+	            ResultOverview resultOverview = ResultOverview
+	                    .builder()
+	                    .createdAt(result.getCreatedAt())
+	                    .resultId(result.getId())
+	                    .result(score)
+	                    .totalTime(result.getTotalTime())
+	                    .totalReadingScore(result.getTotalReadingScore())
+	                    .totalListeningScore(result.getTotalListeningScore())
+	                    .totalCorrectAnswer(result.getTotalCorrectAnswer())
+	                    .totalIncorrectAnswer(result.getTotalIncorrectAnswer())
+	                    .totalSkipAnswer(result.getTotalSkipAnswer())
+	                    .type(result.getType())
+	                    .parts(result.getParts())
+	                    .build();
+	            listResultOverview.add(resultOverview);
+	        }
+	        testInfoInfoResponse.setResultsOverview(listResultOverview);
+	    }
+
+	    // Record end time for the entire method
+	    long endTime = System.nanoTime();
+	    long totalMethodTime = endTime - startTime;
+	    System.out.println("Total time for getTestInfo: " + totalMethodTime / 1000000 + " ms");
+
+	    return testInfoInfoResponse;
 	}
+
 
 	public Test getTestById(String testId) {
 		Test test = testRepository.findById(testId)
@@ -248,7 +286,15 @@ public class TestService {
 	}
 	
 	public FullTestResponse getQuestionTest(String testId, String listPart) {
+		long startTime = System.currentTimeMillis(); // Start time for the entire method
+	    
+	    // Query execution
+	    long queryStartTime = System.currentTimeMillis();
 		List<Question> questions = questionService.getQuestionByTestId(testId, listPart);
+		
+		long queryEndTime = System.currentTimeMillis(); // End time for query
+	    System.out.println("Query Execution Time: " + (queryEndTime - queryStartTime) + " ms");
+	    
 		List<MultipleChoiceQuestion> multipleChoiceQuestions = questionMapper
                 .toListMultipleChoiceQuestionFromListQuestion(questions);
     	int totalQuestion = 0;

@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -19,20 +22,23 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@CompoundIndexes({
+    @CompoundIndex(name = "testId_idx", def = "{'testId': 1}")
+})
 public class Question extends BaseEntity{
 	@Id
     private String id;
+	@Indexed
 	private String testId;
 	private String practiceId;
 	private String parentId;	// id of group (question)
     private int questionNum;
     private int partNum;
     private String type;  // single, group, or subquestion
-    @DBRef(lazy = false)
+    @DBRef(lazy=false)
     private List<Question> subQuestions = new ArrayList<>();
     private String content;
     private int difficulty;
-    @DBRef(lazy=false)
     private List<Topic> topic= new ArrayList<>();
     private List<Resource> resources= new ArrayList<>();
     private String transcript;

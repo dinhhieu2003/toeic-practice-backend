@@ -17,6 +17,9 @@ public interface UserRepository extends MongoRepository<User, String> {
     public Optional<User> findByEmailAndRefreshToken(String email, String refreshToken);
     @Query(value = "{ 'email': ?0 }", fields = "{ 'role': 1 }")
     public Optional<User> findByEmailWithOnlyRole(String email);
+    @Query(value = "{ 'email': ?0 }", fields = "{ 'id': 1, 'email': 1, "
+    		+ "'avatar': 1, 'refreshToken': 1, 'target': 1, 'role': 1 }")
+    public Optional<User> findByEmailWithoutStat(String email);
     // findAllUserInfo => findAll user with id, email, role, target, isActive
     @Query(value = "{}", fields = "{'id': 1, 'email': 1, 'role': 1, 'target': 1 ,'isActive': 1}")
     Page<UserInfoResponse> findAllUserInfo(Pageable pageable);

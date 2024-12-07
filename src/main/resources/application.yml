@@ -11,6 +11,7 @@ spring:
     mongodb:
       uri: ${MONGODB_URI}
       database: Toeic
+      auto-index-creation: true
   servlet:
     multipart:
       max-file-size: 100MB

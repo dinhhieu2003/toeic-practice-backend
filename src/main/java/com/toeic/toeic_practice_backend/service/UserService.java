@@ -37,6 +37,10 @@ public class UserService {
 		return userRepository.findByEmailWithOnlyRole(email);
 	}
 	
+	public Optional<User> getUserByEmailWithoutStat(String email) {
+		return userRepository.findByEmailWithoutStat(email);
+	}
+	
 	public User saveUser(User user) {
 		return userRepository.save(user);
 	}
