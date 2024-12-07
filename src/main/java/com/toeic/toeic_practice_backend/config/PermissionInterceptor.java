@@ -47,7 +47,7 @@ public class PermissionInterceptor implements HandlerInterceptor {
                 ? SecurityUtils.getCurrentUserLogin().get()
                 : "";
         if (email!=null && !email.isEmpty() && !email.equals("anonymousUser")) {
-            User user = this.userService.getUserByEmail(email).get();
+            User user = this.userService.getUserByEmailWithOnlyRole(email).get();
             if (user != null) {
                 Role role = user.getRole();
                 if (role != null) {
