@@ -12,7 +12,7 @@ import com.toeic.toeic_practice_backend.domain.entity.Result;
 
 @Repository
 public interface ResultRepository extends MongoRepository<Result, String> {
-	@Query(value = "{ 'userId': ?0 }", fields = "{ 'userAnswers' : 0 }")
+	@Query(value = "{ 'userId': ?0 }", fields = "{ 'userAnswers' : 0 }", sort = "{ 'createdAt': -1 }")
     List<Result> findWithoutUserAnswersByUserId(String userId);
 
     @Query(value = "{ 'userId': ?0 }", fields = "{ 'userAnswers' : 0 }")
@@ -31,6 +31,6 @@ public interface ResultRepository extends MongoRepository<Result, String> {
     
     List<Result> findByUserIdAndTestIdIn(String userId, List<String> testIds);
     
-    @Query(value = "{ 'testId': ?0, 'userId': ?1 }", fields = "{ 'userAnswers': 0 }")
+    @Query(value = "{ 'testId': ?0, 'userId': ?1 }", fields = "{ 'userAnswers': 0 }", sort = "{ 'createdAt': -1 }")
     List<Result> findByTestIdAndUserId(String testId, String userId);
 }
