@@ -12,13 +12,17 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.toeic.toeic_practice_backend.domain.dto.request.user.UpdateUserTargetRequest;
 import com.toeic.toeic_practice_backend.domain.dto.response.auth.AccountResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.auth.AccountResponse.ResultOverview;
 import com.toeic.toeic_practice_backend.domain.dto.response.auth.LoginResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.auth.Tokens;
+import com.toeic.toeic_practice_backend.domain.dto.response.user.UpdateUserTargetResponse;
 import com.toeic.toeic_practice_backend.domain.entity.User;
 import com.toeic.toeic_practice_backend.exception.AppException;
 import com.toeic.toeic_practice_backend.service.AccountService;
@@ -73,6 +77,30 @@ public class AuthController {
 	    } else {
 	        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 	    }
+	}
+	
+	@PutMapping("/account/target")
+	public ResponseEntity<UpdateUserTargetResponse> updateUserTarget(
+			@RequestBody UpdateUserTargetRequest updateUserTargetRequest) {
+		// Lấy thông tin Authentication hiện tại từ SecurityContextHolder
+	    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+	    
+	    // Kiểm tra xem authentication có null hoặc chưa xác thực hay không
+	    if (authentication == null || !authentication.isAuthenticated()) {
+	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+	    }
+	    
+	    // Lấy email từ Authentication
+	    String email = authentication.getName();
+	    // Tìm kiếm người dùng theo email
+	    Optional<User> userOptional = userService.getUserByEmailWithoutStat(email);
+	    // Init UpdateUserTarget response
+	    UpdateUserTargetResponse response = new UpdateUserTargetResponse();
+	    if (userOptional.isPresent()) {
+	    	User user = userOptional.get();
+	    	response = userService.updateUserTarget(user.getId(), updateUserTargetRequest);
+	    }
+	    return ResponseEntity.ok(response);
 	}
 	
 	@GetMapping("/refresh")

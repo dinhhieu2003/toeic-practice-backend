@@ -7,8 +7,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.toeic.toeic_practice_backend.domain.dto.request.user.UpdateUserTargetRequest;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.Meta;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
+import com.toeic.toeic_practice_backend.domain.dto.response.user.UpdateUserTargetResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.user.UserInfoResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.user.UserUpdateRoleResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.user.UserUpdateStatusResponse;
@@ -39,6 +41,12 @@ public class UserService {
 	
 	public Optional<User> getUserByEmailWithoutStat(String email) {
 		return userRepository.findByEmailWithoutStat(email);
+	}
+	
+	public User getUserById(String id) {
+		User user = userRepository.findById(id)
+				.orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+		return user;
 	}
 	
 	public User saveUser(User user) {
@@ -95,5 +103,15 @@ public class UserService {
 	public void updateRefreshToken(User user, String refreshToken) {
 		user.setRefreshToken(refreshToken);
 		saveUser(user);
+	}
+	
+	public UpdateUserTargetResponse updateUserTarget(String userId ,UpdateUserTargetRequest updateUserTargetRequest) {
+		User currentUser = getUserById(userId);
+		currentUser.setTarget(updateUserTargetRequest.getTarget());
+		User newUser = userRepository.save(currentUser);
+		UpdateUserTargetResponse updateUserTargetResponse = new UpdateUserTargetResponse();
+		updateUserTargetResponse.setEmail(newUser.getEmail());
+		updateUserTargetResponse.setTarget(newUser.getTarget());
+		return updateUserTargetResponse;
 	}
 }
