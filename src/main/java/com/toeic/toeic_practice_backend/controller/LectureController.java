@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.toeic.toeic_practice_backend.domain.dto.request.lecture.LectureRequest;
 import com.toeic.toeic_practice_backend.domain.dto.request.lecture.PracticeRequest;
+import com.toeic.toeic_practice_backend.domain.dto.request.lecture.UpdateLectureStatusRequest;
+import com.toeic.toeic_practice_backend.domain.dto.response.lecture.UpdateLectureStatusResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Lecture;
 import com.toeic.toeic_practice_backend.service.LectureService;
@@ -103,5 +105,12 @@ public class LectureController {
     ) {
         lectureService.deleteLecturePractice(lectureId);
         return ResponseEntity.ok(null);
+    }
+    
+    @PutMapping("{lectureId}/status")
+    public ResponseEntity<UpdateLectureStatusResponse> updateLectureStatus(
+    		@PathVariable String lectureId,
+    		@RequestBody UpdateLectureStatusRequest updateLectureStatusRequest) {
+    	return ResponseEntity.ok(lectureService.updateLectureStatus(lectureId, updateLectureStatusRequest));
     }
 }

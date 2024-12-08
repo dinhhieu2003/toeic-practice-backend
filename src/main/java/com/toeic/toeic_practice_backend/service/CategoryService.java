@@ -9,7 +9,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.toeic.toeic_practice_backend.domain.dto.request.category.UpdateCategoryStatusRequest;
 import com.toeic.toeic_practice_backend.domain.dto.response.category.GetCategoryResponse;
+import com.toeic.toeic_practice_backend.domain.dto.response.category.UpdateCategoryStatusResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.Meta;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.test.GetTestCardResponse;
@@ -60,6 +62,18 @@ public class CategoryService {
         } else {
             throw new AppException(ErrorCode.CATEGORY_ALREADY_EXISTS);
         }
+	}
+	
+	public UpdateCategoryStatusResponse updateCategoryStatus(String categoryId, UpdateCategoryStatusRequest updateCategoryStatusRequest) {
+		Category currentCategory = findById(categoryId);
+		currentCategory.setActive(updateCategoryStatusRequest.isActive());
+		Category newCategory = categoryRepository.save(currentCategory);
+		UpdateCategoryStatusResponse updateCategoryStatusResponse = new UpdateCategoryStatusResponse();
+		updateCategoryStatusResponse.setId(newCategory.getId());
+		updateCategoryStatusResponse.setFormat(newCategory.getFormat());
+		updateCategoryStatusResponse.setYear(newCategory.getYear());
+		updateCategoryStatusResponse.setActive(newCategory.isActive());
+		return updateCategoryStatusResponse;
 	}
 	
 	public PaginationResponse<List<Category>> getAllCategory(Pageable pageable) {

@@ -17,6 +17,8 @@ import org.springframework.stereotype.Service;
 import com.toeic.toeic_practice_backend.domain.dto.request.lecture.LectureRequest;
 import com.toeic.toeic_practice_backend.domain.dto.request.lecture.PracticeRequest;
 import com.toeic.toeic_practice_backend.domain.dto.request.lecture.PracticeRequest.PracticeQuestion;
+import com.toeic.toeic_practice_backend.domain.dto.request.lecture.UpdateLectureStatusRequest;
+import com.toeic.toeic_practice_backend.domain.dto.response.lecture.UpdateLectureStatusResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.Meta;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Lecture;
@@ -181,5 +183,16 @@ public class LectureService {
     public void deleteLecturePractice(String practiceId) {
         Lecture lecture = lectureRepository.findById(practiceId).orElseThrow(()-> new AppException(ErrorCode.LECTURE_NOT_FOUND));
         lectureRepository.delete(lecture);
+    }
+    
+    public UpdateLectureStatusResponse updateLectureStatus(String lectureId, UpdateLectureStatusRequest updateLectureStatusRequest) {
+    	Lecture existLecture = lectureRepository.findById(lectureId).orElseThrow(()-> new AppException(ErrorCode.LECTURE_NOT_FOUND));
+    	existLecture.setActive(updateLectureStatusRequest.isActive());
+    	Lecture newLecture = lectureRepository.save(existLecture);
+    	UpdateLectureStatusResponse updateLectureStatusResponse = new UpdateLectureStatusResponse();
+    	updateLectureStatusResponse.setId(newLecture.getId());
+    	updateLectureStatusResponse.setName(newLecture.getName());
+    	updateLectureStatusResponse.setActive(newLecture.isActive());
+    	return updateLectureStatusResponse;
     }
 }

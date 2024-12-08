@@ -527,49 +527,47 @@ public class TestService {
 		Result newResult = resultService.saveResult(result);
 		TestResultIdResponse testResultIdResponse = new TestResultIdResponse();
 		
-		// update overall stat when fulltest
-		if(isFulltest) {
-			OverallStat overallStat = currentUser.getOverallStat();
-			if(overallStat == null) {
-				overallStat = new OverallStat();
-			}
-			// listening, reading score
-			int currentListeningCount = overallStat.getListeningScoreCount();
-			int currentReadingCount = overallStat.getReadingScoreCount();
-			int currentAvgListeningScore = overallStat.getAverageListeningScore();
-			int currentAvgReadingScore = overallStat.getAverageReadingScore();
-			int listeningScore = scoreBoard.getListeningScore(totalListeningCorrect);
-			int readingScore = scoreBoard.getReadingScore(totalReadingCorrect);
-			int newAvgListeningScore = 
-					((currentAvgListeningScore * currentListeningCount) + listeningScore) / (currentListeningCount + 1);
-			int newAvgReadingScore = 
-					((currentAvgReadingScore * currentReadingCount) + readingScore) / (currentReadingCount + 1);
-			overallStat.setAverageListeningScore(newAvgListeningScore);
-			overallStat.setAverageReadingScore(newAvgReadingScore);
-			overallStat.setListeningScoreCount(currentListeningCount + 1);
-			overallStat.setReadingScoreCount(currentReadingCount + 1);
-			// time
-			int currentTimeCount = overallStat.getTimeCount();
-			double currentAvgTime = overallStat.getAverageTime();
-			double newAvgTime = 
-					((currentAvgTime * currentTimeCount) + submitTestRequest.getTotalSeconds()) / (currentTimeCount + 1);
-			overallStat.setTimeCount(currentTimeCount + 1);
-			overallStat.setAverageTime(newAvgTime);
-			
-			// total
-			int totalScore = listeningScore + readingScore;
-			int currentTotalScoreCount = overallStat.getTotalScoreCount();
-			int currentAvgTotalScore = overallStat.getAverageTotalScore();
-			int newAvgTotalScore =
-					((currentAvgTotalScore * currentTotalScoreCount) + totalScore) / (currentTotalScoreCount + 1);
-			overallStat.setAverageTotalScore(newAvgTotalScore);
-			overallStat.setTotalScoreCount(currentTotalScoreCount + 1);
-			// highest
-			if(totalScore > overallStat.getHighestScore()) {
-				overallStat.setHighestScore(totalScore);
-			}
-			currentUser.setOverallStat(overallStat);
+		// update overall stat
+		OverallStat overallStat = currentUser.getOverallStat();
+		if(overallStat == null) {
+			overallStat = new OverallStat();
 		}
+		// listening, reading score
+		int currentListeningCount = overallStat.getListeningScoreCount();
+		int currentReadingCount = overallStat.getReadingScoreCount();
+		int currentAvgListeningScore = overallStat.getAverageListeningScore();
+		int currentAvgReadingScore = overallStat.getAverageReadingScore();
+		int listeningScore = scoreBoard.getListeningScore(totalListeningCorrect);
+		int readingScore = scoreBoard.getReadingScore(totalReadingCorrect);
+		int newAvgListeningScore = 
+				((currentAvgListeningScore * currentListeningCount) + listeningScore) / (currentListeningCount + 1);
+		int newAvgReadingScore = 
+				((currentAvgReadingScore * currentReadingCount) + readingScore) / (currentReadingCount + 1);
+		overallStat.setAverageListeningScore(newAvgListeningScore);
+		overallStat.setAverageReadingScore(newAvgReadingScore);
+		overallStat.setListeningScoreCount(currentListeningCount + 1);
+		overallStat.setReadingScoreCount(currentReadingCount + 1);
+		// time
+		int currentTimeCount = overallStat.getTimeCount();
+		double currentAvgTime = overallStat.getAverageTime();
+		double newAvgTime = 
+				((currentAvgTime * currentTimeCount) + submitTestRequest.getTotalSeconds()) / (currentTimeCount + 1);
+		overallStat.setTimeCount(currentTimeCount + 1);
+		overallStat.setAverageTime(newAvgTime);
+		
+		// total
+		int totalScore = listeningScore + readingScore;
+		int currentTotalScoreCount = overallStat.getTotalScoreCount();
+		int currentAvgTotalScore = overallStat.getAverageTotalScore();
+		int newAvgTotalScore =
+				((currentAvgTotalScore * currentTotalScoreCount) + totalScore) / (currentTotalScoreCount + 1);
+		overallStat.setAverageTotalScore(newAvgTotalScore);
+		overallStat.setTotalScoreCount(currentTotalScoreCount + 1);
+		// highest
+		if(totalScore > overallStat.getHighestScore()) {
+			overallStat.setHighestScore(totalScore);
+		}
+		currentUser.setOverallStat(overallStat);
 		
 		// save topic stat
 		topicStatMap.forEach((key, topicStat) -> {

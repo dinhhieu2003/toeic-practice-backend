@@ -3,8 +3,14 @@ package com.toeic.toeic_practice_backend.service;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.toeic.toeic_practice_backend.domain.dto.request.topic.UpdateTopicStatusRequest;
+import com.toeic.toeic_practice_backend.domain.dto.response.pagination.Meta;
+import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
+import com.toeic.toeic_practice_backend.domain.dto.response.topic.UpdateTopicStatusResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Topic;
 import com.toeic.toeic_practice_backend.exception.AppException;
 import com.toeic.toeic_practice_backend.repository.TopicRepository;
@@ -28,6 +34,30 @@ public class TopicService {
 	
 	public List<Topic> getAllTopics() {
 		return topicRepository.findAll();
+	}
+	
+	public PaginationResponse<List<Topic>> getTopicPage(Pageable pageable) {
+		Page<Topic> topicPage = topicRepository.findAll(pageable);
+		PaginationResponse<List<Topic>> response = new PaginationResponse<>();
+		Meta meta = new Meta();
+		meta.setCurrent(pageable.getPageNumber()+1);
+		meta.setPageSize(pageable.getPageSize());
+		meta.setTotalItems(topicPage.getTotalElements());
+		meta.setTotalPages(topicPage.getTotalPages());
+		List<Topic> result = topicPage.getContent();
+		response.setMeta(meta);
+		response.setResult(result);
+		return response;
+	}
+	
+	public UpdateTopicStatusResponse updateTopicStatus(String topicId, UpdateTopicStatusRequest updateTopicStatusRequest) {
+		Topic existedTopic = getTopicById(topicId);
+		existedTopic.setActive(updateTopicStatusRequest.isActive());
+		Topic newTopic = topicRepository.save(existedTopic);
+		UpdateTopicStatusResponse updateTopicStatusResponse = new UpdateTopicStatusResponse();
+		updateTopicStatusResponse.setName(newTopic.getName());
+		updateTopicStatusResponse.setActive(newTopic.isActive());
+		return updateTopicStatusResponse;
 	}
 	
 	public Topic getTopicById(String topicId) {
