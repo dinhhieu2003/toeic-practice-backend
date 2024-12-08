@@ -16,7 +16,6 @@ import lombok.NoArgsConstructor;
 @Document(collection = "users")
 @Data
 @EqualsAndHashCode(callSuper = false)
-@NoArgsConstructor
 @AllArgsConstructor
 public class User extends BaseEntity{
 	@Id
@@ -28,10 +27,15 @@ public class User extends BaseEntity{
     private Role role;
     private int target;
     private List<String> needUpdateStats = new ArrayList<>(); // list testId bị thay đổi
-    private OverallStat overallStat;
+    private OverallStat overallStat = new OverallStat();
     private List<TopicStat> topicStats = new ArrayList<>();
     private List<SkillStat> skillStats = new ArrayList<>();
     private List<LearningProgress> learningProgress= new ArrayList<>();
+    
+    public User() {
+        skillStats.add(new SkillStat("listening", 0, 0, 0));
+        skillStats.add(new SkillStat("reading", 0, 0, 0));
+    }
     
     @Data
     @AllArgsConstructor

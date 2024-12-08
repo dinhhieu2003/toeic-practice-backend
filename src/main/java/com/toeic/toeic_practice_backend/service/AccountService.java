@@ -21,6 +21,9 @@ public class AccountService {
 	private final TestService testService;
 	public List<ResultOverview> getResultOverview(String userId) {
 		List<Result> results = resultService.getResultsByUserIdWithoutUserAnswer(userId);
+		if(results.size() == 0) {
+			return new ArrayList<ResultOverview>();
+		}
 		Set<String> testIds = new HashSet<>();
 		for(Result result: results) {
 			testIds.add(result.getTestId());
