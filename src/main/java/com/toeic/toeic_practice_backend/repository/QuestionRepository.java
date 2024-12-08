@@ -10,7 +10,7 @@ import org.springframework.data.mongodb.repository.Query;
 import com.toeic.toeic_practice_backend.domain.entity.Question;
 
 public interface QuestionRepository extends MongoRepository<Question, String> {
-	@Query(value = "{ 'testId': ?0, 'type': { $in: [ 'single', 'group' ] }, 'partNum': { $in: ?1 } }", 
+	@Query(value = "{ 'testId': ?0, 'type': { $ne: 'subquestion' }, 'partNum': { $in: ?1 } }", 
 		       fields = "{ 'id': 1, 'questionNum': 1, 'partNum': 1, 'type': 1, 'subQuestions': 1, 'content': 1, 'resources': 1,'answers': 1 }")
 	List<Question> findByTestIdAndTypeIsNotSubquestion(String testId, List<Integer> listPart);
 	List<Question> findByIdIn(List<String> listQuestionIds);

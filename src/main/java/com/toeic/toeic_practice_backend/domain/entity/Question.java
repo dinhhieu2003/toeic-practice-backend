@@ -22,9 +22,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@CompoundIndexes({
-    @CompoundIndex(name = "testId_idx", def = "{'testId': 1}")
-})
 public class Question extends BaseEntity{
 	@Id
     private String id;

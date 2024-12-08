@@ -36,8 +36,8 @@ public class ResultService {
 	
 	private final ResultMapper resultMapper;
 
-	public List<Result> getByUserIdAndTestId(String userId, String testId) {
-		return resultRepository.findByUserIdAndTestId(userId, testId);
+	public List<Result> getByTestIdAndUserId(String testId, String userId) {
+		return resultRepository.findByTestIdAndUserId(testId, userId);
 	}
 	
 	public List<Result> getByUserIdAndListTestId(String userId, List<String> listTestId) {

@@ -54,7 +54,6 @@ public class User extends BaseEntity{
     @NoArgsConstructor
     @Builder
     public static class TopicStat {
-    	@DBRef
     	private Topic topic;
     	private int totalCorrect;
     	private int totalIncorrect;

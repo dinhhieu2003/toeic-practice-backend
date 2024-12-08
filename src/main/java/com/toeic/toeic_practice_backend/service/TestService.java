@@ -169,7 +169,7 @@ public class TestService {
 	    if (userId != null) {
 	        // Time for fetching results
 	        long startResultTime = System.nanoTime();
-	        List<Result> listResult = resultService.getByUserIdAndTestId(userId, testId);
+	        List<Result> listResult = resultService.getByTestIdAndUserId(testId, userId);
 	        long endResultTime = System.nanoTime();
 	        long resultQueryTime = endResultTime - startResultTime;
 	        System.out.println("Time to fetch results: " + resultQueryTime / 1000000 + " ms");
@@ -286,8 +286,6 @@ public class TestService {
 	}
 	
 	public FullTestResponse getQuestionTest(String testId, String listPart) {
-		long startTime = System.currentTimeMillis(); // Start time for the entire method
-	    
 	    // Query execution
 	    long queryStartTime = System.currentTimeMillis();
 		List<Question> questions = questionService.getQuestionByTestId(testId, listPart);
@@ -319,6 +317,7 @@ public class TestService {
 		System.out.println(email);
 		User currentUser = userService.getUserByEmail(email)
 				.orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+		
 		// initial TopicStat
 		List<TopicStat> topicStats = currentUser.getTopicStats();
 		List<TopicStat> newTopicStats = new ArrayList<>();
@@ -333,15 +332,17 @@ public class TestService {
 		for(SkillStat skillStat : skillStats) {
 			skillStatMap.put(skillStat.getSkill(), skillStat);
 		}
+		
 		boolean isFulltest = submitTestRequest.getType().equals("fulltest");
 		List<AnswerPair> answerPairs = submitTestRequest.getUserAnswer();
-		
+
 		// Extract list question id for query
 		List<String> listQuestionId = new ArrayList<>();
 		for(AnswerPair answerPair: answerPairs) {
 			listQuestionId.add(answerPair.getQuestionId());
 		}
 		List<Question> questions = questionService.getQuestionByIds(listQuestionId);
+
 		List<Topic> topics = topicService.getAllTopics();
 		// hashmap for comparing answer
 		HashMap<String, String> correctAnswerMap = new HashMap<>();

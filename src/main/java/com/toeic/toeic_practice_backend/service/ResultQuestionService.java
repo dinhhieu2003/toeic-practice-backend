@@ -33,20 +33,16 @@ public class ResultQuestionService {
 	    
 	    // get userAnswer
 	    List<UserAnswer> userAnswers = result.getUserAnswers();
-	    List<String> questionIds = userAnswers.stream()
-	        .map(UserAnswer::getQuestionId)
-	        .collect(Collectors.toList());
 
-	    // Query question by listId then map it to store
-	    Map<String, Question> questionMap = questionService.getQuestionByIds(questionIds)
+	    // Store map userAnswer to get parent of subquestion
+	    Map<String, UserAnswer> userAnswerMap = userAnswers
 	        .stream()
-	        .collect(Collectors.toMap(Question::getId, q -> q));
+	        .collect(Collectors.toMap(UserAnswer::getQuestionId, q -> q));
 
 	    // Handle userAnswerResult
 	    List<UserAnswerResult> userAnswerResults = userAnswers.stream()
 	        .filter(userAnswer -> !"group".equals(userAnswer.getType()))
 	        .map(userAnswer -> {
-	            Question question = questionMap.get(userAnswer.getQuestionId());
 	            UserAnswerResult.UserAnswerResultBuilder builder = UserAnswerResult.builder()
 	                .questionId(userAnswer.getQuestionId())
 	                .questionNum(userAnswer.getQuestionNum())
@@ -55,31 +51,28 @@ public class ResultQuestionService {
 	                .solution(userAnswer.getSolution())
 	                .timeSpent(userAnswer.getTimeSpent())
 	                .correct(userAnswer.isCorrect())
-	                .type(userAnswer.getType());
-
-	            if (question != null) {
-	                builder.content(question.getContent())
-	                    .difficulty(question.getDifficulty())
-	                    .resources(question.getResources())
-	                    .transcript(question.getTranscript())
-	                    .explanation(question.getExplanation())
-	                    .answers(question.getAnswers())
-	                    .correctAnswer(question.getCorrectAnswer())
-	                    .listTopics(question.getTopic());
+	                .type(userAnswer.getType())
+	                .content(userAnswer.getContent())
+                    .difficulty(userAnswer.getDifficulty())
+                    .resources(userAnswer.getResources())
+                    .transcript(userAnswer.getTranscript())
+                    .explanation(userAnswer.getExplanation())
+                    .answers(userAnswer.getAnswers())
+                    .correctAnswer(userAnswer.getCorrectAnswer())
+                    .listTopics(userAnswer.getListTopics());
 
 	                // If it is a subquestion, get info from parent question
-	                if ("subquestion".equals(userAnswer.getType()) && question.getParentId() != null) {
-	                    Question parentQuestion = questionMap.get(question.getParentId());
-	                    if (parentQuestion != null) {
-	                        if (question.getTranscript() != null) {
-	                            builder.transcript(parentQuestion.getTranscript());
+	                if ("subquestion".equals(userAnswer.getType()) && userAnswer.getParentId() != null) {
+	                    UserAnswer parentUserAnswer = userAnswerMap.get(userAnswer.getParentId());
+	                    if (parentUserAnswer != null) {
+	                        if (userAnswer.getTranscript() != null) {
+	                            builder.transcript(parentUserAnswer.getTranscript());
 	                        }
-	                        if (question.getResources().isEmpty()) {
-	                            builder.resources(parentQuestion.getResources());
+	                        if (userAnswer.getResources().isEmpty()) {
+	                            builder.resources(parentUserAnswer.getResources());
 	                        }
 	                    }
 	                }
-	            }
 	            return builder.build();
 	        }).collect(Collectors.toList());
 

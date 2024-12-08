@@ -29,5 +29,7 @@ public interface ResultRepository extends MongoRepository<Result, String> {
     List<Result> findByTestId(String testId);
     
     List<Result> findByUserIdAndTestIdIn(String userId, List<String> testIds);
-    List<Result> findByUserIdAndTestId(String userId, String testId);
+    
+    @Query(value = "{ 'testId': ?0, 'userId': ?1 }", fields = "{ 'userAnswers': 0 }")
+    List<Result> findByTestIdAndUserId(String testId, String userId);
 }
