@@ -12,7 +12,8 @@ import com.toeic.toeic_practice_backend.domain.entity.Result;
 
 @Repository
 public interface ResultRepository extends MongoRepository<Result, String> {
-    List<Result> findByUserId(String userId);
+	@Query(value = "{ 'userId': ?0 }", fields = "{ 'userAnswers' : 0 }")
+    List<Result> findWithoutUserAnswersByUserId(String userId);
 
     @Query(value = "{ 'userId': ?0 }", fields = "{ 'userAnswers' : 0 }")
     Page<Result> findWithoutUserAnswersByUserId(String userId, Pageable pageable);

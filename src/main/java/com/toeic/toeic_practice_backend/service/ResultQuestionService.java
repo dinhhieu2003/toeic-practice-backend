@@ -29,7 +29,13 @@ public class ResultQuestionService {
 	        .orElseThrow(() -> new AppException(ErrorCode.RESULT_NOT_FOUND));
 	    
 	    // get test name
-	    String testName = testService.getTestById(result.getTestId()).getName();
+	    String testName = ""; 
+	    
+	    if(result.getTestId() != null && !result.getTestId().isEmpty() && !result.getTestId().isBlank()) {
+	    	testName = testService.getTestById(result.getTestId()).getName();
+	    }
+	    
+	    
 	    
 	    // get userAnswer
 	    List<UserAnswer> userAnswers = result.getUserAnswers();

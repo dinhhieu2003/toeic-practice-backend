@@ -124,7 +124,7 @@ public class ResultService {
 		return finalUserAnswers;
 	}
 	
-	public List<Result> getResultsByUserId(String userId) {
-		return resultRepository.findByUserId(userId);
+	public List<Result> getResultsByUserIdWithoutUserAnswer(String userId) {
+		return resultRepository.findWithoutUserAnswersByUserId(userId);
 	}
 }

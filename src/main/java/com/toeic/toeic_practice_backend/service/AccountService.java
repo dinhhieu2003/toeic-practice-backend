@@ -20,7 +20,7 @@ public class AccountService {
 	private final ResultService resultService;
 	private final TestService testService;
 	public List<ResultOverview> getResultOverview(String userId) {
-		List<Result> results = resultService.getResultsByUserId(userId);
+		List<Result> results = resultService.getResultsByUserIdWithoutUserAnswer(userId);
 		Set<String> testIds = new HashSet<>();
 		for(Result result: results) {
 			testIds.add(result.getTestId());
