@@ -28,7 +28,6 @@ import lombok.RequiredArgsConstructor;
 @Transactional(rollbackFor = {Exception.class})
 public class CategoryService {
 	private final CategoryRepository categoryRepository;
-	private final TestService testService;
 	public Category addCategory(String format, int year) {
 		Optional<Category> categoryOptional = categoryRepository.findByFormatAndYear(format, year);
 		Category categoryResponse = new Category();
@@ -91,7 +90,7 @@ public class CategoryService {
 	}
 	
 	public List<GetCategoryResponse> getAllCategoryNonePage() {
-		List<Category> listCategory = categoryRepository.findAll();
+		List<Category> listCategory = categoryRepository.findByIsActiveTrue();
 		List<GetCategoryResponse> listGetCategoryResponse = listCategory.stream()
 		        .collect(Collectors.groupingBy(Category::getFormat))
 		        .entrySet().stream()
@@ -108,16 +107,8 @@ public class CategoryService {
 		return listGetCategoryResponse;
 	}
 	
-	public PaginationResponse<List<Test>> getTestsInCategory(
-			String id, Pageable pageable) {
-		return testService.getTestsByCategoryId(id, pageable);
-	}
 	
-	public PaginationResponse<List<GetTestCardResponse>> getTestsByFormatAndYear(String format, String year, Pageable pageable) {
-		int yearInt = 0;
-		if(!year.isEmpty()) {
-			yearInt = Integer.parseInt(year);
-		}
-		return testService.getTestsByFormatAndYear(format, yearInt, pageable);
+	public List<Category> getAllByFormat(String format) {
+		return categoryRepository.findByFormatAndIsActiveTrue(format);
 	}
 }

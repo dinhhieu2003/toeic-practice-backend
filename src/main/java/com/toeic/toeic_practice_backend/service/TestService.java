@@ -249,37 +249,12 @@ public class TestService {
 		return response;
 	}
 	
-	public PaginationResponse<List<GetTestCardResponse>> getTestsByFormatAndYear(
-			String format, int year, Pageable pageable) {
-		Page<Test> testPage = null;
-		if(year == 0) {
-			testPage = testRepository
-					.findByFormatOnly(format, pageable);
-		} else {
-			testPage = testRepository
-					.findByFormatAndYear(format, year, pageable);
-		}
-		PaginationResponse<List<GetTestCardResponse>> response = new PaginationResponse<List<GetTestCardResponse>>();
-		Meta meta = new Meta();
-		meta.setCurrent(pageable.getPageNumber()+1);
-		meta.setPageSize(pageable.getPageSize());
-		meta.setTotalItems(testPage.getTotalElements());
-		meta.setTotalPages(testPage.getTotalPages());
-		List<Test> listTest = testPage.getContent();
-		List<GetTestCardResponse> result = listTest.stream()
-                .map(test -> {
-                    GetTestCardResponse testCardResponse = new GetTestCardResponse();
-                    testCardResponse.setId(test.getId());
-                    testCardResponse.setName(test.getName());
-                    testCardResponse.setFormat(test.getCategory().getFormat());
-                    testCardResponse.setYear(test.getCategory().getYear());
-
-                    return testCardResponse;
-                })
-                .collect(Collectors.toList());
-		response.setMeta(meta);
-		response.setResult(result);
-		return response;
+	public Page<Test> getTestsByCategoryId(List<String> listCategoryId, Pageable pageable) {
+		return testRepository.findByCategory_IdIn(listCategoryId, pageable);
+	}
+	
+	public Page<Test> getTestsByFormatAndYear(String format, int year, Pageable pageable) {
+		return testRepository.findByFormatAndYear(format, year, pageable);
 	}
 	
 	public FullTestResponse getQuestionTest(String testId, String listPart) {

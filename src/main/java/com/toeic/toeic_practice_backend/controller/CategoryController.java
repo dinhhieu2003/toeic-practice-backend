@@ -23,6 +23,8 @@ import com.toeic.toeic_practice_backend.domain.dto.response.test.GetTestCardResp
 import com.toeic.toeic_practice_backend.domain.entity.Category;
 import com.toeic.toeic_practice_backend.domain.entity.Test;
 import com.toeic.toeic_practice_backend.service.CategoryService;
+import com.toeic.toeic_practice_backend.service.TestCategoryService;
+import com.toeic.toeic_practice_backend.service.TestService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -31,6 +33,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CategoryController {
 	private final CategoryService categoryService;
+	private final TestService testService;
+	private final TestCategoryService testCategoryService;
 	
 	@PostMapping("")
 	public ResponseEntity<Category> addCategory(@RequestBody Category category) {
@@ -68,7 +72,7 @@ public class CategoryController {
 		int currentInt = Integer.parseInt(current)-1;
 		int pageSizeInt = Integer.parseInt(pageSize);
 		Pageable pageable = PageRequest.of(currentInt, pageSizeInt);
-		return ResponseEntity.ok(categoryService.getTestsInCategory(categoryId, pageable));
+		return ResponseEntity.ok(testService.getTestsByCategoryId(categoryId, pageable));
 	}
 	
 	@PutMapping("{categoryId}/status")
@@ -87,6 +91,6 @@ public class CategoryController {
 		int currentInt = Integer.parseInt(current)-1;
 		int pageSizeInt = Integer.parseInt(pageSize);
 		Pageable pageable = PageRequest.of(currentInt, pageSizeInt);
-		return ResponseEntity.ok(categoryService.getTestsByFormatAndYear(format, year, pageable));
+		return ResponseEntity.ok(testCategoryService.getTestsByFormatAndYear(format, year, pageable));
 	}
 }
