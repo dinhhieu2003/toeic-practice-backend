@@ -10,4 +10,5 @@ import com.toeic.toeic_practice_backend.domain.entity.Permission;
 @Repository
 public interface PermissionRepository extends MongoRepository<Permission, String> {
 	Page<Permission> findAll(Pageable pageable);
+	Page<Permission> findByIsActive(Boolean active, Pageable pageable);
 }

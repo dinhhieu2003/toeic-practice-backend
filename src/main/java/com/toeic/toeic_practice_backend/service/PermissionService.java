@@ -23,17 +23,27 @@ public class PermissionService {
 		return permissionRepository.save(permission);
 	}
 	
-	public PaginationResponse<List<Permission>> getAllPermission(Pageable pageable) {
-		Page<Permission> permissionPage = permissionRepository.findAll(pageable);
-		PaginationResponse<List<Permission>> response = new PaginationResponse<List<Permission>>();
-		Meta meta = new Meta();
-		meta.setCurrent(pageable.getPageNumber()+1);
-		meta.setPageSize(pageable.getPageSize());
-		meta.setTotalItems(permissionPage.getTotalElements());
-		meta.setTotalPages(permissionPage.getTotalPages());
-		List<Permission> result = permissionPage.getContent();
-		response.setMeta(meta);
-		response.setResult(result);
-		return response;
+	public PaginationResponse<List<Permission>> getAllPermission(Pageable pageable, Boolean active) {
+		Page<Permission> permissionPage;
+
+	    if (active != null) {
+	        // if not null, find by isActive
+	        permissionPage = permissionRepository.findByIsActive(active, pageable);
+	    } else {
+	        // if null, find all
+	        permissionPage = permissionRepository.findAll(pageable);
+	    }
+
+	    PaginationResponse<List<Permission>> response = new PaginationResponse<>();
+	    Meta meta = new Meta();
+	    meta.setCurrent(pageable.getPageNumber() + 1);
+	    meta.setPageSize(pageable.getPageSize());
+	    meta.setTotalItems(permissionPage.getTotalElements());
+	    meta.setTotalPages(permissionPage.getTotalPages());
+	    List<Permission> result = permissionPage.getContent();
+	    response.setMeta(meta);
+	    response.setResult(result);
+
+	    return response;
 	}
 }
