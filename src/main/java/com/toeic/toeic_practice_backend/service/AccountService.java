@@ -36,10 +36,7 @@ public class AccountService {
 		
 		List<ResultOverview> listResultOverview = new ArrayList<>(); 
 		for(Result result: results) {
-			int totalQuestion = (int) result.getUserAnswers()
-					.stream()
-					.filter(userAnswer -> !"group".equals(userAnswer.getType()))
-					.count();
+			int totalQuestion = result.getTotalCorrectAnswer() + result.getTotalIncorrectAnswer() + result.getTotalSkipAnswer();
 			String score = result.getTotalCorrectAnswer() + "/" + totalQuestion;
 			ResultOverview resultOverview = ResultOverview
 					.builder()

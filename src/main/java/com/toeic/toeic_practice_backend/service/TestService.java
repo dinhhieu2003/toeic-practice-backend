@@ -175,10 +175,7 @@ public class TestService {
 	        System.out.println("Time to fetch results: " + resultQueryTime / 1000000 + " ms");
 
 	        for (Result result : listResult) {
-	            int totalQuestion = (int) result.getUserAnswers()
-	                    .stream()
-	                    .filter(userAnswer -> !"group".equals(userAnswer.getType()))
-	                    .count();
+	            int totalQuestion = result.getTotalCorrectAnswer() + result.getTotalIncorrectAnswer() + result.getTotalSkipAnswer();
 	            String score = result.getTotalCorrectAnswer() + "/" + totalQuestion;
 	            ResultOverview resultOverview = ResultOverview
 	                    .builder()

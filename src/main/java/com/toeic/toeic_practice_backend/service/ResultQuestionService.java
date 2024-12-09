@@ -34,9 +34,7 @@ public class ResultQuestionService {
 	    if(result.getTestId() != null && !result.getTestId().isEmpty() && !result.getTestId().isBlank()) {
 	    	testName = testService.getTestById(result.getTestId()).getName();
 	    }
-	    
-	    
-	    
+
 	    // get userAnswer
 	    List<UserAnswer> userAnswers = result.getUserAnswers();
 
