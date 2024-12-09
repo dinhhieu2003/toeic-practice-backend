@@ -42,7 +42,8 @@ public class LectureController {
         @RequestParam(required = false) Boolean content,
         @RequestParam(required = false) Boolean practice,
         @RequestParam(required = false) Boolean orderAsc,
-        @RequestParam(required = false) Boolean orderDesc
+        @RequestParam(required = false) Boolean orderDesc,
+        @RequestParam(required = false) Boolean active
     ) {
         int currentInt = Integer.parseInt(current)-1;
 		int pageSizeInt = Integer.parseInt(pageSize);
@@ -53,7 +54,21 @@ public class LectureController {
         filterParams.put("PRACTICE", practice != null ? practice : false);
         filterParams.put("ORDER_ASC", orderAsc != null ? orderAsc : false);
         filterParams.put("ORDER_DESC", orderDesc != null ? orderDesc : false);
+        if (active != null) {
+            filterParams.put("ACTIVE", active);
+        }
         return ResponseEntity.ok(lectureService.getAllLectures(pageable, filterParams));
+    }
+    
+    @GetMapping("/client")
+    public ResponseEntity<PaginationResponse<List<Lecture>>> getAllLecturesActive(
+            @RequestParam(defaultValue = "1") String current,
+            @RequestParam(defaultValue = "5") String pageSize
+    ) {
+    	int currentInt = Integer.parseInt(current)-1;
+		int pageSizeInt = Integer.parseInt(pageSize);
+		Pageable pageable = PageRequest.of(currentInt, pageSizeInt);
+		return ResponseEntity.ok(lectureService.getAllLecturesActive(pageable));
     }
 
     @GetMapping("{lectureId}")

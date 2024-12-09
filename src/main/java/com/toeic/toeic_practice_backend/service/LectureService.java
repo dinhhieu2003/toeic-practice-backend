@@ -43,6 +43,21 @@ public class LectureService {
 
     private final MongoTemplate mongoTemplate;
 
+    public PaginationResponse<List<Lecture>> getAllLecturesActive(Pageable pageable) {
+    	Page<Lecture> lecturePage = lectureRepository.findByIsActiveTrue(pageable);
+    	return PaginationResponse.<List<Lecture>>builder()
+                .meta(
+                    Meta.builder()
+                        .current(pageable.getPageNumber() + 1)  // Số trang hiện tại (bắt đầu từ 1)
+                        .pageSize(pageable.getPageSize())       // Kích thước trang
+                        .totalItems(lecturePage.getTotalElements())  // Tổng số phần tử
+                        .totalPages(lecturePage.getTotalPages())  // Tổng số trang
+                        .build()
+                )
+                .result(lecturePage.getContent())  // Danh sách các bài giảng
+                .build();
+    }
+    
     public PaginationResponse<List<Lecture>> getAllLectures(Pageable pageable, Map<String, Boolean> filterParams) {
         // Tạo một đối tượng Query mới
         Query query = new Query();
@@ -61,6 +76,12 @@ public class LectureService {
             query.fields().exclude("practiceQuestions");
         }
 
+        if (filterParams.containsKey("ACTIVE")) {
+            Boolean isActive = filterParams.get("ACTIVE");
+            System.out.println(isActive);
+            query.addCriteria(Criteria.where("isActive").is(isActive));
+        }
+        
         Boolean orderAsc = filterParams.get("ORDER_ASC");
         Boolean orderDesc = filterParams.get("ORDER_DESC");
 
