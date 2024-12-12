@@ -40,7 +40,10 @@ public enum ErrorCode {
 	LECTURE_NOT_FOUND(7001, "Lecture not found", HttpStatus.NOT_FOUND),
 	
 //	Permission
-	PERMISSION_NOT_FOUND(8001, "Permission not found", HttpStatus.NOT_FOUND);
+	PERMISSION_NOT_FOUND(8001, "Permission not found", HttpStatus.NOT_FOUND),
+	
+//	Role
+	ROLE_NOT_FOUND(9001, "Role not found", HttpStatus.NOT_FOUND);
 	
 	private final int code;
 	private final String message;

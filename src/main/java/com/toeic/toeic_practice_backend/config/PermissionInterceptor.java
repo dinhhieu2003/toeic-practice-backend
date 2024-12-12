@@ -57,7 +57,7 @@ public class PermissionInterceptor implements HandlerInterceptor {
                 .orElseThrow(() -> new AppException(ErrorCode.UNAUTHORIZED));
         Role role = user.getRole();
 
-        if (role == null) {
+        if (role == null || !role.isActive()) {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
 

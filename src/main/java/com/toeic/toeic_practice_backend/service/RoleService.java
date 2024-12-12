@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.toeic.toeic_practice_backend.domain.dto.request.role.RoleCreationRequest;
+import com.toeic.toeic_practice_backend.domain.dto.request.role.UpdateRoleStatusRequest;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.Meta;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Permission;
@@ -53,6 +54,14 @@ public class RoleService {
 		role.setPermissions(permissions);
 		Role updatedRole = roleRepository.save(role);
 		return updatedRole;
+	}
+	
+	public Role updateRoleStatus(UpdateRoleStatusRequest updateRoleStatusRequest, String roleId) {
+		Role existingRole = roleRepository.findById(roleId)
+				.orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
+		existingRole.setActive(updateRoleStatusRequest.isActive());
+		Role newRole = roleRepository.save(existingRole);
+		return newRole;
 	}
 	
 	public PaginationResponse<List<Role>> getAllRoles(Pageable pageable) {
