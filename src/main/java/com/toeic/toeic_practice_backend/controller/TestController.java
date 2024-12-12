@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.toeic.toeic_practice_backend.domain.dto.request.test.SubmitTestRequest;
 import com.toeic.toeic_practice_backend.domain.dto.request.test.TestUdateRequest;
+import com.toeic.toeic_practice_backend.domain.dto.request.test.UpdateTestStatus;
 import com.toeic.toeic_practice_backend.domain.dto.request.test.TestCreationRequest;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.test.FullTestResponse;
@@ -95,6 +97,11 @@ public class TestController {
 	@PostMapping("{testId}")
 	public ResponseEntity<Test> updateTest(@RequestBody TestUdateRequest test, @PathVariable String testId) {
 		return ResponseEntity.ok(testService.updateTest(test, testId));
+	}
+	
+	@PutMapping("{testId}/status")
+	public ResponseEntity<Test> updateTestStatus(@RequestBody UpdateTestStatus updateTestStatus, @PathVariable String testId) {
+		return ResponseEntity.ok(testService.updateTest(updateTestStatus, testId));
 	}
 	
 	@GetMapping("")

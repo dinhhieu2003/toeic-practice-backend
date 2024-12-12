@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.toeic.toeic_practice_backend.domain.dto.request.test.SubmitTestRequest;
 import com.toeic.toeic_practice_backend.domain.dto.request.test.TestUdateRequest;
+import com.toeic.toeic_practice_backend.domain.dto.request.test.UpdateTestStatus;
 import com.toeic.toeic_practice_backend.domain.dto.request.test.SubmitTestRequest.AnswerPair;
 import com.toeic.toeic_practice_backend.domain.dto.request.test.TestCreationRequest;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.Meta;
@@ -103,6 +104,14 @@ public class TestService {
 		}
 		
 		return testResponse;
+	}
+	
+	public Test updateTest(UpdateTestStatus updateTestStatus, String testId) {
+		Test existingTest = testRepository.findById(testId)
+				.orElseThrow(() -> new AppException(ErrorCode.TEST_NOT_FOUND));
+		existingTest.setActive(updateTestStatus.isActive());
+		Test newTest = testRepository.save(existingTest);
+		return newTest;
 	}
 	
 	public TestInfoResponse getTestInfo(String testId, String userId) {

@@ -42,4 +42,6 @@ public class PermissionController {
 		System.out.println(active);
 		return ResponseEntity.ok(permissionService.getAllPermission(pageable, active));
 	}
+	
+	
 }
