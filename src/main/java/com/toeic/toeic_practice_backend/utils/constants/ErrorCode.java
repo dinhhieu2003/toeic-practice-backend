@@ -37,7 +37,10 @@ public enum ErrorCode {
 	RESULT_NOT_FOUND(6001, "Result not found", HttpStatus.NOT_FOUND),
 
 //  Lecture
-	LECTURE_NOT_FOUND(7001, "Lecture not found", HttpStatus.NOT_FOUND);
+	LECTURE_NOT_FOUND(7001, "Lecture not found", HttpStatus.NOT_FOUND),
+	
+//	Permission
+	PERMISSION_NOT_FOUND(8001, "Permission not found", HttpStatus.NOT_FOUND);
 	
 	private final int code;
 	private final String message;
