@@ -28,6 +28,10 @@ public class FormatApiResponse implements ResponseBodyAdvice<Object>{
 			ServerHttpResponse response) {
 		HttpServletResponse servletResponse = ((ServletServerHttpResponse) response).getServletResponse();
 		int status = servletResponse.getStatus();
+		String path = request.getURI().getPath();
+		if(path.startsWith("/v3/api-docs") || path.startsWith("/swagger-ui")) {
+			return body;
+		}
 		if(status >= 400) {
 			return body;
 		}

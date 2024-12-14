@@ -28,9 +28,13 @@ public class SecurityConfiguration {
 	private final OAuth2AuthenticationFailureHandler failureHandler;
 
 	private String[] whiteList = {
-		"/api/v1/auth/**",
-		"/oauth2/**",
-		"/api/oauth2/**",
+			"/",
+            "/api/v1/auth/**",
+            "/oauth2/**", 
+            "/api/oauth2/**",
+            "/v3/api-docs/**",
+            "/swagger-ui/**",
+            "/swagger-ui.html"
 	};
 
 	private String[] getWhiteList = {
