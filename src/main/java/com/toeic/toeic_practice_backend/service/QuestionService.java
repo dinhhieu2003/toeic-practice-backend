@@ -172,6 +172,7 @@ public class QuestionService {
 
         filterParams.forEach((key, value) -> {
             if(value != null && !value.isEmpty()) {
+            	System.out.println(value);
                 switch (key) {
                     case "DIFFICULTY":
                         query.addCriteria(Criteria.where("difficulty").is(value));
@@ -180,7 +181,7 @@ public class QuestionService {
                         query.addCriteria(Criteria.where("partNum").is(Integer.parseInt(value)));
                         break;
                     case "TOPIC":
-                        query.addCriteria(Criteria.where("topic").is(value));
+                        query.addCriteria(Criteria.where("topic.name").is(value));
                         break;
                     default:
                         break;
