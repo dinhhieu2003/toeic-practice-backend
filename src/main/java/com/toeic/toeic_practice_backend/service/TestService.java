@@ -290,8 +290,16 @@ public class TestService {
 		return fullTestResponse;
 	}
 	
+	private void updateTestUserAttempt(String testId) {
+		Test test = getTestById(testId);
+		test.setTotalUserAttempt(test.getTotalUserAttempt() + 1);
+		testRepository.save(test);
+	}
+	
 	@Transactional(rollbackFor = {Exception.class})
 	public TestResultIdResponse submitTest(SubmitTestRequest submitTestRequest) {
+		// Update userAttempt for test
+		updateTestUserAttempt(submitTestRequest.getTestId());
 		// Get user id for saving
 		String email = SecurityUtils.getCurrentUserLogin()
 				.orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
@@ -564,6 +572,7 @@ public class TestService {
 		userService.saveUser(currentUser);
 		
 		testResultIdResponse.setResultId(newResult.getId());
+		
 		return testResultIdResponse;
 	}
 	

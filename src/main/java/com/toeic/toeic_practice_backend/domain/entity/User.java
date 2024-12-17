@@ -35,6 +35,7 @@ public class User extends BaseEntity{
     public User() {
         skillStats.add(new SkillStat("listening", 0, 0, 0));
         skillStats.add(new SkillStat("reading", 0, 0, 0));
+        target = 10;
     }
     
     @Data
