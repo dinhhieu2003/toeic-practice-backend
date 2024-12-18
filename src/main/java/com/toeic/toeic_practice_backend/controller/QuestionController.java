@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -41,7 +42,7 @@ public class QuestionController {
 		return ResponseEntity.ok(questionService.addTopicToQuestion(listTopicIds, questionId));
 	}
 	
-	@PostMapping("/{questionId}/update/resource")
+	@PutMapping("/{questionId}/update/resource")
 	public ResponseEntity<UpdateResourceQuestionResponse> updateResourceQuestion(@RequestBody UpdateResourceQuestionRequest res, @PathVariable String questionId) {
 		return ResponseEntity.ok(questionService.updateResourceQuestion(res.getRes(), questionId));
 	}
