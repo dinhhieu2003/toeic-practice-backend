@@ -44,7 +44,7 @@ public class CategoryController {
 				.body(categoryService.addCategory(format, year));
 	}
 	
-	@PostMapping("/{id}")
+	@PutMapping("/{id}")
 	public ResponseEntity<Category> updateCategory(@RequestBody Category category, @PathVariable String id) {
 		return ResponseEntity.ok(categoryService.updateCategory(category, id));
 	}
