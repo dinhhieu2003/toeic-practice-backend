@@ -68,7 +68,7 @@ public class QuestionController {
 		return ResponseEntity.ok(questionService.getAllQuestion(pageable, filterParams));
 	}
 	
-	@PostMapping()
+	@PutMapping()
 	public ResponseEntity<Question> updateQuestion(@RequestBody UpdateQuestionRequest updateQuestionRequest) {
 		return ResponseEntity.ok(questionService.updateQuestion(updateQuestionRequest));
 	}
