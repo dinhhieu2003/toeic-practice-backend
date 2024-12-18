@@ -59,17 +59,6 @@ public class LectureController {
         }
         return ResponseEntity.ok(lectureService.getAllLectures(pageable, filterParams));
     }
-    
-    @GetMapping("/client")
-    public ResponseEntity<PaginationResponse<List<Lecture>>> getAllLecturesActive(
-            @RequestParam(defaultValue = "1") String current,
-            @RequestParam(defaultValue = "5") String pageSize
-    ) {
-    	int currentInt = Integer.parseInt(current)-1;
-		int pageSizeInt = Integer.parseInt(pageSize);
-		Pageable pageable = PageRequest.of(currentInt, pageSizeInt);
-		return ResponseEntity.ok(lectureService.getAllLecturesActive(pageable));
-    }
 
     @GetMapping("{lectureId}")
     public ResponseEntity<Lecture> getLectureById(
