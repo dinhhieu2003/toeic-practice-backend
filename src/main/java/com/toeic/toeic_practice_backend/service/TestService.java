@@ -303,9 +303,12 @@ public class TestService {
 		// Get user id for saving
 		String email = SecurityUtils.getCurrentUserLogin()
 				.orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
-		System.out.println(email);
+		long startTime = System.nanoTime();
 		User currentUser = userService.getUserByEmail(email)
 				.orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+		long endTime = System.nanoTime();
+		long userQueryTime = endTime - startTime;
+	    System.out.println("Time to fetch user: " + userQueryTime / 1000000 + " ms");
 		
 		// initial TopicStat
 		List<TopicStat> topicStats = currentUser.getTopicStats();
@@ -330,7 +333,12 @@ public class TestService {
 		for(AnswerPair answerPair: answerPairs) {
 			listQuestionId.add(answerPair.getQuestionId());
 		}
+		
+		long startQuestionQueryTime = System.nanoTime();
 		List<Question> questions = questionService.getQuestionByIds(listQuestionId);
+		long endQuestionQueryTime = System.nanoTime();
+		long questionQueryTime = endQuestionQueryTime - startQuestionQueryTime;
+		System.out.println("Time to fetch questions: " + questionQueryTime/1000000 + "ms");
 
 		List<Topic> topics = topicService.getAllTopics();
 		// hashmap for comparing answer
@@ -456,7 +464,11 @@ public class TestService {
 		    .collect(Collectors.toSet());
 		
 		// Query all group questions by their IDs
+		long startQueryGroupQuestionTime = System.nanoTime();
 		List<Question> groupQuestions = questionService.getQuestionByIds(new ArrayList<>(groupQuestionIds));
+		long endQueryGroupQuestionTime = System.nanoTime();
+		long groupQuestionQueryTime = endQueryGroupQuestionTime - startQueryGroupQuestionTime;
+	    System.out.println("Time to group question: " + groupQuestionQueryTime / 1000000 + " ms");
 		
 		// Map group question IDs to their corresponding questions
 		HashMap<String, Question> groupQuestionMap = new HashMap<>();
