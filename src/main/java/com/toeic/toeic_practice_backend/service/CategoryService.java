@@ -75,8 +75,13 @@ public class CategoryService {
 		return updateCategoryStatusResponse;
 	}
 	
-	public PaginationResponse<List<Category>> getAllCategory(Pageable pageable) {
-		Page<Category> categoryPage = categoryRepository.findAll(pageable);
+	public PaginationResponse<List<Category>> getAllCategory(Pageable pageable, String search) {
+		Page<Category> categoryPage = null;
+		if(search.isEmpty()) {
+			categoryPage = categoryRepository.findAll(pageable);
+		} else {
+			categoryPage = categoryRepository.findByFormatContaining(search, pageable);
+		}
 		PaginationResponse<List<Category>> response = new PaginationResponse<List<Category>>();
 		Meta meta = new Meta();
 		meta.setCurrent(pageable.getPageNumber()+1);
