@@ -24,6 +24,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class Question extends BaseEntity{
 	@Id
+	@Indexed
     private String id;
 	@Indexed
 	private String testId;
