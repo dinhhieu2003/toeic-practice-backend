@@ -33,7 +33,7 @@ public class Question extends BaseEntity{
     private int questionNum;
     private int partNum;
     private String type;  // single, group, or subquestion
-    @DBRef(lazy=false)
+    @DBRef(lazy=true)
     private List<Question> subQuestions = new ArrayList<>();
     private String content;
     private int difficulty;

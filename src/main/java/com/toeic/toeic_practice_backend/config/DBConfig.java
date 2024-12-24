@@ -26,6 +26,11 @@ public class DBConfig extends AbstractMongoClientConfiguration{
 	private String dbUri;
     
 	@Override
+	protected boolean autoIndexCreation() {
+		return true;
+	}
+	
+	@Override
 	protected String getDatabaseName() {
 		return this.dbName;
 	}
