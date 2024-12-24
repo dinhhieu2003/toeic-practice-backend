@@ -16,6 +16,11 @@ public interface TestRepository extends MongoRepository<Test, String> {
 	Optional<Test> findByNameAndCategory_Id(String name, String categoryId);
 	Optional<Test> findByName(String name);
 	Page<Test> findByCategory_Id(String categoryId, Pageable pageable);
+	@Query("{ $and: [ " +
+	           " { 'category._id': ?1 }, " + 
+	           " { 'name': { $regex: ?0, $options: 'i' } } " +
+	           "] }")
+	Page<Test> findByTestNameContaining(String search, String categoryId, Pageable pageable);
 	Page<Test> findByCategory_IdIn(List<String> listCategoryId, Pageable pageable);
 	@Query("{ 'category.format': ?0, 'category.year': ?1, 'isActive': true }")
     Page<Test> findByFormatAndYear(String format, int year, Pageable pageable);

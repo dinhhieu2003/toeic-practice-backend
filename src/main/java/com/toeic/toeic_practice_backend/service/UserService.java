@@ -72,8 +72,13 @@ public class UserService {
 		return userUpdateRoleDto;
 	}
 	
-	public PaginationResponse<List<UserInfoResponse>> getAllUser(Pageable pageable) {
-		Page<UserInfoResponse> userPage = userRepository.findAllUserInfo(pageable);
+	public PaginationResponse<List<UserInfoResponse>> getAllUser(String search, Pageable pageable) {
+		Page<UserInfoResponse> userPage = null;
+		if(search.isEmpty()) {
+			userPage = userRepository.findAllUserInfo(pageable);
+		} else if(!search.isEmpty()) {
+			userPage = userRepository.findUserInfoByEmailContaining(search, pageable);
+		}
 	    
 		PaginationResponse<List<UserInfoResponse>> response = new PaginationResponse<List<UserInfoResponse>>();
 		Meta meta = new Meta();

@@ -36,8 +36,14 @@ public class TopicService {
 		return topicRepository.findAll();
 	}
 	
-	public PaginationResponse<List<Topic>> getTopicPage(Pageable pageable) {
-		Page<Topic> topicPage = topicRepository.findAll(pageable);
+	public PaginationResponse<List<Topic>> getTopicPage(String search, Pageable pageable) {
+		Page<Topic> topicPage = null;
+		if(search.isEmpty()) {
+			topicPage = topicRepository.findAll(pageable);
+		} else if(!search.isEmpty()) {
+			topicPage = topicRepository.findByNameContaining(search, pageable);
+		}
+		 
 		PaginationResponse<List<Topic>> response = new PaginationResponse<>();
 		Meta meta = new Meta();
 		meta.setCurrent(pageable.getPageNumber()+1);

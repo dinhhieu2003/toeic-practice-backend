@@ -23,4 +23,7 @@ public interface UserRepository extends MongoRepository<User, String> {
     // findAllUserInfo => findAll user with id, email, role, target, isActive
     @Query(value = "{}", fields = "{'id': 1, 'email': 1, 'role': 1, 'target': 1 ,'isActive': 1}")
     Page<UserInfoResponse> findAllUserInfo(Pageable pageable);
+    
+    @Query(value = "{ 'email': {$regex: ?0, $options: 'i'} }", fields = "{'id': 1, 'email': 1, 'role': 1, 'target': 1 ,'isActive': 1}")
+    Page<UserInfoResponse> findUserInfoByEmailContaining(String search, Pageable pageable);
 }

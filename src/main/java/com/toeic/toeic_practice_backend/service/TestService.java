@@ -243,9 +243,14 @@ public class TestService {
 		return questionService.getAllQuestionsInTestByTestId(testId, pageable);
 	}
 	
-	public PaginationResponse<List<Test>> getTestsByCategoryId(
+	public PaginationResponse<List<Test>> getTestsByCategoryId(String search,
 			String categoryId, Pageable pageable) {
-		Page<Test> testPage = testRepository.findByCategory_Id(categoryId, pageable);
+		Page<Test> testPage = null;
+		if(search.isEmpty()) {
+			testPage = testRepository.findByCategory_Id(categoryId, pageable);
+		} else if(!search.isEmpty()) {
+			testPage = testRepository.findByTestNameContaining(search, categoryId, pageable);
+		}
 		PaginationResponse<List<Test>> response = new PaginationResponse<List<Test>>();
 		Meta meta = new Meta();
 		meta.setCurrent(pageable.getPageNumber()+1);
