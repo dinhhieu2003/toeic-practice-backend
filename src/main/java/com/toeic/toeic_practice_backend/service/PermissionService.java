@@ -3,7 +3,11 @@ package com.toeic.toeic_practice_backend.service;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import com.toeic.toeic_practice_backend.domain.dto.request.permission.CreatePermissionRequest;
@@ -22,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class PermissionService {
 	private final PermissionRepository permissionRepository;
+	private final MongoTemplate mongoTemplate;
 	
 	public Permission updatePermission(Permission permission, String permissionId) {
 		Permission existingPermission = permissionRepository.findById(permissionId)
@@ -51,17 +56,28 @@ public class PermissionService {
 		return permissionRepository.save(newPermission);
 	}
 	
-	public PaginationResponse<List<Permission>> getAllPermission(Pageable pageable, Boolean active) {
-		Page<Permission> permissionPage;
-
-	    if (active != null) {
-	        // if not null, find by isActive
-	        permissionPage = permissionRepository.findByIsActive(active, pageable);
-	    } else {
-	        // if null, find all
-	        permissionPage = permissionRepository.findAll(pageable);
+	public PaginationResponse<List<Permission>> getAllPermission(Pageable pageable, Boolean active, String search) {
+		Query query = new Query();
+		if (active != null) {
+	        query.addCriteria(Criteria.where("isActive").is(active));
 	    }
+		
+		if (search != null && !search.isEmpty()) {
+	        query.addCriteria(Criteria.where("name").regex(search, "i"));
+	    }
+		
+		// Áp dụng phân trang
+	    query.with(pageable);
 
+	    // Lấy danh sách kết quả
+	    List<Permission> permissions = mongoTemplate.find(query, Permission.class);
+
+	    // Tính tổng số phần tử cho phân trang
+	    long totalItems = mongoTemplate.count(query.skip(0).limit(0), Permission.class);
+
+	    // Trả về Page
+	    Page<Permission> permissionPage = new PageImpl<>(permissions, pageable, totalItems);
+		
 	    PaginationResponse<List<Permission>> response = new PaginationResponse<>();
 	    Meta meta = new Meta();
 	    meta.setCurrent(pageable.getPageNumber() + 1);

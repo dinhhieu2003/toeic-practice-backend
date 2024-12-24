@@ -49,12 +49,13 @@ public class PermissionController {
 	public ResponseEntity<PaginationResponse<List<Permission>>> getAllPermission(
 			@RequestParam(defaultValue = "1") String current,
 			@RequestParam(defaultValue = "5") String pageSize, 
-			@RequestParam(required = false) Boolean active) {
+			@RequestParam(required = false) Boolean active,
+			@RequestParam(required = false, defaultValue = "") String search) {
 		int currentInt = Integer.parseInt(current)-1;
 		int pageSizeInt = Integer.parseInt(pageSize);
 		Pageable pageable = PageRequest.of(currentInt, pageSizeInt);
 		System.out.println(active);
-		return ResponseEntity.ok(permissionService.getAllPermission(pageable, active));
+		return ResponseEntity.ok(permissionService.getAllPermission(pageable, active, search));
 	}
 	
 	
