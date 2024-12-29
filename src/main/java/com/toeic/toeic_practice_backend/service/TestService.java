@@ -304,7 +304,11 @@ public class TestService {
 	@Transactional(rollbackFor = {Exception.class})
 	public TestResultIdResponse submitTest(SubmitTestRequest submitTestRequest) {
 		// Update userAttempt for test
-		updateTestUserAttempt(submitTestRequest.getTestId());
+		String testId = submitTestRequest.getTestId();
+		if(testId != null && !testId.isEmpty() && !testId.isBlank()) {
+			updateTestUserAttempt(submitTestRequest.getTestId());
+		}
+		
 		// Get user id for saving
 		String email = SecurityUtils.getCurrentUserLogin()
 				.orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
