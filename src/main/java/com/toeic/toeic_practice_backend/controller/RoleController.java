@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.azure.core.annotation.Put;
@@ -47,7 +48,8 @@ public class RoleController {
 	}
 	
 	@GetMapping("")
-	public ResponseEntity<PaginationResponse<List<Role>>> getAllRoles(Pageable pageable) {
-		return ResponseEntity.ok(roleService.getAllRoles(pageable));
+	public ResponseEntity<PaginationResponse<List<Role>>> getAllRoles(Pageable pageable,
+			@RequestParam(required = false, defaultValue = "") String search) {
+		return ResponseEntity.ok(roleService.getAllRoles(search, pageable));
 	}
 }

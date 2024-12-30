@@ -64,8 +64,13 @@ public class RoleService {
 		return newRole;
 	}
 	
-	public PaginationResponse<List<Role>> getAllRoles(Pageable pageable) {
-		Page<Role> pageRoles = roleRepository.findAll(pageable);
+	public PaginationResponse<List<Role>> getAllRoles(String search, Pageable pageable) {
+		Page<Role> pageRoles = null;
+		if(search.isEmpty()) {
+			pageRoles = roleRepository.findAll(pageable);
+		} else if(!search.isEmpty()) {
+			pageRoles = roleRepository.findByNameContaining(search, pageable);
+		}
 		List<Role> listRoles = pageRoles.getContent();
 		PaginationResponse<List<Role>> response = new PaginationResponse<>();
 		Meta meta = Meta.builder().current(pageRoles.getNumber())

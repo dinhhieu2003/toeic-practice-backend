@@ -58,7 +58,7 @@ public class LectureService {
                 .build();
     }
     
-    public PaginationResponse<List<Lecture>> getAllLectures(Pageable pageable, Map<String, Boolean> filterParams) {
+    public PaginationResponse<List<Lecture>> getAllLectures(Pageable pageable, Map<String, Boolean> filterParams, String search) {
         // Tạo một đối tượng Query mới
         Query query = new Query();
 
@@ -80,6 +80,10 @@ public class LectureService {
             Boolean isActive = filterParams.get("ACTIVE");
             System.out.println(isActive);
             query.addCriteria(Criteria.where("isActive").is(isActive));
+        }
+        
+        if (!search.isEmpty()) {
+        	query.addCriteria(Criteria.where("name").regex(search, "i"));
         }
         
         Boolean orderAsc = filterParams.get("ORDER_ASC");

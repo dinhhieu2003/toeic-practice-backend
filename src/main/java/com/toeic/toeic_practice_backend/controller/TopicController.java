@@ -43,11 +43,12 @@ public class TopicController {
 	@GetMapping("/pagination")
 	public ResponseEntity<PaginationResponse<List<Topic>>> getTopicPage(
 			@RequestParam(defaultValue = "1") String current,
-			@RequestParam(defaultValue = "5") String pageSize) {
+			@RequestParam(defaultValue = "5") String pageSize,
+			@RequestParam(required = false, defaultValue = "") String search) {
 		int currentInt = Integer.parseInt(current)-1;
 		int pageSizeInt = Integer.parseInt(pageSize);
 		Pageable pageable = PageRequest.of(currentInt, pageSizeInt);
-		return ResponseEntity.ok(topicService.getTopicPage(pageable));
+		return ResponseEntity.ok(topicService.getTopicPage(search, pageable));
 	}
 	
 	@PutMapping("{topicId}/status")

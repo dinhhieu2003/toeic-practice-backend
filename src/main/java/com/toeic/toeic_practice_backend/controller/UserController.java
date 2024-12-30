@@ -49,10 +49,11 @@ public class UserController {
 	@GetMapping
 	public ResponseEntity<PaginationResponse<List<UserInfoResponse>>> getAllUser(
 			@RequestParam(defaultValue = "1") String current,
-			@RequestParam(defaultValue = "5") String pageSize) {
+			@RequestParam(defaultValue = "5") String pageSize,
+			@RequestParam(required = false ,defaultValue = "") String search) {
 		int currentInt = Integer.parseInt(current)-1;
 		int pageSizeInt = Integer.parseInt(pageSize);
 		Pageable pageable = PageRequest.of(currentInt, pageSizeInt);
-		return ResponseEntity.ok(userService.getAllUser(pageable));
+		return ResponseEntity.ok(userService.getAllUser(search, pageable));
 	}
 }

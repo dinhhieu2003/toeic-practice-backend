@@ -43,7 +43,8 @@ public class LectureController {
         @RequestParam(required = false) Boolean practice,
         @RequestParam(required = false) Boolean orderAsc,
         @RequestParam(required = false) Boolean orderDesc,
-        @RequestParam(required = false) Boolean active
+        @RequestParam(required = false) Boolean active,
+        @RequestParam(required = false, defaultValue = "") String search
     ) {
         int currentInt = Integer.parseInt(current)-1;
 		int pageSizeInt = Integer.parseInt(pageSize);
@@ -57,7 +58,7 @@ public class LectureController {
         if (active != null) {
             filterParams.put("ACTIVE", active);
         }
-        return ResponseEntity.ok(lectureService.getAllLectures(pageable, filterParams));
+        return ResponseEntity.ok(lectureService.getAllLectures(pageable, filterParams, search));
     }
 
     @GetMapping("{lectureId}")
