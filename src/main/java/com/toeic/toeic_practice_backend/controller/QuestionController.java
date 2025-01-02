@@ -48,7 +48,7 @@ public class QuestionController {
 	}
 	
 	@GetMapping()
-	public ResponseEntity<PaginationResponse<List<Question>>> getAllQuestion(
+	public ResponseEntity<PaginationResponse<List<Question>>> getAllQuestionForPractice(
 			@RequestParam(defaultValue = "1") String current,
 			@RequestParam(defaultValue = "5") String pageSize,
 			@RequestParam(required = false) String difficulty,
@@ -65,7 +65,7 @@ public class QuestionController {
 		filterParams.put("TOPIC", topic);
 		filterParams.put("ORDER_ASC_BY", orderAscBy);
     	filterParams.put("ORDER_DESC_BY", orderDescBy);
-		return ResponseEntity.ok(questionService.getAllQuestion(pageable, filterParams));
+		return ResponseEntity.ok(questionService.getAllQuestionForPractice(pageable, filterParams));
 	}
 	
 	@PutMapping()

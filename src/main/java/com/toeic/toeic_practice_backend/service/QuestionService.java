@@ -164,7 +164,7 @@ public class QuestionService {
         return mongoTemplate.find(query, Question.class);
     }
     
-    public PaginationResponse<List<Question>> getAllQuestion(Pageable pageable, Map<String, String> filterParams) {
+    public PaginationResponse<List<Question>> getAllQuestionForPractice(Pageable pageable, Map<String, String> filterParams) {
         Query query = new Query();
 
         // Thêm điều kiện để loại bỏ các câu hỏi có type là "subquestion"

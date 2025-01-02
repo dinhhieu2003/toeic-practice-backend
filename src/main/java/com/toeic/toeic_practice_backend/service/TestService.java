@@ -308,7 +308,6 @@ public class TestService {
 		if(testId != null && !testId.isEmpty() && !testId.isBlank()) {
 			updateTestUserAttempt(submitTestRequest.getTestId());
 		}
-		
 		// Get user id for saving
 		String email = SecurityUtils.getCurrentUserLogin()
 				.orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
