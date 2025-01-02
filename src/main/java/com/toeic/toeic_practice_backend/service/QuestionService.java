@@ -164,6 +164,7 @@ public class QuestionService {
         return mongoTemplate.find(query, Question.class);
     }
     
+    // get random
     public PaginationResponse<List<Question>> getAllQuestionForPractice(Pageable pageable, Map<String, String> filterParams) {
         Query query = new Query();
 
