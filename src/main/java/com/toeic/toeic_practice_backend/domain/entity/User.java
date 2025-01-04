@@ -1,6 +1,7 @@
 package com.toeic.toeic_practice_backend.domain.entity;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import org.springframework.data.annotation.Id;
@@ -31,6 +32,7 @@ public class User extends BaseEntity{
     private List<TopicStat> topicStats = new ArrayList<>();
     private List<SkillStat> skillStats = new ArrayList<>();
     private List<LearningProgress> learningProgress= new ArrayList<>();
+    private HashSet<String> testHistory = new HashSet<>();	// list testId done
     
     public User() {
         skillStats.add(new SkillStat("listening", 0, 0, 0));
@@ -142,8 +144,7 @@ public class User extends BaseEntity{
     @AllArgsConstructor
     @NoArgsConstructor
     public static class LearningProgress {
-    	@DBRef(lazy=false)
-    	private Lecture lectureId;
+    	private String lectureId;
     	private float percent;
     }
 }
