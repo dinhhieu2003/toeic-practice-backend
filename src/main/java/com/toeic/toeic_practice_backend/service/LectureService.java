@@ -18,6 +18,7 @@ import com.toeic.toeic_practice_backend.domain.dto.request.lecture.LectureReques
 import com.toeic.toeic_practice_backend.domain.dto.request.lecture.PracticeRequest;
 import com.toeic.toeic_practice_backend.domain.dto.request.lecture.PracticeRequest.PracticeQuestion;
 import com.toeic.toeic_practice_backend.domain.dto.request.lecture.UpdateLectureStatusRequest;
+import com.toeic.toeic_practice_backend.domain.dto.response.lecture.RandomLectureResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.lecture.UpdateLectureStatusResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.Meta;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
@@ -42,6 +43,13 @@ public class LectureService {
     private final TopicService topicService;
 
     private final MongoTemplate mongoTemplate;
+    
+    public List<RandomLectureResponse> getRandomLecture(String lectureId) {
+    	List<Lecture> lectures = lectureRepository.findRandomLecturesExcludingId(lectureId, 5);
+    	return lectures.stream()
+                .map(lecture -> new RandomLectureResponse(lecture.getId(), lecture.getName()))
+                .collect(Collectors.toList());
+    }
 
     public PaginationResponse<List<Lecture>> getAllLecturesActive(Pageable pageable) {
     	Page<Lecture> lecturePage = lectureRepository.findByIsActiveTrue(pageable);

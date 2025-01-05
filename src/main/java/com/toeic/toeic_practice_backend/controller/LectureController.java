@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.toeic.toeic_practice_backend.domain.dto.request.lecture.LectureRequest;
 import com.toeic.toeic_practice_backend.domain.dto.request.lecture.PracticeRequest;
 import com.toeic.toeic_practice_backend.domain.dto.request.lecture.UpdateLectureStatusRequest;
+import com.toeic.toeic_practice_backend.domain.dto.response.lecture.RandomLectureResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.lecture.UpdateLectureStatusResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Lecture;
@@ -59,6 +60,11 @@ public class LectureController {
             filterParams.put("ACTIVE", active);
         }
         return ResponseEntity.ok(lectureService.getAllLectures(pageable, filterParams, search));
+    }
+    
+    @GetMapping("{lectureId}/random")
+    public ResponseEntity<List<RandomLectureResponse>> getRandomLecture(@PathVariable String lectureId) {
+    	return ResponseEntity.ok(lectureService.getRandomLecture(lectureId));
     }
 
     @GetMapping("{lectureId}")
