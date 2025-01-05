@@ -303,17 +303,22 @@ public class TestService {
 	
 	@Transactional(rollbackFor = {Exception.class})
 	public TestResultIdResponse submitTest(SubmitTestRequest submitTestRequest) {
-		// Step 1: Update userAttempt for test
+		// Step 1: Get user logging in for updating stat
+		String email = SecurityUtils.getCurrentUserLogin()
+				.orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
+		User currentUser = userService.getUserByEmail(email)
+				.orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+		
+		// Update userAttempt
 		String testId = submitTestRequest.getTestId();
 		if(testId != null && !testId.isEmpty() && !testId.isBlank()) {
 			updateTestUserAttempt(submitTestRequest.getTestId());
 		}
 		
-		// Step 2: Get user logging in for updating stat
-		String email = SecurityUtils.getCurrentUserLogin()
-				.orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
-		User currentUser = userService.getUserByEmail(email)
-				.orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+		// Update test history for user
+		HashSet<String> testIdsInHistory = currentUser.getTestHistory();
+		testIdsInHistory.add(testId);
+		currentUser.setTestHistory(testIdsInHistory);
 		
 		// initial TopicStat
 		List<TopicStat> newTopicStats = new ArrayList<>();

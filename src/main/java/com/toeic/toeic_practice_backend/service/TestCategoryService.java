@@ -1,10 +1,14 @@
 package com.toeic.toeic_practice_backend.service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.Meta;
@@ -20,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 public class TestCategoryService {
 	private final TestService testService;
 	private final CategoryService categoryService;
+	private final UserService userService;
 	
 	public PaginationResponse<List<GetTestCardResponse>> getTestsByFormatAndYear(
 			String format, String year, Pageable pageable) {
@@ -47,6 +52,16 @@ public class TestCategoryService {
 		meta.setTotalItems(testPage.getTotalElements());
 		meta.setTotalPages(testPage.getTotalPages());
 		List<Test> listTest = testPage.getContent();
+		HashSet<String> testIds = new HashSet<>();
+		// Lấy thông tin Authentication hiện tại từ SecurityContextHolder
+	    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+	    if (authentication != null && authentication.isAuthenticated() 
+	            && !(authentication instanceof AnonymousAuthenticationToken)) {
+	    	System.out.println(authentication);
+	    	String email = authentication.getName();
+	    	testIds.addAll(userService.getUserTestHistory(email));
+	    }
+		
 		List<GetTestCardResponse> result = listTest.stream()
                 .map(test -> {
                     GetTestCardResponse testCardResponse = new GetTestCardResponse();
@@ -54,7 +69,8 @@ public class TestCategoryService {
                     testCardResponse.setName(test.getName());
                     testCardResponse.setFormat(test.getCategory().getFormat());
                     testCardResponse.setYear(test.getCategory().getYear());
-
+                    testCardResponse.setTotalUser(test.getTotalUserAttempt());
+                    testCardResponse.setCompleted(testIds.contains(test.getId()));
                     return testCardResponse;
                 })
                 .collect(Collectors.toList());

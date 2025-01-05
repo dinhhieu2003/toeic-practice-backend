@@ -1,5 +1,6 @@
 package com.toeic.toeic_practice_backend.service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,6 +31,12 @@ public class UserService {
 	private final UserRepository userRepository;
 	private final RoleRepository roleRepository;
 	private final UserMapper userMapper;
+	
+	public HashSet<String> getUserTestHistory(String email) {
+		User user = userRepository.findByEmailWithOnlyTestHistory(email)
+				.orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+		return user.getTestHistory();
+	}
 	
 	public Optional<User> getUserByEmail(String email) {
 		return userRepository.findByEmail(email);

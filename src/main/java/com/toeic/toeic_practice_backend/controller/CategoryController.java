@@ -84,6 +84,7 @@ public class CategoryController {
 		return ResponseEntity.ok(categoryService.updateCategoryStatus(categoryId, upadateCategoryStatusRequest));
 	}
 	
+	// list test displayed for client
 	@GetMapping("/tests")
 	public ResponseEntity<PaginationResponse<List<GetTestCardResponse>>> getTestsByFormatAndYear(
 			@RequestParam(defaultValue = "ETS") String format,
