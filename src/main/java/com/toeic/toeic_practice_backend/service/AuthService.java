@@ -1,5 +1,8 @@
 package com.toeic.toeic_practice_backend.service;
 
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.toeic.toeic_practice_backend.domain.dto.response.auth.Tokens;
@@ -19,5 +22,15 @@ public class AuthService {
 		String refreshToken = jwtTokenUtils.createRefreshToken(user);
 		userService.updateRefreshToken(user, refreshToken);
 		return new Tokens(accessToken, refreshToken);
+	}
+	
+	public String getCurrentEmail() {
+	    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+	    String email = null;
+	    if (authentication != null && authentication.isAuthenticated() 
+	            && !(authentication instanceof AnonymousAuthenticationToken)) {
+	    	email = authentication.getName();
+	    }
+	    return email;
 	}
 }

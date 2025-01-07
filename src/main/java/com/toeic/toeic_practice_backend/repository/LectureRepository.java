@@ -18,4 +18,5 @@ public interface LectureRepository extends MongoRepository<Lecture, String> {
 	        "{ $sample: { size: ?1 } }"
 	    })
 	List<Lecture> findRandomLecturesExcludingId(String lectureId, int size);
+	List<Lecture> findByIdIn(List<String> ids);
 }

@@ -22,11 +22,13 @@ import com.toeic.toeic_practice_backend.domain.dto.response.auth.AccountResponse
 import com.toeic.toeic_practice_backend.domain.dto.response.auth.AccountResponse.ResultOverview;
 import com.toeic.toeic_practice_backend.domain.dto.response.auth.LoginResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.auth.Tokens;
+import com.toeic.toeic_practice_backend.domain.dto.response.lecture.LectureCardResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.user.UpdateUserTargetResponse;
 import com.toeic.toeic_practice_backend.domain.entity.User;
 import com.toeic.toeic_practice_backend.exception.AppException;
 import com.toeic.toeic_practice_backend.service.AccountService;
 import com.toeic.toeic_practice_backend.service.AuthService;
+import com.toeic.toeic_practice_backend.service.LectureUserService;
 import com.toeic.toeic_practice_backend.service.ResultService;
 import com.toeic.toeic_practice_backend.service.UserService;
 import com.toeic.toeic_practice_backend.utils.constants.ErrorCode;

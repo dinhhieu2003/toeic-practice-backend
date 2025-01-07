@@ -25,6 +25,7 @@ public class TestCategoryService {
 	private final TestService testService;
 	private final CategoryService categoryService;
 	private final UserService userService;
+	private final AuthService authService;
 	
 	public PaginationResponse<List<GetTestCardResponse>> getTestsByFormatAndYear(
 			String format, String year, Pageable pageable) {
@@ -53,12 +54,9 @@ public class TestCategoryService {
 		meta.setTotalPages(testPage.getTotalPages());
 		List<Test> listTest = testPage.getContent();
 		HashSet<String> testIds = new HashSet<>();
-		// Lấy thông tin Authentication hiện tại từ SecurityContextHolder
-	    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-	    if (authentication != null && authentication.isAuthenticated() 
-	            && !(authentication instanceof AnonymousAuthenticationToken)) {
-	    	System.out.println(authentication);
-	    	String email = authentication.getName();
+		
+	    String email = authService.getCurrentEmail();
+	    if(email != null) {
 	    	testIds.addAll(userService.getUserTestHistory(email));
 	    }
 		

@@ -44,6 +44,10 @@ public class LectureService {
 
     private final MongoTemplate mongoTemplate;
     
+    public List<Lecture> getById(List<String> ids) {
+    	return lectureRepository.findByIdIn(ids);
+    }
+    
     public List<RandomLectureResponse> getRandomLecture(String lectureId) {
     	List<Lecture> lectures = lectureRepository.findRandomLecturesExcludingId(lectureId, 5);
     	return lectures.stream()

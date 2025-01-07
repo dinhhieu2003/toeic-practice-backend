@@ -1,6 +1,7 @@
 package com.toeic.toeic_practice_backend.domain.entity;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
@@ -31,7 +32,7 @@ public class User extends BaseEntity{
     private OverallStat overallStat = new OverallStat();
     private List<TopicStat> topicStats = new ArrayList<>();
     private List<SkillStat> skillStats = new ArrayList<>();
-    private List<LearningProgress> learningProgress= new ArrayList<>();
+    private HashMap<String, Integer> learningProgress= new HashMap<>();	// {lectureId: percent}
     private HashSet<String> testHistory = new HashSet<>();	// list testId done
     
     public User() {
@@ -138,13 +139,5 @@ public class User extends BaseEntity{
     		}
     		this.totalTime += timeSpent;
     	}
-    }
-    
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class LearningProgress {
-    	private String lectureId;
-    	private float percent;
     }
 }

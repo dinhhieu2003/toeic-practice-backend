@@ -15,12 +15,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.toeic.toeic_practice_backend.domain.dto.request.user.UserUpdateRoleRequest;
 import com.toeic.toeic_practice_backend.domain.dto.request.user.UserUpdateStatusRequest;
+import com.toeic.toeic_practice_backend.domain.dto.response.lecture.LectureCardResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.user.UserInfoResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.user.UserUpdateRoleResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.user.UserUpdateStatusResponse;
 import com.toeic.toeic_practice_backend.domain.entity.User;
 import com.toeic.toeic_practice_backend.exception.AppException;
+import com.toeic.toeic_practice_backend.service.LectureUserService;
 import com.toeic.toeic_practice_backend.service.UserService;
 import com.toeic.toeic_practice_backend.utils.constants.ErrorCode;
 import com.toeic.toeic_practice_backend.utils.security.SecurityUtils;
@@ -32,6 +34,13 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/users")
 public class UserController {
 	private final UserService userService;
+	
+	private final LectureUserService lectureUserService;
+	
+	@GetMapping("/lectures")
+	public ResponseEntity<List<LectureCardResponse>> getLearningProgress() {
+		return ResponseEntity.ok(lectureUserService.getLearningProgress());
+	}
 	
 	@PutMapping("/{id}/role")
 	public ResponseEntity<UserUpdateRoleResponse> updateUserRole(@PathVariable String id, @RequestBody UserUpdateRoleRequest role) {

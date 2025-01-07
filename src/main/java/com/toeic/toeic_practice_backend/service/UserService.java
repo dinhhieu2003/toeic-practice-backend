@@ -1,8 +1,10 @@
 package com.toeic.toeic_practice_backend.service;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -31,6 +33,13 @@ public class UserService {
 	private final UserRepository userRepository;
 	private final RoleRepository roleRepository;
 	private final UserMapper userMapper;
+	
+	public HashMap<String, Integer> getUserLearningProgress(String email) {
+		User user = userRepository.findByEmailWithOnlyLearningProgress(email)
+				.orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+		HashMap<String, Integer> response = user.getLearningProgress();
+		return response;
+	}
 	
 	public HashSet<String> getUserTestHistory(String email) {
 		User user = userRepository.findByEmailWithOnlyTestHistory(email)
