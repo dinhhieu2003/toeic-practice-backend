@@ -303,72 +303,62 @@ public class TestService {
 	
 	@Transactional(rollbackFor = {Exception.class})
 	public TestResultIdResponse submitTest(SubmitTestRequest submitTestRequest) {
-		// Update userAttempt for test
+		// Step 1: Get user logging in for updating stat
+		String email = SecurityUtils.getCurrentUserLogin()
+				.orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
+		User currentUser = userService.getUserByEmail(email)
+				.orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+		
+		// Update userAttempt
 		String testId = submitTestRequest.getTestId();
 		if(testId != null && !testId.isEmpty() && !testId.isBlank()) {
 			updateTestUserAttempt(submitTestRequest.getTestId());
 		}
 		
-		// Get user id for saving
-		String email = SecurityUtils.getCurrentUserLogin()
-				.orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
-		long startTime = System.nanoTime();
-		User currentUser = userService.getUserByEmail(email)
-				.orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-		long endTime = System.nanoTime();
-		long userQueryTime = endTime - startTime;
-	    System.out.println("Time to fetch user: " + userQueryTime / 1000000 + " ms");
+		// Update test history for user
+		HashSet<String> testIdsInHistory = currentUser.getTestHistory();
+		testIdsInHistory.add(testId);
+		currentUser.setTestHistory(testIdsInHistory);
 		
 		// initial TopicStat
-		List<TopicStat> topicStats = currentUser.getTopicStats();
 		List<TopicStat> newTopicStats = new ArrayList<>();
-		HashMap<String, TopicStat> topicStatMap = new HashMap<>();
-		for(TopicStat topicStat : topicStats) {
-			topicStatMap.put(topicStat.getTopic().getId(), topicStat);
-		}
+		Map<String, TopicStat> topicStatMap = currentUser.getTopicStats().stream()
+			    .collect(Collectors.toMap(stat -> stat.getTopic().getId(), stat -> stat));
 		// initial SkillStat
-		List<SkillStat> skillStats = currentUser.getSkillStats();
 		List<SkillStat> newSkillStats = new ArrayList<>();
-		HashMap<String, SkillStat> skillStatMap = new HashMap<>();
-		for(SkillStat skillStat : skillStats) {
-			skillStatMap.put(skillStat.getSkill(), skillStat);
-		}
+		Map<String, SkillStat> skillStatMap = currentUser.getSkillStats().stream()
+			    .collect(Collectors.toMap(SkillStat::getSkill, stat -> stat));
 		
-		boolean isFulltest = submitTestRequest.getType().equals("fulltest");
 		List<AnswerPair> answerPairs = submitTestRequest.getUserAnswer();
 
 		// Extract list question id for query
-		List<String> listQuestionId = new ArrayList<>();
-		for(AnswerPair answerPair: answerPairs) {
-			listQuestionId.add(answerPair.getQuestionId());
-		}
+		List<String> questionIds = submitTestRequest.getUserAnswer().stream()
+			    .map(AnswerPair::getQuestionId)
+			    .collect(Collectors.toList());
 		
-		long startQuestionQueryTime = System.nanoTime();
-		List<Question> questions = questionService.getQuestionByIds(listQuestionId);
-		long endQuestionQueryTime = System.nanoTime();
-		long questionQueryTime = endQuestionQueryTime - startQuestionQueryTime;
-		System.out.println("Time to fetch questions: " + questionQueryTime/1000000 + "ms");
+		// Fetch questions and topics
+		List<Question> questions = questionService.getQuestionByIds(questionIds);
+		Map<String, Topic> topicMap = topicService.getAllTopics().stream()
+		    .collect(Collectors.toMap(Topic::getId, topic -> topic));
 
-		List<Topic> topics = topicService.getAllTopics();
-		// hashmap for comparing answer
-		HashMap<String, String> correctAnswerMap = new HashMap<>();
-		HashMap<String, Integer> partNumMap = new HashMap<>();
-		HashMap<String, Question> questionMap = new HashMap<>();
-		HashMap<String, List<String>> topicIdMap = new HashMap<>();
-		HashMap<String, List<Topic>> topicQuestionMap = new HashMap<>();
-		for(Question question: questions) {
-			correctAnswerMap.put(question.getId(), question.getCorrectAnswer());
-			partNumMap.put(question.getId(), question.getPartNum());
-			questionMap.put(question.getId(), question);
-			topicIdMap.put(question.getId(), question.getTopic().stream()
-					.map(Topic::getId)
-					.collect(Collectors.toList()));
-			topicQuestionMap.put(question.getId(), question.getTopic().stream()
-					.collect(Collectors.toList()));
-		}
-		HashMap<String, Topic> topicMap = new HashMap<>();
-		for(Topic topic: topics) {
-			topicMap.put(topic.getId(), topic);
+		// Prepare helper maps for quick lookups
+		Map<String, String> correctAnswerMap = new HashMap<>();
+		Map<String, Integer> partNumMap = new HashMap<>();
+		Map<String, Question> questionMap = new HashMap<>();
+		Map<String, List<String>> topicIdMap = new HashMap<>();
+		Map<String, List<Topic>> topicQuestionMap = new HashMap<>();
+
+		for (Question question : questions) {
+		    correctAnswerMap.put(question.getId(), question.getCorrectAnswer());
+		    partNumMap.put(question.getId(), question.getPartNum());
+		    questionMap.put(question.getId(), question);
+
+		    // Collect topic IDs and Topic objects for each question
+		    List<Topic> questionTopics = question.getTopic();
+		    topicIdMap.put(question.getId(), questionTopics.stream()
+		        .map(Topic::getId)
+		        .collect(Collectors.toList()));
+		    topicQuestionMap.put(question.getId(), questionTopics);
 		}
 		
 		// Score board
@@ -411,54 +401,21 @@ public class TestService {
 			}
 			
 			// update SkillStat
-			skillStatMap.putIfAbsent(testSkill, new SkillStat());
+			skillStatMap.putIfAbsent(testSkill, new SkillStat(testSkill, 0, 0, 0));
 			SkillStat skillStat = skillStatMap.get(testSkill);
-			if(isCorrect) {
-				skillStat.setTotalCorrect(skillStat.getTotalCorrect() + 1);
-			} else if(!isSkip) {
-				skillStat.setTotalIncorrect(skillStat.getTotalIncorrect() + 1);
-			}
-			skillStat.setTotalTime(skillStat.getTotalTime() + answerPair.getTimeSpent());
-			skillStat.setSkill(testSkill);
+			skillStat.updateStats(isCorrect, isSkip, answerPair.getTimeSpent());
 			skillStatMap.put(testSkill, skillStat);
 			
 			// update TopicStat
 			for(String topicId : listTopicIds) {
-				topicStatMap.putIfAbsent(topicId, new TopicStat());
+				Topic topic = topicMap.get(topicId);
+				topicStatMap.putIfAbsent(topicId, new TopicStat(topic, 0, 0, 0, 0, 0));
 				TopicStat stat = topicStatMap.get(topicId);
-				stat.setTopic(topicMap.get(topicId));
-				if(isCorrect) {
-					stat.setTotalCorrect(stat.getTotalCorrect() + 1);
-				} else if(!isSkip) {
-					stat.setTotalIncorrect(stat.getTotalIncorrect() +  1);
-				}
-				
-				int currentTimeCount = stat.getTimeCount();
-				double avgTime = (stat.getAverageTime() * currentTimeCount + answerPair.getTimeSpent()) /(currentTimeCount + 1);
-				stat.setAverageTime(avgTime);
-				stat.setTimeCount(currentTimeCount + 1);
-				stat.setTotalTime(stat.getTotalTime() + answerPair.getTimeSpent());
+				stat.updateStats(isCorrect, isSkip, answerPair.getTimeSpent());
 				topicStatMap.put(topicId, stat);
 			}
 			
-			UserAnswer userAnswer = new UserAnswer();
-			userAnswer.setQuestionId(answerPair.getQuestionId());
-			userAnswer.setParentId(currentQuestion.getParentId());
-			userAnswer.setListTopics(listTopics);
-			userAnswer.setCorrect(isCorrect);
-			userAnswer.setUserAnswer(answerPair.getUserAnswer());
-			userAnswer.setSolution("Hãy học course này");
-			userAnswer.setTimeSpent(answerPair.getTimeSpent());
-			userAnswer.setQuestionNum(currentQuestion.getQuestionNum());
-			userAnswer.setPartNum(currentQuestion.getPartNum());
-			userAnswer.setType(currentQuestion.getType());
-			userAnswer.setContent(currentQuestion.getContent());
-			userAnswer.setDifficulty(currentQuestion.getDifficulty());
-			userAnswer.setResources(currentQuestion.getResources());
-			userAnswer.setTranscript(currentQuestion.getTranscript());
-			userAnswer.setExplanation(currentQuestion.getExplanation());
-			userAnswer.setAnswers(currentQuestion.getAnswers());
-			userAnswer.setCorrectAnswer(currentQuestion.getCorrectAnswer());
+			UserAnswer userAnswer = createUserAnswer(currentQuestion, answerPair, listTopics, isCorrect);
 			userAnswers.add(userAnswer);
 		}
 		
@@ -473,11 +430,7 @@ public class TestService {
 		    .collect(Collectors.toSet());
 		
 		// Query all group questions by their IDs
-		long startQueryGroupQuestionTime = System.nanoTime();
 		List<Question> groupQuestions = questionService.getQuestionByIds(new ArrayList<>(groupQuestionIds));
-		long endQueryGroupQuestionTime = System.nanoTime();
-		long groupQuestionQueryTime = endQueryGroupQuestionTime - startQueryGroupQuestionTime;
-	    System.out.println("Time to group question: " + groupQuestionQueryTime / 1000000 + " ms");
 		
 		// Map group question IDs to their corresponding questions
 		HashMap<String, Question> groupQuestionMap = new HashMap<>();
@@ -496,22 +449,7 @@ public class TestService {
 		// Initialize UserAnswer groups with subquestions
 		List<UserAnswer> groupedUserAnswers = new ArrayList<>();
 		for (Question groupQuestion : groupQuestions) {
-		    UserAnswer groupUserAnswer = new UserAnswer();
-		    groupUserAnswer.setQuestionId(groupQuestion.getId());
-		    groupUserAnswer.setParentId(null); // Group itself has no parent
-		    groupUserAnswer.setType("group");
-		    groupUserAnswer.setQuestionNum(groupQuestion.getQuestionNum());
-		    groupUserAnswer.setPartNum(groupQuestion.getPartNum());
-		    groupUserAnswer.setListTopics(groupQuestion.getTopic());
-		    groupUserAnswer.setContent(groupQuestion.getContent());
-		    groupUserAnswer.setDifficulty(groupQuestion.getDifficulty());
-		    groupUserAnswer.setResources(groupQuestion.getResources());
-		    groupUserAnswer.setTranscript(groupQuestion.getTranscript());
-		    groupUserAnswer.setExplanation(groupQuestion.getExplanation());
-		    groupUserAnswer.setAnswers(groupQuestion.getAnswers());
-		    groupUserAnswer.setCorrectAnswer(groupQuestion.getCorrectAnswer());
-		    groupUserAnswer.setSubUserAnswer(subUserAnswerMap.getOrDefault(groupQuestion.getId(), new ArrayList<>()));
-
+		    UserAnswer groupUserAnswer = createGroupUserAnswer(groupQuestion, subUserAnswerMap);
 		    groupedUserAnswers.add(groupUserAnswer);
 		}
 		
@@ -542,41 +480,10 @@ public class TestService {
 		if(overallStat == null) {
 			overallStat = new OverallStat();
 		}
-		// listening, reading score
-		int currentListeningCount = overallStat.getListeningScoreCount();
-		int currentReadingCount = overallStat.getReadingScoreCount();
-		int currentAvgListeningScore = overallStat.getAverageListeningScore();
-		int currentAvgReadingScore = overallStat.getAverageReadingScore();
-		int listeningScore = scoreBoard.getListeningScore(totalListeningCorrect);
-		int readingScore = scoreBoard.getReadingScore(totalReadingCorrect);
-		int newAvgListeningScore = 
-				((currentAvgListeningScore * currentListeningCount) + listeningScore) / (currentListeningCount + 1);
-		int newAvgReadingScore = 
-				((currentAvgReadingScore * currentReadingCount) + readingScore) / (currentReadingCount + 1);
-		overallStat.setAverageListeningScore(newAvgListeningScore);
-		overallStat.setAverageReadingScore(newAvgReadingScore);
-		overallStat.setListeningScoreCount(currentListeningCount + 1);
-		overallStat.setReadingScoreCount(currentReadingCount + 1);
-		// time
-		int currentTimeCount = overallStat.getTimeCount();
-		double currentAvgTime = overallStat.getAverageTime();
-		double newAvgTime = 
-				((currentAvgTime * currentTimeCount) + submitTestRequest.getTotalSeconds()) / (currentTimeCount + 1);
-		overallStat.setTimeCount(currentTimeCount + 1);
-		overallStat.setAverageTime(newAvgTime);
-		
-		// total
-		int totalScore = listeningScore + readingScore;
-		int currentTotalScoreCount = overallStat.getTotalScoreCount();
-		int currentAvgTotalScore = overallStat.getAverageTotalScore();
-		int newAvgTotalScore =
-				((currentAvgTotalScore * currentTotalScoreCount) + totalScore) / (currentTotalScoreCount + 1);
-		overallStat.setAverageTotalScore(newAvgTotalScore);
-		overallStat.setTotalScoreCount(currentTotalScoreCount + 1);
-		// highest
-		if(totalScore > overallStat.getHighestScore()) {
-			overallStat.setHighestScore(totalScore);
-		}
+		int listeningScoreFromScoreBoard = scoreBoard.getListeningScore(totalListeningCorrect);
+		int readingScoreFromScoreBoard = scoreBoard.getReadingScore(totalReadingCorrect);
+		int totalSeconds = submitTestRequest.getTotalSeconds();
+		overallStat.updateStats(listeningScoreFromScoreBoard, readingScoreFromScoreBoard, totalSeconds);
 		currentUser.setOverallStat(overallStat);
 		
 		// save topic stat
@@ -597,14 +504,44 @@ public class TestService {
 		return testResultIdResponse;
 	}
 	
-//	public void reCalculateStats(User currentUser, List<String> listTestIds) {
-//		// Lay duoc toan bo result theo userId va testId
-//		String userId = currentUser.getId();
-//		List<Result> listResult = resultService.getByUserIdAndListTestId(userId, listTestIds);
-//		// Lay het questionId ra
-//		List<String> listQuestionId = new ArrayList<>();
-//		for(Result result : listResult) {
-//			
-//		}
-//	}
+	private UserAnswer createGroupUserAnswer(Question groupQuestion, HashMap<String, List<UserAnswer>> subUserAnswerMap) {
+		UserAnswer groupUserAnswer = new UserAnswer();
+	    groupUserAnswer.setQuestionId(groupQuestion.getId());
+	    groupUserAnswer.setParentId(null); // Group itself has no parent
+	    groupUserAnswer.setType("group");
+	    groupUserAnswer.setQuestionNum(groupQuestion.getQuestionNum());
+	    groupUserAnswer.setPartNum(groupQuestion.getPartNum());
+	    groupUserAnswer.setListTopics(groupQuestion.getTopic());
+	    groupUserAnswer.setContent(groupQuestion.getContent());
+	    groupUserAnswer.setDifficulty(groupQuestion.getDifficulty());
+	    groupUserAnswer.setResources(groupQuestion.getResources());
+	    groupUserAnswer.setTranscript(groupQuestion.getTranscript());
+	    groupUserAnswer.setExplanation(groupQuestion.getExplanation());
+	    groupUserAnswer.setAnswers(groupQuestion.getAnswers());
+	    groupUserAnswer.setCorrectAnswer(groupQuestion.getCorrectAnswer());
+	    groupUserAnswer.setSubUserAnswer(subUserAnswerMap.getOrDefault(groupQuestion.getId(), new ArrayList<>()));
+	    return groupUserAnswer;
+	}
+	
+	private UserAnswer createUserAnswer(Question currentQuestion, AnswerPair answerPair, List<Topic> listTopics, boolean isCorrect) {
+		UserAnswer userAnswer = new UserAnswer();
+		userAnswer.setQuestionId(answerPair.getQuestionId());
+		userAnswer.setParentId(currentQuestion.getParentId());
+		userAnswer.setListTopics(listTopics);
+		userAnswer.setCorrect(isCorrect);
+		userAnswer.setUserAnswer(answerPair.getUserAnswer());
+		userAnswer.setSolution("Hãy học course này");
+		userAnswer.setTimeSpent(answerPair.getTimeSpent());
+		userAnswer.setQuestionNum(currentQuestion.getQuestionNum());
+		userAnswer.setPartNum(currentQuestion.getPartNum());
+		userAnswer.setType(currentQuestion.getType());
+		userAnswer.setContent(currentQuestion.getContent());
+		userAnswer.setDifficulty(currentQuestion.getDifficulty());
+		userAnswer.setResources(currentQuestion.getResources());
+		userAnswer.setTranscript(currentQuestion.getTranscript());
+		userAnswer.setExplanation(currentQuestion.getExplanation());
+		userAnswer.setAnswers(currentQuestion.getAnswers());
+		userAnswer.setCorrectAnswer(currentQuestion.getCorrectAnswer());
+		return userAnswer;
+	}
 }

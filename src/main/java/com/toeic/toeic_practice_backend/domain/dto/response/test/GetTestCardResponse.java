@@ -12,4 +12,6 @@ public class GetTestCardResponse {
 	private String format;
 	private int year;
 	private String name;
+	private boolean isCompleted;
+	private int totalUser;
 }

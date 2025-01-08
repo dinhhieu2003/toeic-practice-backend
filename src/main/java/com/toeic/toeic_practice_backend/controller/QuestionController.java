@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -41,13 +42,13 @@ public class QuestionController {
 		return ResponseEntity.ok(questionService.addTopicToQuestion(listTopicIds, questionId));
 	}
 	
-	@PostMapping("/{questionId}/update/resource")
+	@PutMapping("/{questionId}/update/resource")
 	public ResponseEntity<UpdateResourceQuestionResponse> updateResourceQuestion(@RequestBody UpdateResourceQuestionRequest res, @PathVariable String questionId) {
 		return ResponseEntity.ok(questionService.updateResourceQuestion(res.getRes(), questionId));
 	}
 	
 	@GetMapping()
-	public ResponseEntity<PaginationResponse<List<Question>>> getAllQuestion(
+	public ResponseEntity<PaginationResponse<List<Question>>> getAllQuestionForPractice(
 			@RequestParam(defaultValue = "1") String current,
 			@RequestParam(defaultValue = "5") String pageSize,
 			@RequestParam(required = false) String difficulty,
@@ -64,10 +65,10 @@ public class QuestionController {
 		filterParams.put("TOPIC", topic);
 		filterParams.put("ORDER_ASC_BY", orderAscBy);
     	filterParams.put("ORDER_DESC_BY", orderDescBy);
-		return ResponseEntity.ok(questionService.getAllQuestion(pageable, filterParams));
+		return ResponseEntity.ok(questionService.getAllQuestionForPractice(pageable, filterParams));
 	}
 	
-	@PostMapping()
+	@PutMapping()
 	public ResponseEntity<Question> updateQuestion(@RequestBody UpdateQuestionRequest updateQuestionRequest) {
 		return ResponseEntity.ok(questionService.updateQuestion(updateQuestionRequest));
 	}

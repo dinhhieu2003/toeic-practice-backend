@@ -24,8 +24,8 @@ public class Lecture extends BaseEntity{
     private String id;
     private String name;
     private String content;
-    @DBRef
+    @DBRef(lazy=true)
     private List<Topic> topic = new ArrayList<>();
-    @DBRef(lazy=false)
+    @DBRef(lazy=true)
     private List<Question> practiceQuestions;
 }

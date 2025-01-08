@@ -13,6 +13,10 @@ import com.toeic.toeic_practice_backend.domain.entity.User;
 
 @Repository
 public interface UserRepository extends MongoRepository<User, String> {
+	@Query(value = "{ 'email': ?0 }", fields = "{ 'learningProgress': 1 }")
+	public Optional<User> findByEmailWithOnlyLearningProgress(String email);
+	@Query(value = "{ 'email': ?0 }", fields = "{ 'testHistory': 1 }")
+	public Optional<User> findByEmailWithOnlyTestHistory(String email);
     public Optional<User> findByEmail(String email);
     public Optional<User> findByEmailAndRefreshToken(String email, String refreshToken);
     @Query(value = "{ 'email': ?0 }", fields = "{ 'role': 1 }")

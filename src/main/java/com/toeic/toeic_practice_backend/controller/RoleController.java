@@ -35,7 +35,7 @@ public class RoleController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(newRole);
 	}
 	
-	@PostMapping("/{id}")
+	@PutMapping("/{id}")
 	public ResponseEntity<Role> updateRole(@RequestBody RoleCreationRequest role, @PathVariable String id) {
 		Role updatedRole = roleService.updateRole(role, id);
 		return ResponseEntity.ok(updatedRole);

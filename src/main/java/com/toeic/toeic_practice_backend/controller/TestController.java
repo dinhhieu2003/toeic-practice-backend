@@ -94,7 +94,7 @@ public class TestController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(testService.addTest(test));
 	}
 	
-	@PostMapping("{testId}")
+	@PutMapping("{testId}")
 	public ResponseEntity<Test> updateTest(@RequestBody TestUdateRequest test, @PathVariable String testId) {
 		return ResponseEntity.ok(testService.updateTest(test, testId));
 	}

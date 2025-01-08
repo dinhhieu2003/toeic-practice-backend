@@ -44,7 +44,7 @@ public class CategoryController {
 				.body(categoryService.addCategory(format, year));
 	}
 	
-	@PostMapping("/{id}")
+	@PutMapping("/{id}")
 	public ResponseEntity<Category> updateCategory(@RequestBody Category category, @PathVariable String id) {
 		return ResponseEntity.ok(categoryService.updateCategory(category, id));
 	}
@@ -84,6 +84,7 @@ public class CategoryController {
 		return ResponseEntity.ok(categoryService.updateCategoryStatus(categoryId, upadateCategoryStatusRequest));
 	}
 	
+	// list test displayed for client
 	@GetMapping("/tests")
 	public ResponseEntity<PaginationResponse<List<GetTestCardResponse>>> getTestsByFormatAndYear(
 			@RequestParam(defaultValue = "ETS") String format,

@@ -1,6 +1,8 @@
 package com.toeic.toeic_practice_backend.domain.entity;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 import org.springframework.data.annotation.Id;
@@ -30,7 +32,8 @@ public class User extends BaseEntity{
     private OverallStat overallStat = new OverallStat();
     private List<TopicStat> topicStats = new ArrayList<>();
     private List<SkillStat> skillStats = new ArrayList<>();
-    private List<LearningProgress> learningProgress= new ArrayList<>();
+    private HashMap<String, Integer> learningProgress= new HashMap<>();	// {lectureId: percent}
+    private HashSet<String> testHistory = new HashSet<>();	// list testId done
     
     public User() {
         skillStats.add(new SkillStat("listening", 0, 0, 0));
@@ -52,6 +55,45 @@ public class User extends BaseEntity{
         private double averageTime;
         private int timeCount;
         private int highestScore;
+        
+        public void updateStats(int listeningScoreFromScoreBoard, 
+        		int readingScoreFromScoreBoard, int totalSeconds) {
+        	// listening, reading score
+    		int currentListeningCount = this.listeningScoreCount;
+    		int currentReadingCount = this.readingScoreCount;
+    		int currentAvgListeningScore = this.averageListeningScore;
+    		int currentAvgReadingScore = this.averageReadingScore;
+    		int listeningScore = listeningScoreFromScoreBoard;
+    		int readingScore = readingScoreFromScoreBoard;
+    		int newAvgListeningScore = 
+    				((currentAvgListeningScore * currentListeningCount) + listeningScore) / (currentListeningCount + 1);
+    		int newAvgReadingScore = 
+    				((currentAvgReadingScore * currentReadingCount) + readingScore) / (currentReadingCount + 1);
+    		this.averageListeningScore = newAvgListeningScore;
+    		this.averageReadingScore = newAvgReadingScore;
+    		this.listeningScoreCount = currentListeningCount + 1;
+    		this.readingScoreCount = currentReadingCount + 1;
+    		// time
+    		int currentTimeCount = this.timeCount;
+    		double currentAvgTime = this.averageTime;
+    		double newAvgTime = 
+    				((currentAvgTime * currentTimeCount) + totalSeconds) / (currentTimeCount + 1);
+    		this.timeCount = currentTimeCount + 1;
+    		this.averageTime = newAvgTime;
+    		
+    		// total
+    		int totalScore = listeningScore + readingScore;
+    		int currentTotalScoreCount = this.totalScoreCount;
+    		int currentAvgTotalScore = this.averageTotalScore;
+    		int newAvgTotalScore =
+    				((currentAvgTotalScore * currentTotalScoreCount) + totalScore) / (currentTotalScoreCount + 1);
+    		this.averageTotalScore = newAvgTotalScore;
+    		this.totalScoreCount = currentTotalScoreCount + 1;
+    		// highest
+    		if(totalScore > this.highestScore) {
+    			this.highestScore = totalScore;
+    		}
+        }
     }
     
     @Data
@@ -65,6 +107,18 @@ public class User extends BaseEntity{
     	private double averageTime;
     	private int timeCount;
     	private int totalTime;
+    	
+    	public void updateStats(boolean isCorrect, boolean isSkip, int timeSpent) {
+    		if(isCorrect) {
+    			this.totalCorrect++;
+    		} else if(!isSkip) {
+    			this.totalIncorrect++;
+    		}
+    		double avgTime = (this.averageTime * this.timeCount + timeSpent) /(this.timeCount + 1);
+    		this.averageTime = avgTime;
+    		this.timeCount++;
+    		this.totalTime += timeSpent;
+    	}
     }
     
     @Data
@@ -76,14 +130,14 @@ public class User extends BaseEntity{
     	private int totalCorrect;
     	private int totalIncorrect;
     	private int totalTime;
-    }
-    
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class LearningProgress {
-    	@DBRef(lazy=false)
-    	private Lecture lectureId;
-    	private float percent;
+    	
+    	public void updateStats(boolean isCorrect, boolean isSkip, int timeSpent) {
+    		if(isCorrect) {
+    			this.totalCorrect++;
+    		} else if(!isSkip) {
+    			this.totalIncorrect++;
+    		}
+    		this.totalTime += timeSpent;
+    	}
     }
 }

@@ -2,13 +2,13 @@ package com.toeic.toeic_practice_backend.domain.dto.response.auth;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.springframework.data.mongodb.core.mapping.DBRef;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.toeic.toeic_practice_backend.domain.entity.Role;
-import com.toeic.toeic_practice_backend.domain.entity.User.LearningProgress;
 import com.toeic.toeic_practice_backend.domain.entity.User.OverallStat;
 import com.toeic.toeic_practice_backend.domain.entity.User.SkillStat;
 import com.toeic.toeic_practice_backend.domain.entity.User.TopicStat;
@@ -32,7 +32,7 @@ public class AccountResponse {
     private List<TopicStat> topicStats = new ArrayList<>();
     private List<SkillStat> skillStats = new ArrayList<>();
     @JsonIgnore
-    private List<LearningProgress> learningProgress= new ArrayList<>();
+    private HashMap<String, Integer> learningProgress= new HashMap<>();
     private List<ResultOverview> results;
     
     @Data

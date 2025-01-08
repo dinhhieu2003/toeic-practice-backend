@@ -19,11 +19,16 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.toeic.toeic_practice_backend.domain.dto.request.lecture.LectureRequest;
 import com.toeic.toeic_practice_backend.domain.dto.request.lecture.PracticeRequest;
+import com.toeic.toeic_practice_backend.domain.dto.request.lecture.UpdateLecturePercentRequest;
 import com.toeic.toeic_practice_backend.domain.dto.request.lecture.UpdateLectureStatusRequest;
+import com.toeic.toeic_practice_backend.domain.dto.response.lecture.LectureCardResponse;
+import com.toeic.toeic_practice_backend.domain.dto.response.lecture.RandomLectureResponse;
+import com.toeic.toeic_practice_backend.domain.dto.response.lecture.UpdateLecturePercentResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.lecture.UpdateLectureStatusResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Lecture;
 import com.toeic.toeic_practice_backend.service.LectureService;
+import com.toeic.toeic_practice_backend.service.LectureUserService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -33,6 +38,7 @@ import lombok.RequiredArgsConstructor;
 public class LectureController {
     
     private final LectureService lectureService;
+    private final LectureUserService lectureUserService;
 
     @GetMapping
     public ResponseEntity<PaginationResponse<List<Lecture>>> getAllLectures(
@@ -61,15 +67,38 @@ public class LectureController {
         return ResponseEntity.ok(lectureService.getAllLectures(pageable, filterParams, search));
     }
     
-    @GetMapping("/client")
-    public ResponseEntity<PaginationResponse<List<Lecture>>> getAllLecturesActive(
-            @RequestParam(defaultValue = "1") String current,
-            @RequestParam(defaultValue = "5") String pageSize
-    ) {
-    	int currentInt = Integer.parseInt(current)-1;
+    // Get lecture cards with percent for client
+    @GetMapping("client")
+    public ResponseEntity<PaginationResponse<List<LectureCardResponse>>> getAllLecturesForClient(
+		@RequestParam(defaultValue = "1") String current,
+        @RequestParam(defaultValue = "5") String pageSize,
+        @RequestParam(required = false) Boolean info,
+        @RequestParam(required = false) Boolean content,
+        @RequestParam(required = false) Boolean practice,
+        @RequestParam(required = false) Boolean orderAsc,
+        @RequestParam(required = false) Boolean orderDesc,
+        @RequestParam(required = false) Boolean active,
+        @RequestParam(required = false, defaultValue = "") String search
+     ) {
+        int currentInt = Integer.parseInt(current)-1;
 		int pageSizeInt = Integer.parseInt(pageSize);
 		Pageable pageable = PageRequest.of(currentInt, pageSizeInt);
-		return ResponseEntity.ok(lectureService.getAllLecturesActive(pageable));
+        Map<String, Boolean> filterParams = new HashedMap<>();
+        filterParams.put("INFO", info != null ? info : true);
+        filterParams.put("CONTENT", content != null ? content : false);
+        filterParams.put("PRACTICE", practice != null ? practice : false);
+        filterParams.put("ORDER_ASC", orderAsc != null ? orderAsc : false);
+        filterParams.put("ORDER_DESC", orderDesc != null ? orderDesc : false);
+        if (active != null) {
+            filterParams.put("ACTIVE", active);
+        }
+        return ResponseEntity.ok(lectureUserService.getAllLectures(pageable, filterParams, search));
+    }
+    
+    
+    @GetMapping("{lectureId}/random")
+    public ResponseEntity<List<RandomLectureResponse>> getRandomLecture(@PathVariable String lectureId) {
+    	return ResponseEntity.ok(lectureService.getRandomLecture(lectureId));
     }
 
     @GetMapping("{lectureId}")
@@ -128,5 +157,13 @@ public class LectureController {
     		@PathVariable String lectureId,
     		@RequestBody UpdateLectureStatusRequest updateLectureStatusRequest) {
     	return ResponseEntity.ok(lectureService.updateLectureStatus(lectureId, updateLectureStatusRequest));
+    }
+    
+    // Update lecture percent for user
+    @PutMapping("{lectureId}/percent")
+    public ResponseEntity<UpdateLecturePercentResponse> updateLecturePercent(
+    		@PathVariable String lectureId, 
+    		@RequestBody UpdateLecturePercentRequest percent) {
+    	return ResponseEntity.ok(lectureUserService.updateLecturePercent(lectureId, percent.getPercent()));
     }
 }
