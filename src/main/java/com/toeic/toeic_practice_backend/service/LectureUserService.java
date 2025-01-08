@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.toeic.toeic_practice_backend.domain.dto.response.lecture.LearningProgressResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.lecture.LectureCardResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.lecture.UpdateLecturePercentResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
@@ -22,13 +23,11 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-// Chuc nang cap nhat %
-// Chuc nang lay lecture card co percent
-// Chuc nang lay lecture cua nguoi dung
 
 // test: isCompleted test, update percent lecture -> done
 // test: Chuc nang lay all lecture card co percent, viet api -> done
-// test: Chuc nang lay lecture card cua nguoi dung, viet api
+// test: Chuc nang lay lecture card cua nguoi dung, viet api -> done
+// fix: tra ve notComp, comp
 public class LectureUserService {
 	private final LectureService lectureService;
 	private final UserService userService;
@@ -47,7 +46,7 @@ public class LectureUserService {
 		return response;
 	}
 	
-	public List<LectureCardResponse> getLearningProgress() {
+	public LearningProgressResponse getLearningProgress() {
 		String email = authService.getCurrentEmail();
 		if(email == null ) {
 			throw new AppException(ErrorCode.USER_NOT_FOUND);
@@ -58,7 +57,8 @@ public class LectureUserService {
 		// Get lecture by ids
 		List<Lecture> lectures = lectureService.getById(lectureIds);
 		// With each lecture, get id, list topic name, percent (in hash map)
-		List<LectureCardResponse> lectureCards = new ArrayList<>();
+		List<LectureCardResponse> lectureCardsNotCompleted = new ArrayList<>();
+		List<LectureCardResponse> lectureCardsCompleted = new ArrayList<>();
 		for(Lecture lecture: lectures) {
 			LectureCardResponse lectureCard = new LectureCardResponse();
 			lectureCard.setId(lecture.getId());
@@ -67,10 +67,18 @@ public class LectureUserService {
 					.stream()
 					.map(Topic::getName)
 					.collect(Collectors.toList()));
-			lectureCard.setPercent(learningProgressMap.get(lecture.getId()));
-			lectureCards.add(lectureCard);
+			int percent = learningProgressMap.get(lecture.getId());
+			lectureCard.setPercent(percent);
+			if(percent < 100) {
+				lectureCardsNotCompleted.add(lectureCard);
+			} else if(percent == 100){
+				lectureCardsCompleted.add(lectureCard);
+			}
 		}
-		return lectureCards;
+		LearningProgressResponse learningProgressResponse = new LearningProgressResponse();
+		learningProgressResponse.setCompleted(lectureCardsCompleted);
+		learningProgressResponse.setNotCompleted(lectureCardsNotCompleted);
+		return learningProgressResponse;
 	}
 	
 	public PaginationResponse<List<LectureCardResponse>> getAllLectures(Pageable pageable, Map<String, Boolean> filterParams, String search) {

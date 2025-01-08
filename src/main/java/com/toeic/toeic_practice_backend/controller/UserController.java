@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.toeic.toeic_practice_backend.domain.dto.request.user.UserUpdateRoleRequest;
 import com.toeic.toeic_practice_backend.domain.dto.request.user.UserUpdateStatusRequest;
+import com.toeic.toeic_practice_backend.domain.dto.response.lecture.LearningProgressResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.lecture.LectureCardResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.user.UserInfoResponse;
@@ -38,7 +39,7 @@ public class UserController {
 	private final LectureUserService lectureUserService;
 	
 	@GetMapping("/lectures")
-	public ResponseEntity<List<LectureCardResponse>> getLearningProgress() {
+	public ResponseEntity<LearningProgressResponse> getLearningProgress() {
 		return ResponseEntity.ok(lectureUserService.getLearningProgress());
 	}
 	
