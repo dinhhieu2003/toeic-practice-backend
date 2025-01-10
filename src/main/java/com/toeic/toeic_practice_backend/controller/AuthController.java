@@ -44,34 +44,7 @@ public class AuthController {
 	private final UserService userService;
 	private final JwtTokenUtils jwtTokenUtils;
 	private final AuthService authService;
-	private final AccountService accountService;
-	
-	
-	
-	@PutMapping("/account/target")
-	public ResponseEntity<UpdateUserTargetResponse> updateUserTarget(
-			@RequestBody UpdateUserTargetRequest updateUserTargetRequest) {
-		// Lấy thông tin Authentication hiện tại từ SecurityContextHolder
-	    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-	    
-	    // Kiểm tra xem authentication có null hoặc chưa xác thực hay không
-	    if (authentication == null || !authentication.isAuthenticated()) {
-	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	    }
-	    
-	    // Lấy email từ Authentication
-	    String email = authentication.getName();
-	    // Tìm kiếm người dùng theo email
-	    Optional<User> userOptional = userService.getUserByEmailWithoutStat(email);
-	    // Init UpdateUserTarget response
-	    UpdateUserTargetResponse response = new UpdateUserTargetResponse();
-	    if (userOptional.isPresent()) {
-	    	User user = userOptional.get();
-	    	response = userService.updateUserTarget(user.getId(), updateUserTargetRequest);
-	    }
-	    return ResponseEntity.ok(response);
-	}
-	
+
 	@GetMapping("/refresh")
     public ResponseEntity<LoginResponse> handleRefreshToken(
             @CookieValue(name = "refresh_token") String refresh_token) {
