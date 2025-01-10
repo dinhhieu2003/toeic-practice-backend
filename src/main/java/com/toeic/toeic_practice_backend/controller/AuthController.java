@@ -46,40 +46,7 @@ public class AuthController {
 	private final AuthService authService;
 	private final AccountService accountService;
 	
-	@GetMapping("/account")
-	public ResponseEntity<AccountResponse> getCurrentAccount() {
-		// Lấy thông tin Authentication hiện tại từ SecurityContextHolder
-	    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-	    
-	    // Kiểm tra xem authentication có null hoặc chưa xác thực hay không
-	    if (authentication == null || !authentication.isAuthenticated()) {
-	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	    }
-	    
-	    // Lấy email từ Authentication
-	    String email = authentication.getName();
-	    // Tìm kiếm người dùng theo email
-	    Optional<User> userOptional = userService.getUserByEmail(email);
-	    if (userOptional.isPresent()) {
-	        User user = userOptional.get();
-	        List<ResultOverview> listResultOverview = accountService.getResultOverview(user.getId());
-	        AccountResponse accountResponse = AccountResponse.builder()
-	        		.id(user.getId())
-	                .email(user.getEmail())
-	                .avatar(user.getAvatar())
-	                .role(user.getRole())
-	                .target(user.getTarget())
-	                .overallStat(user.getOverallStat())
-	                .topicStats(user.getTopicStats())
-	                .skillStats(user.getSkillStats())
-	                .learningProgress(user.getLearningProgress())
-	                .results(listResultOverview)
-	                .build();
-	        return ResponseEntity.ok(accountResponse);
-	    } else {
-	        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-	    }
-	}
+	
 	
 	@PutMapping("/account/target")
 	public ResponseEntity<UpdateUserTargetResponse> updateUserTarget(
