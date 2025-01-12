@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.collections4.map.HashedMap;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -29,21 +28,23 @@ import com.toeic.toeic_practice_backend.domain.dto.response.pagination.Paginatio
 import com.toeic.toeic_practice_backend.domain.entity.Lecture;
 import com.toeic.toeic_practice_backend.service.LectureService;
 import com.toeic.toeic_practice_backend.service.LectureUserService;
+import com.toeic.toeic_practice_backend.utils.PaginationUtils;
+import com.toeic.toeic_practice_backend.utils.constants.PaginationConstants;
 
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/v1/lectures")
+@RequestMapping("${api.prefix}/lectures")
 @RequiredArgsConstructor
 public class LectureController {
     
     private final LectureService lectureService;
     private final LectureUserService lectureUserService;
 
-    @GetMapping
+    @GetMapping("")
     public ResponseEntity<PaginationResponse<List<Lecture>>> getAllLectures(
-        @RequestParam(defaultValue = "1") String current,
-        @RequestParam(defaultValue = "5") String pageSize,
+        @RequestParam(defaultValue = PaginationConstants.DEFAULT_CURRENT_PAGE) int current,
+        @RequestParam(defaultValue = PaginationConstants.DEFAULT_PAGE_SIZE) int pageSize,
         @RequestParam(required = false) Boolean info,
         @RequestParam(required = false) Boolean content,
         @RequestParam(required = false) Boolean practice,
@@ -52,9 +53,7 @@ public class LectureController {
         @RequestParam(required = false) Boolean active,
         @RequestParam(required = false, defaultValue = "") String search
     ) {
-        int currentInt = Integer.parseInt(current)-1;
-		int pageSizeInt = Integer.parseInt(pageSize);
-		Pageable pageable = PageRequest.of(currentInt, pageSizeInt);
+        Pageable pageable = PaginationUtils.createPageable(current, pageSize);
         Map<String, Boolean> filterParams = new HashedMap<>();
         filterParams.put("INFO", info != null ? info : false);
         filterParams.put("CONTENT", content != null ? content : false);
@@ -70,8 +69,8 @@ public class LectureController {
     // Get lecture cards with percent for client
     @GetMapping("client")
     public ResponseEntity<PaginationResponse<List<LectureCardResponse>>> getAllLecturesForClient(
-		@RequestParam(defaultValue = "1") String current,
-        @RequestParam(defaultValue = "5") String pageSize,
+    		@RequestParam(defaultValue = PaginationConstants.DEFAULT_CURRENT_PAGE) int current,
+            @RequestParam(defaultValue = PaginationConstants.DEFAULT_PAGE_SIZE) int pageSize,
         @RequestParam(required = false) Boolean info,
         @RequestParam(required = false) Boolean content,
         @RequestParam(required = false) Boolean practice,
@@ -80,9 +79,7 @@ public class LectureController {
         @RequestParam(required = false) Boolean active,
         @RequestParam(required = false, defaultValue = "") String search
      ) {
-        int currentInt = Integer.parseInt(current)-1;
-		int pageSizeInt = Integer.parseInt(pageSize);
-		Pageable pageable = PageRequest.of(currentInt, pageSizeInt);
+        Pageable pageable = PaginationUtils.createPageable(current, pageSize);
         Map<String, Boolean> filterParams = new HashedMap<>();
         filterParams.put("INFO", info != null ? info : true);
         filterParams.put("CONTENT", content != null ? content : false);
@@ -115,7 +112,7 @@ public class LectureController {
         return ResponseEntity.ok(lectureService.getLectureById(lectureId, filterParams));
     }
     
-    @PostMapping
+    @PostMapping("")
     public ResponseEntity<Lecture> saveLecture(@RequestBody LectureRequest request) {
         return ResponseEntity.ok(lectureService.saveLecture(request));
     }

@@ -23,6 +23,7 @@ import com.toeic.toeic_practice_backend.exception.AppException;
 import com.toeic.toeic_practice_backend.mapper.UserMapper;
 import com.toeic.toeic_practice_backend.repository.RoleRepository;
 import com.toeic.toeic_practice_backend.repository.UserRepository;
+import com.toeic.toeic_practice_backend.utils.PaginationUtils;
 import com.toeic.toeic_practice_backend.utils.constants.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
@@ -96,15 +97,7 @@ public class UserService {
 			userPage = userRepository.findUserInfoByEmailContaining(search, pageable);
 		}
 	    
-		PaginationResponse<List<UserInfoResponse>> response = new PaginationResponse<List<UserInfoResponse>>();
-		Meta meta = new Meta();
-		meta.setCurrent(pageable.getPageNumber()+1);
-		meta.setPageSize(pageable.getPageSize());
-		meta.setTotalItems(userPage.getTotalElements());
-		meta.setTotalPages(userPage.getTotalPages());
-		response.setMeta(meta);
-		response.setResult(userPage.getContent());
-		return response;
+		return PaginationUtils.buildPaginationResponse(pageable, userPage);
 	}
 	
 	public UserUpdateStatusResponse updateUserStatus(String id, boolean isActive) {

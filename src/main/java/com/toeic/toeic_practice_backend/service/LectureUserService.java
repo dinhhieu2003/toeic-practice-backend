@@ -17,17 +17,13 @@ import com.toeic.toeic_practice_backend.domain.entity.Lecture;
 import com.toeic.toeic_practice_backend.domain.entity.Topic;
 import com.toeic.toeic_practice_backend.domain.entity.User;
 import com.toeic.toeic_practice_backend.exception.AppException;
+import com.toeic.toeic_practice_backend.utils.PaginationUtils;
 import com.toeic.toeic_practice_backend.utils.constants.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-
-// test: isCompleted test, update percent lecture -> done
-// test: Chuc nang lay all lecture card co percent, viet api -> done
-// test: Chuc nang lay lecture card cua nguoi dung, viet api -> done
-// fix: tra ve notComp, comp
 public class LectureUserService {
 	private final LectureService lectureService;
 	private final UserService userService;
@@ -104,9 +100,7 @@ public class LectureUserService {
 			lectureCards.add(lectureCard);
 		}
 		
-		return PaginationResponse.<List<LectureCardResponse>>builder()
-	            .meta(lecturePage.getMeta())
-	            .result(lectureCards)
-	            .build();
+		return PaginationUtils
+				.buildPaginationResponse(lecturePage.getMeta(), lectureCards);
 	}
 }

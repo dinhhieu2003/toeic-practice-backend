@@ -2,7 +2,6 @@ package com.toeic.toeic_practice_backend.controller;
 
 import java.util.List;
 
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,11 +19,13 @@ import com.toeic.toeic_practice_backend.domain.dto.request.permission.UpdatePerm
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Permission;
 import com.toeic.toeic_practice_backend.service.PermissionService;
+import com.toeic.toeic_practice_backend.utils.PaginationUtils;
+import com.toeic.toeic_practice_backend.utils.constants.PaginationConstants;
 
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/v1/permissions")
+@RequestMapping("${api.prefix}/permissions")
 @RequiredArgsConstructor
 public class PermissionController {
 	private final PermissionService permissionService;
@@ -45,18 +46,14 @@ public class PermissionController {
 		return ResponseEntity.ok(permissionService.updatePermissionStatus(permissionStatus, permissionId));
 	}
 	
-	@GetMapping
+	@GetMapping("")
 	public ResponseEntity<PaginationResponse<List<Permission>>> getAllPermission(
-			@RequestParam(defaultValue = "1") String current,
-			@RequestParam(defaultValue = "5") String pageSize, 
+			@RequestParam(defaultValue = PaginationConstants.DEFAULT_CURRENT_PAGE) int current,
+			@RequestParam(defaultValue = PaginationConstants.DEFAULT_PAGE_SIZE) int pageSize, 
 			@RequestParam(required = false) Boolean active,
 			@RequestParam(required = false, defaultValue = "") String search) {
-		int currentInt = Integer.parseInt(current)-1;
-		int pageSizeInt = Integer.parseInt(pageSize);
-		Pageable pageable = PageRequest.of(currentInt, pageSizeInt);
-		System.out.println(active);
+		Pageable pageable = PaginationUtils.createPageable(current, pageSize);
 		return ResponseEntity.ok(permissionService.getAllPermission(pageable, active, search));
 	}
-	
-	
+
 }

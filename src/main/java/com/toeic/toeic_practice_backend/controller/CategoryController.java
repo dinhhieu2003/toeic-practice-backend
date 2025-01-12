@@ -25,11 +25,13 @@ import com.toeic.toeic_practice_backend.domain.entity.Test;
 import com.toeic.toeic_practice_backend.service.CategoryService;
 import com.toeic.toeic_practice_backend.service.TestCategoryService;
 import com.toeic.toeic_practice_backend.service.TestService;
+import com.toeic.toeic_practice_backend.utils.PaginationUtils;
+import com.toeic.toeic_practice_backend.utils.constants.PaginationConstants;
 
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/v1/categories")
+@RequestMapping("${api.prefix}/categories")
 @RequiredArgsConstructor
 public class CategoryController {
 	private final CategoryService categoryService;
@@ -51,12 +53,10 @@ public class CategoryController {
 	
 	@GetMapping("")
 	public ResponseEntity<PaginationResponse<List<Category>>> getAllCategory(
-			@RequestParam(defaultValue = "1") String current,
-			@RequestParam(defaultValue = "5") String pageSize,
+			@RequestParam(defaultValue = PaginationConstants.DEFAULT_CURRENT_PAGE) int current,
+			@RequestParam(defaultValue = PaginationConstants.DEFAULT_PAGE_SIZE) int pageSize,
 			@RequestParam (required = false, defaultValue = "") String search) {
-		int currentInt = Integer.parseInt(current)-1;
-		int pageSizeInt = Integer.parseInt(pageSize);
-		Pageable pageable = PageRequest.of(currentInt, pageSizeInt);
+		Pageable pageable = PaginationUtils.createPageable(current, pageSize);
 		return ResponseEntity.ok(categoryService.getAllCategory(pageable, search));
 	}
 	

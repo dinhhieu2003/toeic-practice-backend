@@ -9,13 +9,13 @@ import org.springframework.stereotype.Service;
 
 import com.toeic.toeic_practice_backend.domain.dto.request.role.RoleCreationRequest;
 import com.toeic.toeic_practice_backend.domain.dto.request.role.UpdateRoleStatusRequest;
-import com.toeic.toeic_practice_backend.domain.dto.response.pagination.Meta;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Permission;
 import com.toeic.toeic_practice_backend.domain.entity.Role;
 import com.toeic.toeic_practice_backend.exception.AppException;
 import com.toeic.toeic_practice_backend.repository.PermissionRepository;
 import com.toeic.toeic_practice_backend.repository.RoleRepository;
+import com.toeic.toeic_practice_backend.utils.PaginationUtils;
 import com.toeic.toeic_practice_backend.utils.constants.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
@@ -65,20 +65,14 @@ public class RoleService {
 	}
 	
 	public PaginationResponse<List<Role>> getAllRoles(String search, Pageable pageable) {
-		Page<Role> pageRoles = null;
+		Page<Role> rolePage = null;
 		if(search.isEmpty()) {
-			pageRoles = roleRepository.findAll(pageable);
+			rolePage = roleRepository.findAll(pageable);
 		} else if(!search.isEmpty()) {
-			pageRoles = roleRepository.findByNameContaining(search, pageable);
+			rolePage = roleRepository.findByNameContaining(search, pageable);
 		}
-		List<Role> listRoles = pageRoles.getContent();
-		PaginationResponse<List<Role>> response = new PaginationResponse<>();
-		Meta meta = Meta.builder().current(pageRoles.getNumber())
-				.pageSize(pageRoles.getSize()).totalItems(pageRoles.getTotalElements())
-				.totalPages(pageRoles.getTotalPages()).build();
-		response.setMeta(meta);
-		response.setResult(listRoles);
-		return response;
+		
+		return PaginationUtils.buildPaginationResponse(pageable, rolePage);
 	}
 	
 	public Role getRoleByName(String name) {

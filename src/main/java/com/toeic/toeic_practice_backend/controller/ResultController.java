@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.collections4.map.HashedMap;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,26 +19,26 @@ import com.toeic.toeic_practice_backend.domain.entity.Result;
 import com.toeic.toeic_practice_backend.domain.entity.Result.UserAnswer;
 import com.toeic.toeic_practice_backend.service.ResultQuestionService;
 import com.toeic.toeic_practice_backend.service.ResultService;
+import com.toeic.toeic_practice_backend.utils.PaginationUtils;
+import com.toeic.toeic_practice_backend.utils.constants.PaginationConstants;
 
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/v1/results")
+@RequestMapping("${api.prefix}/results")
 @RequiredArgsConstructor
 public class ResultController {
     
     private final ResultService resultService;
     private final ResultQuestionService resultQuestionService;
 
-    @GetMapping
+    @GetMapping("")
     public ResponseEntity<PaginationResponse<List<TestResultResponse>>> getAllResults(
-        @RequestParam(defaultValue = "1") String current,
-        @RequestParam(defaultValue = "5") String pageSize,
+        @RequestParam(defaultValue = PaginationConstants.DEFAULT_CURRENT_PAGE) int current,
+        @RequestParam(defaultValue = PaginationConstants.DEFAULT_PAGE_SIZE) int pageSize,
         @RequestParam(required = false) String type
     ) {
-        int currentInt = Integer.parseInt(current)-1;
-		int pageSizeInt = Integer.parseInt(pageSize);
-		Pageable pageable = PageRequest.of(currentInt, pageSizeInt);
+        Pageable pageable = PaginationUtils.createPageable(current, pageSize);
         Map<String, String> filterParams = new HashedMap<>(); 
 		filterParams.put("TYPE", type);
         return ResponseEntity.ok(resultService.getAllResults(pageable, filterParams));

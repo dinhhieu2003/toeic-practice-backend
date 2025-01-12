@@ -23,7 +23,6 @@ import com.toeic.toeic_practice_backend.domain.dto.request.test.TestCreationRequ
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.Meta;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.test.FullTestResponse;
-import com.toeic.toeic_practice_backend.domain.dto.response.test.GetTestCardResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.test.MultipleChoiceQuestion;
 import com.toeic.toeic_practice_backend.domain.dto.response.test.TestInfoResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.test.TestResultIdResponse;
@@ -43,6 +42,7 @@ import com.toeic.toeic_practice_backend.exception.AppException;
 import com.toeic.toeic_practice_backend.mapper.QuestionMapper;
 import com.toeic.toeic_practice_backend.repository.CategoryRepository;
 import com.toeic.toeic_practice_backend.repository.TestRepository;
+import com.toeic.toeic_practice_backend.utils.PaginationUtils;
 import com.toeic.toeic_practice_backend.utils.constants.ErrorCode;
 import com.toeic.toeic_practice_backend.utils.constants.ScoreBoard;
 import com.toeic.toeic_practice_backend.utils.security.SecurityUtils;
@@ -226,16 +226,7 @@ public class TestService {
 	
 	public PaginationResponse<List<Test>> getAllTest(Pageable pageable) {
 		Page<Test> testPage = testRepository.findAll(pageable);
-		PaginationResponse<List<Test>> response = new PaginationResponse<List<Test>>();
-		Meta meta = new Meta();
-		meta.setCurrent(pageable.getPageNumber()+1);
-		meta.setPageSize(pageable.getPageSize());
-		meta.setTotalItems(testPage.getTotalElements());
-		meta.setTotalPages(testPage.getTotalPages());
-		List<Test> result = testPage.getContent();
-		response.setMeta(meta);
-		response.setResult(result);
-		return response;
+		return PaginationUtils.buildPaginationResponse(pageable, testPage);
 	}
 	
 	public PaginationResponse<List<Question>> getAllQuestionsInTestByTestId(

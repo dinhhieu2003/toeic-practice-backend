@@ -1,6 +1,5 @@
 package com.toeic.toeic_practice_backend.service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -11,16 +10,14 @@ import org.springframework.stereotype.Service;
 
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.Meta;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
-import com.toeic.toeic_practice_backend.domain.dto.response.result.ResultSummaryResponse;
-import com.toeic.toeic_practice_backend.domain.dto.response.result.ResultSummaryResponse.UserAnswerResult;
 import com.toeic.toeic_practice_backend.domain.dto.response.test.TestResultResponse;
-import com.toeic.toeic_practice_backend.domain.entity.Question;
 import com.toeic.toeic_practice_backend.domain.entity.Result;
 import com.toeic.toeic_practice_backend.domain.entity.Result.UserAnswer;
 import com.toeic.toeic_practice_backend.domain.entity.User;
 import com.toeic.toeic_practice_backend.exception.AppException;
 import com.toeic.toeic_practice_backend.mapper.ResultMapper;
 import com.toeic.toeic_practice_backend.repository.ResultRepository;
+import com.toeic.toeic_practice_backend.utils.PaginationUtils;
 import com.toeic.toeic_practice_backend.utils.constants.ErrorCode;
 import com.toeic.toeic_practice_backend.utils.security.SecurityUtils;
 
@@ -92,17 +89,13 @@ public class ResultService {
 		List<TestResultResponse> result = resultMapper.toTestResultResponseList(resultPage.getContent());
 
 		// Tạo PaginationResponse
-		return PaginationResponse.<List<TestResultResponse>>builder()
-			.meta(
-				Meta.builder()
-					.current(pageable.getPageNumber() + 1)
-					.pageSize(pageable.getPageSize())
-					.totalItems(resultPage.getTotalElements())
-					.totalPages(resultPage.getTotalPages())
-					.build()
-			)
-			.result(result)
-			.build();
+		Meta meta = Meta.builder()
+				.current(pageable.getPageNumber() + 1)
+				.pageSize(pageable.getPageSize())
+				.totalItems(resultPage.getTotalElements())
+				.totalPages(resultPage.getTotalPages())
+				.build();
+		return PaginationUtils.buildPaginationResponse(meta, result);
 	}
 	
 	public Result getByIdMobile(String resultId) {

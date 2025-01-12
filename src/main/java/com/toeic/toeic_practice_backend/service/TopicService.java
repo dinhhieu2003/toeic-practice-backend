@@ -8,12 +8,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.toeic.toeic_practice_backend.domain.dto.request.topic.UpdateTopicStatusRequest;
-import com.toeic.toeic_practice_backend.domain.dto.response.pagination.Meta;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.topic.UpdateTopicStatusResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Topic;
 import com.toeic.toeic_practice_backend.exception.AppException;
 import com.toeic.toeic_practice_backend.repository.TopicRepository;
+import com.toeic.toeic_practice_backend.utils.PaginationUtils;
 import com.toeic.toeic_practice_backend.utils.constants.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
@@ -44,16 +44,7 @@ public class TopicService {
 			topicPage = topicRepository.findByNameContaining(search, pageable);
 		}
 		 
-		PaginationResponse<List<Topic>> response = new PaginationResponse<>();
-		Meta meta = new Meta();
-		meta.setCurrent(pageable.getPageNumber()+1);
-		meta.setPageSize(pageable.getPageSize());
-		meta.setTotalItems(topicPage.getTotalElements());
-		meta.setTotalPages(topicPage.getTotalPages());
-		List<Topic> result = topicPage.getContent();
-		response.setMeta(meta);
-		response.setResult(result);
-		return response;
+		return PaginationUtils.buildPaginationResponse(pageable, topicPage);
 	}
 	
 	public UpdateTopicStatusResponse updateTopicStatus(String topicId, UpdateTopicStatusRequest updateTopicStatusRequest) {
