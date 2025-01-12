@@ -32,12 +32,14 @@ import com.toeic.toeic_practice_backend.domain.entity.User;
 import com.toeic.toeic_practice_backend.service.AccountService;
 import com.toeic.toeic_practice_backend.service.LectureUserService;
 import com.toeic.toeic_practice_backend.service.UserService;
+import com.toeic.toeic_practice_backend.utils.PaginationUtils;
+import com.toeic.toeic_practice_backend.utils.constants.PaginationConstants;
 
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/users")
+@RequestMapping("${api.prefix}/users")
 public class UserController {
 	private final UserService userService;
 	private final AccountService accountService;
@@ -123,12 +125,10 @@ public class UserController {
 	
 	@GetMapping
 	public ResponseEntity<PaginationResponse<List<UserInfoResponse>>> getAllUser(
-			@RequestParam(defaultValue = "1") String current,
-			@RequestParam(defaultValue = "5") String pageSize,
+			@RequestParam(defaultValue = PaginationConstants.DEFAULT_CURRENT_PAGE) int current,
+			@RequestParam(defaultValue = PaginationConstants.DEFAULT_PAGE_SIZE) int pageSize,
 			@RequestParam(required = false ,defaultValue = "") String search) {
-		int currentInt = Integer.parseInt(current)-1;
-		int pageSizeInt = Integer.parseInt(pageSize);
-		Pageable pageable = PageRequest.of(currentInt, pageSizeInt);
+		Pageable pageable = PaginationUtils.createPageable(current, pageSize);
 		return ResponseEntity.ok(userService.getAllUser(search, pageable));
 	}
 }

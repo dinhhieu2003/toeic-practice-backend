@@ -4,12 +4,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,21 +29,25 @@ import com.toeic.toeic_practice_backend.domain.dto.response.test.TestResultIdRes
 import com.toeic.toeic_practice_backend.domain.entity.Question;
 import com.toeic.toeic_practice_backend.domain.entity.Test;
 import com.toeic.toeic_practice_backend.domain.entity.User;
+import com.toeic.toeic_practice_backend.service.AuthService;
 import com.toeic.toeic_practice_backend.service.AzureBlobService;
 import com.toeic.toeic_practice_backend.service.QuestionService;
 import com.toeic.toeic_practice_backend.service.TestService;
 import com.toeic.toeic_practice_backend.service.UserService;
+import com.toeic.toeic_practice_backend.utils.PaginationUtils;
+import com.toeic.toeic_practice_backend.utils.constants.PaginationConstants;
 
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/v1/tests")
+@RequestMapping("${api.prefix}/tests")
 @RequiredArgsConstructor
 public class TestController {
 	private final TestService testService;
 	private final AzureBlobService azureBlobService;
 	private final QuestionService questionService;
 	private final UserService userService;
+	private final AuthService authService;
 	
 	@PostMapping("{testId}/import")
     public ResponseEntity<?> importQuestions(@RequestParam("file") MultipartFile file, @PathVariable String testId) {
@@ -106,11 +107,9 @@ public class TestController {
 	
 	@GetMapping("")
 	public ResponseEntity<PaginationResponse<List<Test>>> getAllTest(
-			@RequestParam(defaultValue = "1") String current,
-			@RequestParam(defaultValue = "5") String pageSize) {
-		int currentInt = Integer.parseInt(current)-1;
-		int pageSizeInt = Integer.parseInt(pageSize);
-		Pageable pageable = PageRequest.of(currentInt, pageSizeInt);
+			@RequestParam(defaultValue = PaginationConstants.DEFAULT_CURRENT_PAGE) int current,
+			@RequestParam(defaultValue = PaginationConstants.DEFAULT_PAGE_SIZE) int pageSize) {
+		Pageable pageable = PaginationUtils.createPageable(current, pageSize);
 		return ResponseEntity.ok(testService.getAllTest(pageable));
 	}
 	
@@ -126,11 +125,7 @@ public class TestController {
 	
 	@GetMapping("/{testId}/info")
 	public ResponseEntity<TestInfoResponse> getTestInfo(@PathVariable String testId) {
-		// Lấy thông tin Authentication hiện tại từ SecurityContextHolder
-	    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-	    // Lấy email từ Authentication
-	    String email = authentication.getName();
-	    // Tìm kiếm người dùng theo email
+		String email = authService.getCurrentEmail();
 	    Optional<User> userOptional = userService.getUserByEmailWithoutStat(email);
 	    String userId = null;
 	    if (userOptional.isPresent()) {
@@ -149,11 +144,9 @@ public class TestController {
 	@GetMapping("/{testId}/questions")
 	public ResponseEntity<PaginationResponse<List<Question>>> getAllQuestionsInTestByTestId(
 			@PathVariable String testId, 
-			@RequestParam(defaultValue = "1") String current,
-			@RequestParam(defaultValue = "5") String pageSize) {
-		int currentInt = Integer.parseInt(current)-1;
-		int pageSizeInt = Integer.parseInt(pageSize);
-		Pageable pageable = PageRequest.of(currentInt, pageSizeInt);
+			@RequestParam(defaultValue = PaginationConstants.DEFAULT_CURRENT_PAGE) int current,
+			@RequestParam(defaultValue = PaginationConstants.DEFAULT_PAGE_SIZE) int pageSize) {
+		Pageable pageable = PaginationUtils.createPageable(current, pageSize);
 		return ResponseEntity.ok(testService.getAllQuestionsInTestByTestId(testId, pageable));
 	}
 }

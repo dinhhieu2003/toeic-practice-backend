@@ -12,13 +12,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.toeic.toeic_practice_backend.domain.dto.request.category.UpdateCategoryStatusRequest;
 import com.toeic.toeic_practice_backend.domain.dto.response.category.GetCategoryResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.category.UpdateCategoryStatusResponse;
-import com.toeic.toeic_practice_backend.domain.dto.response.pagination.Meta;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
-import com.toeic.toeic_practice_backend.domain.dto.response.test.GetTestCardResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Category;
-import com.toeic.toeic_practice_backend.domain.entity.Test;
 import com.toeic.toeic_practice_backend.exception.AppException;
 import com.toeic.toeic_practice_backend.repository.CategoryRepository;
+import com.toeic.toeic_practice_backend.utils.PaginationUtils;
 import com.toeic.toeic_practice_backend.utils.constants.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
@@ -82,15 +80,8 @@ public class CategoryService {
 		} else {
 			categoryPage = categoryRepository.findByFormatContaining(search, pageable);
 		}
-		PaginationResponse<List<Category>> response = new PaginationResponse<List<Category>>();
-		Meta meta = new Meta();
-		meta.setCurrent(pageable.getPageNumber()+1);
-		meta.setPageSize(pageable.getPageSize());
-		meta.setTotalItems(categoryPage.getTotalElements());
-		meta.setTotalPages(categoryPage.getTotalPages());
-		List<Category> result = categoryPage.getContent();
-		response.setMeta(meta);
-		response.setResult(result);
+		PaginationResponse<List<Category>> response = 
+				PaginationUtils.buildPaginationResponse(pageable, categoryPage);
 		return response;
 	}
 	

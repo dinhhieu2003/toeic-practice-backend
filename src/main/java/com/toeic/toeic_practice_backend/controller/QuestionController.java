@@ -16,7 +16,6 @@ import com.toeic.toeic_practice_backend.domain.dto.request.question.UpdateResour
 import java.util.Map;
 
 import org.apache.commons.collections4.map.HashedMap;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,16 +24,18 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.question.UpdateResourceQuestionResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Question;
-import com.toeic.toeic_practice_backend.domain.entity.Question.Resource;
 import com.toeic.toeic_practice_backend.service.QuestionService;
+import com.toeic.toeic_practice_backend.utils.PaginationUtils;
+import com.toeic.toeic_practice_backend.utils.constants.PaginationConstants;
 
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/v1/questions")
+@RequestMapping("${api.prefix}/questions")
 @RequiredArgsConstructor
 public class QuestionController {
 	private final QuestionService questionService;
+	
 	@PostMapping("/topics")
 	public ResponseEntity<Question> addTopicsToQuestion(@RequestBody AddTopicToQuestionRequest request) {
 		List<String> listTopicIds = request.getListTopicIds();
@@ -47,18 +48,16 @@ public class QuestionController {
 		return ResponseEntity.ok(questionService.updateResourceQuestion(res.getRes(), questionId));
 	}
 	
-	@GetMapping()
+	@GetMapping("")
 	public ResponseEntity<PaginationResponse<List<Question>>> getAllQuestionForPractice(
-			@RequestParam(defaultValue = "1") String current,
-			@RequestParam(defaultValue = "5") String pageSize,
+			@RequestParam(defaultValue = PaginationConstants.DEFAULT_CURRENT_PAGE) int current,
+			@RequestParam(defaultValue = PaginationConstants.DEFAULT_PAGE_SIZE) int pageSize,
 			@RequestParam(required = false) String difficulty,
             @RequestParam(required = false) String partNum,
             @RequestParam(required = false) String topic,
 			@RequestParam(required = false) String orderAscBy,
 			@RequestParam(required = false) String orderDescBy) {
-		int currentInt = Integer.parseInt(current)-1;
-		int pageSizeInt = Integer.parseInt(pageSize);
-		Pageable pageable = PageRequest.of(currentInt, pageSizeInt);
+		Pageable pageable = PaginationUtils.createPageable(current, pageSize);
 		Map<String, String> filterParams = new HashedMap<>(); 
 		filterParams.put("DIFFICULTY", difficulty);
 		filterParams.put("PARTNUM", partNum);
@@ -68,7 +67,7 @@ public class QuestionController {
 		return ResponseEntity.ok(questionService.getAllQuestionForPractice(pageable, filterParams));
 	}
 	
-	@PutMapping()
+	@PutMapping("")
 	public ResponseEntity<Question> updateQuestion(@RequestBody UpdateQuestionRequest updateQuestionRequest) {
 		return ResponseEntity.ok(questionService.updateQuestion(updateQuestionRequest));
 	}

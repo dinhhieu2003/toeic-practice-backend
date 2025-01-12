@@ -12,12 +12,11 @@ import org.springframework.stereotype.Service;
 
 import com.toeic.toeic_practice_backend.domain.dto.request.permission.CreatePermissionRequest;
 import com.toeic.toeic_practice_backend.domain.dto.request.permission.UpdatePermissionStatus;
-import com.toeic.toeic_practice_backend.domain.dto.response.pagination.Meta;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
-import com.toeic.toeic_practice_backend.domain.entity.Category;
 import com.toeic.toeic_practice_backend.domain.entity.Permission;
 import com.toeic.toeic_practice_backend.exception.AppException;
 import com.toeic.toeic_practice_backend.repository.PermissionRepository;
+import com.toeic.toeic_practice_backend.utils.PaginationUtils;
 import com.toeic.toeic_practice_backend.utils.constants.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
@@ -78,15 +77,8 @@ public class PermissionService {
 	    // Trả về Page
 	    Page<Permission> permissionPage = new PageImpl<>(permissions, pageable, totalItems);
 		
-	    PaginationResponse<List<Permission>> response = new PaginationResponse<>();
-	    Meta meta = new Meta();
-	    meta.setCurrent(pageable.getPageNumber() + 1);
-	    meta.setPageSize(pageable.getPageSize());
-	    meta.setTotalItems(permissionPage.getTotalElements());
-	    meta.setTotalPages(permissionPage.getTotalPages());
-	    List<Permission> result = permissionPage.getContent();
-	    response.setMeta(meta);
-	    response.setResult(result);
+	    PaginationResponse<List<Permission>> response = 
+	    		PaginationUtils.buildPaginationResponse(pageable, permissionPage);
 
 	    return response;
 	}

@@ -28,6 +28,7 @@ import com.toeic.toeic_practice_backend.domain.entity.Topic;
 import com.toeic.toeic_practice_backend.exception.AppException;
 import com.toeic.toeic_practice_backend.repository.LectureRepository;
 import com.toeic.toeic_practice_backend.repository.QuestionRepository;
+import com.toeic.toeic_practice_backend.utils.PaginationUtils;
 import com.toeic.toeic_practice_backend.utils.constants.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
@@ -117,17 +118,7 @@ public class LectureService {
         Page<Lecture> lecturePage = new PageImpl<>(lectures, pageable, totalItems);
 
         // Trả về kết quả với phân trang
-        return PaginationResponse.<List<Lecture>>builder()
-            .meta(
-                Meta.builder()
-                    .current(pageable.getPageNumber() + 1)  // Số trang hiện tại (bắt đầu từ 1)
-                    .pageSize(pageable.getPageSize())       // Kích thước trang
-                    .totalItems(lecturePage.getTotalElements())  // Tổng số phần tử
-                    .totalPages(lecturePage.getTotalPages())  // Tổng số trang
-                    .build()
-            )
-            .result(lecturePage.getContent())  // Danh sách các bài giảng
-            .build();
+        return PaginationUtils.buildPaginationResponse(pageable, lecturePage);
     }
 
     public Lecture getLectureById(String lectureId, Map<String, Boolean> filterParams) {

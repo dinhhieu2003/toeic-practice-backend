@@ -28,7 +28,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.toeic.toeic_practice_backend.domain.dto.request.question.UpdateQuestionRequest;
-import com.toeic.toeic_practice_backend.domain.dto.response.pagination.Meta;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.question.UpdateResourceQuestionResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Question;
@@ -37,8 +36,8 @@ import com.toeic.toeic_practice_backend.domain.entity.Result;
 import com.toeic.toeic_practice_backend.domain.entity.Topic;
 import com.toeic.toeic_practice_backend.domain.entity.User;
 import com.toeic.toeic_practice_backend.exception.AppException;
-import com.toeic.toeic_practice_backend.mapper.QuestionMapper;
 import com.toeic.toeic_practice_backend.repository.QuestionRepository;
+import com.toeic.toeic_practice_backend.utils.PaginationUtils;
 import com.toeic.toeic_practice_backend.utils.constants.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
@@ -51,7 +50,6 @@ public class QuestionService {
     private final TopicService topicService;
     private final ResultService resultService;
     private final UserService userService;
-    private final QuestionMapper questionMapper;
     private final MongoTemplate mongoTemplate;
     @Value("${azure.url-resources}")
     private String urlResource;
@@ -207,33 +205,13 @@ public class QuestionService {
 
         Page<Question> questionPage = new PageImpl<>(questions, pageable, totalItems);
 
-        return PaginationResponse.<List<Question>>builder()
-            .meta(
-                Meta.builder()
-                    .current(pageable.getPageNumber() + 1)
-                    .pageSize(pageable.getPageSize())
-                    .totalItems(questionPage.getTotalElements())
-                    .totalPages(questionPage.getTotalPages())
-                    .build()
-            )
-            .result(questionPage.getContent())
-            .build();
+        return PaginationUtils.buildPaginationResponse(pageable, questionPage);
     }
     
     public PaginationResponse<List<Question>> getAllQuestionsInTestByTestId(
     		String testId, Pageable pageable) {
     	Page<Question> questionPage = questionRepository.findByTestId(testId, pageable);
-    	return PaginationResponse.<List<Question>>builder()
-                .meta(
-                    Meta.builder()
-                        .current(pageable.getPageNumber() + 1)
-                        .pageSize(pageable.getPageSize())
-                        .totalItems(questionPage.getTotalElements())
-                        .totalPages(questionPage.getTotalPages())
-                        .build()
-                )
-                .result(questionPage.getContent())
-                .build();
+    	return PaginationUtils.buildPaginationResponse(pageable, questionPage);
     }
     
     public void importQuestions(MultipartFile file, String testId) throws IOException {
