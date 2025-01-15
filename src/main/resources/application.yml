@@ -60,3 +60,7 @@ azure:
       name: ${AZURE_STORAGE_CONTAINER_NAME}
     connection:
       string: ${AZURE_CONNECTION_STRING}
+
+# api
+api:
+  prefix: /api/v1
