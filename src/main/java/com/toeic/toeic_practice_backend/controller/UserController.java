@@ -18,16 +18,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.toeic.toeic_practice_backend.domain.dto.request.user.UpdateUserTargetRequest;
-import com.toeic.toeic_practice_backend.domain.dto.request.user.UserUpdateRoleRequest;
-import com.toeic.toeic_practice_backend.domain.dto.request.user.UserUpdateStatusRequest;
+import com.toeic.toeic_practice_backend.domain.dto.request.user.UpdateUserRoleRequest;
+import com.toeic.toeic_practice_backend.domain.dto.request.user.UpdateUserStatusRequest;
 import com.toeic.toeic_practice_backend.domain.dto.response.auth.AccountResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.auth.AccountResponse.ResultOverview;
 import com.toeic.toeic_practice_backend.domain.dto.response.lecture.LearningProgressResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.user.UpdateUserTargetResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.user.UserInfoResponse;
-import com.toeic.toeic_practice_backend.domain.dto.response.user.UserUpdateRoleResponse;
-import com.toeic.toeic_practice_backend.domain.dto.response.user.UserUpdateStatusResponse;
+import com.toeic.toeic_practice_backend.domain.dto.response.user.UpdateUserRoleResponse;
+import com.toeic.toeic_practice_backend.domain.dto.response.user.UpdateUserStatusResponse;
 import com.toeic.toeic_practice_backend.domain.entity.User;
 import com.toeic.toeic_practice_backend.service.AccountService;
 import com.toeic.toeic_practice_backend.service.LectureUserService;
@@ -111,14 +111,14 @@ public class UserController {
 	}
 	
 	@PutMapping("/{id}/role")
-	public ResponseEntity<UserUpdateRoleResponse> updateUserRole(@PathVariable String id, @RequestBody UserUpdateRoleRequest role) {
-		UserUpdateRoleResponse userUpdated = userService.updateUserRole(id, role.getRoleId());
+	public ResponseEntity<UpdateUserRoleResponse> updateUserRole(@PathVariable String id, @RequestBody UpdateUserRoleRequest role) {
+		UpdateUserRoleResponse userUpdated = userService.updateUserRole(id, role.getRoleId());
 		return ResponseEntity.ok(userUpdated);
 	}
 	
 	@PutMapping("/{id}/status")
-	public ResponseEntity<UserUpdateStatusResponse> updateUserStatus(@PathVariable String id, @RequestBody UserUpdateStatusRequest userUpdateStatusRequest) {
-		UserUpdateStatusResponse userUpdated = userService.updateUserStatus(id,
+	public ResponseEntity<UpdateUserStatusResponse> updateUserStatus(@PathVariable String id, @RequestBody UpdateUserStatusRequest userUpdateStatusRequest) {
+		UpdateUserStatusResponse userUpdated = userService.updateUserStatus(id,
 				userUpdateStatusRequest.isActive());
 		return ResponseEntity.ok(userUpdated);
 	}

@@ -7,6 +7,6 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserUpdateStatusRequest {
+public class UpdateUserStatusRequest {
 	private boolean active;
 }

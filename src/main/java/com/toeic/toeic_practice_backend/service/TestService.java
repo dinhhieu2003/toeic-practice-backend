@@ -16,10 +16,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.toeic.toeic_practice_backend.domain.dto.request.test.SubmitTestRequest;
-import com.toeic.toeic_practice_backend.domain.dto.request.test.TestUdateRequest;
-import com.toeic.toeic_practice_backend.domain.dto.request.test.UpdateTestStatus;
+import com.toeic.toeic_practice_backend.domain.dto.request.test.UpdateTestRequest;
+import com.toeic.toeic_practice_backend.domain.dto.request.test.UpdateTestStatusRequest;
 import com.toeic.toeic_practice_backend.domain.dto.request.test.SubmitTestRequest.AnswerPair;
-import com.toeic.toeic_practice_backend.domain.dto.request.test.TestCreationRequest;
+import com.toeic.toeic_practice_backend.domain.dto.request.test.CreateTestRequest;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.Meta;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.test.FullTestResponse;
@@ -60,7 +60,7 @@ public class TestService {
 	private final TopicService topicService;
 	private final UserService userService;
 	
-	public Test addTest(TestCreationRequest testCreationRequest) {
+	public Test addTest(CreateTestRequest testCreationRequest) {
 		Optional<Test> testOptional = 
 				testRepository.findByName(testCreationRequest.getName());
 		Test testResponse = new Test();
@@ -83,7 +83,7 @@ public class TestService {
 		return testResponse;
 	}
 	
-	public Test updateTest(TestUdateRequest testUpdateRequest, String testId) {
+	public Test updateTest(UpdateTestRequest testUpdateRequest, String testId) {
 		Optional<Test> existingTest = testRepository.findByName(testUpdateRequest.getName());
 		Test testResponse = new Test();
 		if(existingTest.isEmpty() || existingTest.get().getId().equals(testId)) {
@@ -106,7 +106,7 @@ public class TestService {
 		return testResponse;
 	}
 	
-	public Test updateTest(UpdateTestStatus updateTestStatus, String testId) {
+	public Test updateTest(UpdateTestStatusRequest updateTestStatus, String testId) {
 		Test existingTest = testRepository.findById(testId)
 				.orElseThrow(() -> new AppException(ErrorCode.TEST_NOT_FOUND));
 		existingTest.setActive(updateTestStatus.isActive());

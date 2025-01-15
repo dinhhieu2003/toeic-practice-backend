@@ -1,4 +1,4 @@
-package com.toeic.toeic_practice_backend.domain.dto.request.question;
+package com.toeic.toeic_practice_backend.domain.dto.response.question;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UpdateResourceQuestionRequest {
-	private List<Resource> res = new ArrayList<>();
+public class UpdateQuestionResourceResponse {
+	private String questionId;
+	private List<Resource> resources = new ArrayList<>();
 }

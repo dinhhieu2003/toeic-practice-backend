@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class TestUdateRequest {
+public class UpdateTestRequest {
 	private String name;
     private int totalQuestion;
     private int totalScore;

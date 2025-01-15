@@ -14,9 +14,9 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
-import com.toeic.toeic_practice_backend.domain.dto.request.lecture.LectureRequest;
-import com.toeic.toeic_practice_backend.domain.dto.request.lecture.PracticeRequest;
-import com.toeic.toeic_practice_backend.domain.dto.request.lecture.PracticeRequest.PracticeQuestion;
+import com.toeic.toeic_practice_backend.domain.dto.request.lecture.CreateLectureRequest;
+import com.toeic.toeic_practice_backend.domain.dto.request.lecture.CreateLecturePracticeRequest;
+import com.toeic.toeic_practice_backend.domain.dto.request.lecture.CreateLecturePracticeRequest.PracticeQuestion;
 import com.toeic.toeic_practice_backend.domain.dto.request.lecture.UpdateLectureStatusRequest;
 import com.toeic.toeic_practice_backend.domain.dto.response.lecture.RandomLectureResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.lecture.UpdateLectureStatusResponse;
@@ -147,7 +147,7 @@ public class LectureService {
         return lecture;
     }
 
-    public Lecture saveLecture(LectureRequest request) {
+    public Lecture saveLecture(CreateLectureRequest request) {
         List<Topic> topics = topicService.getTopicByIds(request.getTopicIds());
         return lectureRepository.save(
             Lecture
@@ -166,7 +166,7 @@ public class LectureService {
         return lectureRepository.save(existedLecture);
     }
 
-    public Lecture saveLecturePractice(String lectureId, PracticeRequest request) {
+    public Lecture saveLecturePractice(String lectureId, CreateLecturePracticeRequest request) {
         Lecture existedLecture = lectureRepository.findById(lectureId).orElseThrow(()-> new AppException(ErrorCode.LECTURE_NOT_FOUND));
         List<Question> questions = request.getPracticeQuestions().stream().map(practiceQuestion -> 
             convertPracticeToQuestion(practiceQuestion)
@@ -195,7 +195,7 @@ public class LectureService {
             .build();
     }
 
-    public Lecture updateLecture(String lectureId, LectureRequest request) {
+    public Lecture updateLecture(String lectureId, CreateLectureRequest request) {
         Lecture existLecture = lectureRepository.findById(lectureId).orElseThrow(()-> new AppException(ErrorCode.LECTURE_NOT_FOUND));
         List<Topic> topics = topicService.getTopicByIds(request.getTopicIds());
         existLecture.setName(request.getName());

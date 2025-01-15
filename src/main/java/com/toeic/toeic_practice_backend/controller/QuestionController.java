@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.toeic.toeic_practice_backend.domain.dto.request.question.AddTopicToQuestionRequest;
 import com.toeic.toeic_practice_backend.domain.dto.request.question.UpdateQuestionRequest;
-import com.toeic.toeic_practice_backend.domain.dto.request.question.UpdateResourceQuestionRequest;
+import com.toeic.toeic_practice_backend.domain.dto.request.question.UpdateQuestionResourceRequest;
 
 import java.util.Map;
 
@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
-import com.toeic.toeic_practice_backend.domain.dto.response.question.UpdateResourceQuestionResponse;
+import com.toeic.toeic_practice_backend.domain.dto.response.question.UpdateQuestionResourceResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Question;
 import com.toeic.toeic_practice_backend.service.QuestionService;
 import com.toeic.toeic_practice_backend.utils.PaginationUtils;
@@ -44,7 +44,7 @@ public class QuestionController {
 	}
 	
 	@PutMapping("/{questionId}/update/resource")
-	public ResponseEntity<UpdateResourceQuestionResponse> updateResourceQuestion(@RequestBody UpdateResourceQuestionRequest res, @PathVariable String questionId) {
+	public ResponseEntity<UpdateQuestionResourceResponse> updateResourceQuestion(@RequestBody UpdateQuestionResourceRequest res, @PathVariable String questionId) {
 		return ResponseEntity.ok(questionService.updateResourceQuestion(res.getRes(), questionId));
 	}
 	

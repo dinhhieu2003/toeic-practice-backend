@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.toeic.toeic_practice_backend.domain.dto.request.role.RoleCreationRequest;
+import com.toeic.toeic_practice_backend.domain.dto.request.role.CreateRoleRequest;
 import com.toeic.toeic_practice_backend.domain.dto.request.role.UpdateRoleStatusRequest;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Role;
@@ -31,13 +31,13 @@ public class RoleController {
 	private final RoleService roleService;
 	
 	@PostMapping("")
-	public ResponseEntity<Role> createRole(@RequestBody RoleCreationRequest role) {
+	public ResponseEntity<Role> createRole(@RequestBody CreateRoleRequest role) {
 		Role newRole = roleService.createRole(role);
 		return ResponseEntity.status(HttpStatus.CREATED).body(newRole);
 	}
 	
 	@PutMapping("/{id}")
-	public ResponseEntity<Role> updateRole(@RequestBody RoleCreationRequest role, @PathVariable String id) {
+	public ResponseEntity<Role> updateRole(@RequestBody CreateRoleRequest role, @PathVariable String id) {
 		Role updatedRole = roleService.updateRole(role, id);
 		return ResponseEntity.ok(updatedRole);
 	}

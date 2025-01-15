@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PracticeRequest {
+public class CreateLecturePracticeRequest {
     private String LectureId;
     private List<PracticeQuestion> practiceQuestions;
 

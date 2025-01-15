@@ -15,8 +15,8 @@ import com.toeic.toeic_practice_backend.domain.dto.response.pagination.Meta;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.user.UpdateUserTargetResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.user.UserInfoResponse;
-import com.toeic.toeic_practice_backend.domain.dto.response.user.UserUpdateRoleResponse;
-import com.toeic.toeic_practice_backend.domain.dto.response.user.UserUpdateStatusResponse;
+import com.toeic.toeic_practice_backend.domain.dto.response.user.UpdateUserRoleResponse;
+import com.toeic.toeic_practice_backend.domain.dto.response.user.UpdateUserStatusResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Role;
 import com.toeic.toeic_practice_backend.domain.entity.User;
 import com.toeic.toeic_practice_backend.exception.AppException;
@@ -78,14 +78,14 @@ public class UserService {
 		userRepository.saveAll(users);
 	}
 	
-	public UserUpdateRoleResponse updateUserRole(String id, String roleId) {
+	public UpdateUserRoleResponse updateUserRole(String id, String roleId) {
 		User newUser = userRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.INVALID_KEY));
 		Role role = roleRepository.findById(roleId)
 				.orElseThrow(() -> new AppException(ErrorCode.INVALID_KEY));
 		newUser.setRole(role);
 		newUser = userRepository.save(newUser);
-		UserUpdateRoleResponse userUpdateRoleDto = userMapper.toUserUpdateRoleResponseFromUser(newUser);
+		UpdateUserRoleResponse userUpdateRoleDto = userMapper.toUserUpdateRoleResponseFromUser(newUser);
 		return userUpdateRoleDto;
 	}
 	
@@ -100,12 +100,12 @@ public class UserService {
 		return PaginationUtils.buildPaginationResponse(pageable, userPage);
 	}
 	
-	public UserUpdateStatusResponse updateUserStatus(String id, boolean isActive) {
+	public UpdateUserStatusResponse updateUserStatus(String id, boolean isActive) {
 		User newUser = userRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.INVALID_KEY));
 		newUser.setActive(isActive);
 		newUser = userRepository.save(newUser);
-		UserUpdateStatusResponse userUpdateStatusDto = userMapper.toUserUpdateStatusResponseFromUser(newUser);
+		UpdateUserStatusResponse userUpdateStatusDto = userMapper.toUserUpdateStatusResponseFromUser(newUser);
 		return userUpdateStatusDto;
 	}
 	

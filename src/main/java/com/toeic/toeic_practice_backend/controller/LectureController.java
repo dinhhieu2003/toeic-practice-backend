@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.toeic.toeic_practice_backend.domain.dto.request.lecture.LectureRequest;
-import com.toeic.toeic_practice_backend.domain.dto.request.lecture.PracticeRequest;
+import com.toeic.toeic_practice_backend.domain.dto.request.lecture.CreateLectureRequest;
+import com.toeic.toeic_practice_backend.domain.dto.request.lecture.CreateLecturePracticeRequest;
 import com.toeic.toeic_practice_backend.domain.dto.request.lecture.UpdateLecturePercentRequest;
 import com.toeic.toeic_practice_backend.domain.dto.request.lecture.UpdateLectureStatusRequest;
 import com.toeic.toeic_practice_backend.domain.dto.response.lecture.LectureCardResponse;
@@ -113,7 +113,7 @@ public class LectureController {
     }
     
     @PostMapping("")
-    public ResponseEntity<Lecture> saveLecture(@RequestBody LectureRequest request) {
+    public ResponseEntity<Lecture> saveLecture(@RequestBody CreateLectureRequest request) {
         return ResponseEntity.ok(lectureService.saveLecture(request));
     }
 
@@ -128,7 +128,7 @@ public class LectureController {
     @PostMapping("{lectureId}/savePractice")
     public ResponseEntity<Lecture> saveLecturePractice(
         @PathVariable String lectureId,
-        @RequestBody PracticeRequest request
+        @RequestBody CreateLecturePracticeRequest request
     ) {
         return ResponseEntity.ok(lectureService.saveLecturePractice(lectureId, request));
     }
@@ -136,7 +136,7 @@ public class LectureController {
     @PutMapping("{lectureId}")
     public ResponseEntity<Lecture> updateLecture(
         @PathVariable String lectureId,
-        @RequestBody LectureRequest request
+        @RequestBody CreateLectureRequest request
     ) {
         return ResponseEntity.ok(lectureService.updateLecture(lectureId, request));
     }

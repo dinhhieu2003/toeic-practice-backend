@@ -11,7 +11,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import com.toeic.toeic_practice_backend.domain.dto.request.permission.CreatePermissionRequest;
-import com.toeic.toeic_practice_backend.domain.dto.request.permission.UpdatePermissionStatus;
+import com.toeic.toeic_practice_backend.domain.dto.request.permission.UpdatePermissionStatusRequest;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Permission;
 import com.toeic.toeic_practice_backend.exception.AppException;
@@ -38,7 +38,7 @@ public class PermissionService {
 		return newPermission;
 	}
 	
-	public Permission updatePermissionStatus(UpdatePermissionStatus updatePermissionStatus, String permissionId) {
+	public Permission updatePermissionStatus(UpdatePermissionStatusRequest updatePermissionStatus, String permissionId) {
 		Permission existingPermission = permissionRepository.findById(permissionId)
 				.orElseThrow(() -> new AppException(ErrorCode.PERMISSION_NOT_FOUND));
 		existingPermission.setActive(updatePermissionStatus.isActive());

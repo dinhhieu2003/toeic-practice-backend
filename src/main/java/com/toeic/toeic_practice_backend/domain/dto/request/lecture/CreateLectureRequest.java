@@ -1,4 +1,4 @@
-package com.toeic.toeic_practice_backend.domain.dto.request.role;
+package com.toeic.toeic_practice_backend.domain.dto.request.lecture;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,8 +12,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RoleCreationRequest {
-	private String name;
-    private String description;
-    private List<String> permissionIds = new ArrayList<>();
+public class CreateLectureRequest {
+    private String name;
+    private String content;
+    private List<String> topicIds = new ArrayList<>();
 }

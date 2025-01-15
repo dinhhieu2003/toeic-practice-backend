@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TestCreationRequest {
+public class CreateTestRequest {
 	private String name;
 	private String categoryId;
     private int totalUserAttempt;

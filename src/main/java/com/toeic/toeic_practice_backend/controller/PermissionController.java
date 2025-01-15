@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.toeic.toeic_practice_backend.domain.dto.request.permission.CreatePermissionRequest;
-import com.toeic.toeic_practice_backend.domain.dto.request.permission.UpdatePermissionStatus;
+import com.toeic.toeic_practice_backend.domain.dto.request.permission.UpdatePermissionStatusRequest;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Permission;
 import com.toeic.toeic_practice_backend.service.PermissionService;
@@ -42,7 +42,7 @@ public class PermissionController {
 	}
 	
 	@PutMapping("{permissionId}/status")
-	public ResponseEntity<Permission> updatePermissionStatus(@RequestBody UpdatePermissionStatus permissionStatus, @PathVariable String permissionId ) {
+	public ResponseEntity<Permission> updatePermissionStatus(@RequestBody UpdatePermissionStatusRequest permissionStatus, @PathVariable String permissionId ) {
 		return ResponseEntity.ok(permissionService.updatePermissionStatus(permissionStatus, permissionId));
 	}
 	

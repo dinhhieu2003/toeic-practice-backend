@@ -7,8 +7,8 @@ import org.mapstruct.factory.Mappers;
 import org.springframework.stereotype.Component;
 
 import com.toeic.toeic_practice_backend.domain.dto.response.user.UserInfoResponse;
-import com.toeic.toeic_practice_backend.domain.dto.response.user.UserUpdateRoleResponse;
-import com.toeic.toeic_practice_backend.domain.dto.response.user.UserUpdateStatusResponse;
+import com.toeic.toeic_practice_backend.domain.dto.response.user.UpdateUserRoleResponse;
+import com.toeic.toeic_practice_backend.domain.dto.response.user.UpdateUserStatusResponse;
 import com.toeic.toeic_practice_backend.domain.entity.User;
 
 @Component
@@ -18,8 +18,8 @@ public interface UserMapper {
 	
 //	User toUserFromUserCreationRequest (UserCreationRequest userCreationRequest);
 //	
-	UserUpdateRoleResponse toUserUpdateRoleResponseFromUser(User user);
-	UserUpdateStatusResponse toUserUpdateStatusResponseFromUser(User user);
+	UpdateUserRoleResponse toUserUpdateRoleResponseFromUser(User user);
+	UpdateUserStatusResponse toUserUpdateStatusResponseFromUser(User user);
 	UserInfoResponse toUserInfoResponseFromUser(User user);
 	List<UserInfoResponse> toListUserInfoResponseFromListUser(List<User> listUser);
 }

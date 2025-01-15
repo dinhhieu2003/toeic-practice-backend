@@ -29,7 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.toeic.toeic_practice_backend.domain.dto.request.question.UpdateQuestionRequest;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
-import com.toeic.toeic_practice_backend.domain.dto.response.question.UpdateResourceQuestionResponse;
+import com.toeic.toeic_practice_backend.domain.dto.response.question.UpdateQuestionResourceResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Question;
 import com.toeic.toeic_practice_backend.domain.entity.Question.Resource;
 import com.toeic.toeic_practice_backend.domain.entity.Result;
@@ -487,13 +487,13 @@ public class QuestionService {
     	return saveQuestion(question);
     }
     
-    public UpdateResourceQuestionResponse updateResourceQuestion(List<Resource> res, String questionId) {
+    public UpdateQuestionResourceResponse updateResourceQuestion(List<Resource> res, String questionId) {
     	Question question = questionRepository
     			.findById(questionId)
     			.orElseThrow(() -> new AppException(ErrorCode.QUESTION_NOT_FOUND));
     	question.setResources(res);
-    	UpdateResourceQuestionResponse updateResourceQuestionResponse
-    		= new UpdateResourceQuestionResponse();
+    	UpdateQuestionResourceResponse updateResourceQuestionResponse
+    		= new UpdateQuestionResourceResponse();
     	updateResourceQuestionResponse.setQuestionId(questionId);
     	updateResourceQuestionResponse.setResources(res);
     	questionRepository.save(question);
