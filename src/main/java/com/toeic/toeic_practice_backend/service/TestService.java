@@ -20,7 +20,6 @@ import com.toeic.toeic_practice_backend.domain.dto.request.test.UpdateTestReques
 import com.toeic.toeic_practice_backend.domain.dto.request.test.UpdateTestStatusRequest;
 import com.toeic.toeic_practice_backend.domain.dto.request.test.SubmitTestRequest.AnswerPair;
 import com.toeic.toeic_practice_backend.domain.dto.request.test.CreateTestRequest;
-import com.toeic.toeic_practice_backend.domain.dto.response.pagination.Meta;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.test.FullTestResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.test.MultipleChoiceQuestion;
@@ -242,16 +241,7 @@ public class TestService {
 		} else if(!search.isEmpty()) {
 			testPage = testRepository.findByTestNameContaining(search, categoryId, pageable);
 		}
-		PaginationResponse<List<Test>> response = new PaginationResponse<List<Test>>();
-		Meta meta = new Meta();
-		meta.setCurrent(pageable.getPageNumber()+1);
-		meta.setPageSize(pageable.getPageSize());
-		meta.setTotalItems(testPage.getTotalElements());
-		meta.setTotalPages(testPage.getTotalPages());
-		List<Test> result = testPage.getContent();
-		response.setMeta(meta);
-		response.setResult(result);
-		return response;
+		return PaginationUtils.buildPaginationResponse(pageable, testPage);
 	}
 	
 	public Page<Test> getTestsByCategoryId(List<String> listCategoryId, Pageable pageable) {

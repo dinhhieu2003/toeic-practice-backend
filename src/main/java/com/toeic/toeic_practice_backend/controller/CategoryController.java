@@ -2,7 +2,6 @@ package com.toeic.toeic_practice_backend.controller;
 
 import java.util.List;
 
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -68,12 +67,10 @@ public class CategoryController {
 	@GetMapping("/{categoryId}/tests")
 	public ResponseEntity<PaginationResponse<List<Test>>> getTestsInCategory(
 			@PathVariable String categoryId,
-			@RequestParam(defaultValue = "1") String current,
-			@RequestParam(defaultValue = "5") String pageSize,
+			@RequestParam(defaultValue = PaginationConstants.DEFAULT_CURRENT_PAGE) int current,
+			@RequestParam(defaultValue = PaginationConstants.DEFAULT_PAGE_SIZE) int pageSize,
 			@RequestParam(required = false, defaultValue = "") String search) {
-		int currentInt = Integer.parseInt(current)-1;
-		int pageSizeInt = Integer.parseInt(pageSize);
-		Pageable pageable = PageRequest.of(currentInt, pageSizeInt);
+		Pageable pageable = PaginationUtils.createPageable(current, pageSize);
 		return ResponseEntity.ok(testService.getTestsByCategoryId(search, categoryId, pageable));
 	}
 	
@@ -89,11 +86,9 @@ public class CategoryController {
 	public ResponseEntity<PaginationResponse<List<GetTestCardResponse>>> getTestsByFormatAndYear(
 			@RequestParam(defaultValue = "ETS") String format,
 			@RequestParam(defaultValue = "") String year,
-			@RequestParam(defaultValue = "1") String current,
-			@RequestParam(defaultValue = "5") String pageSize) {
-		int currentInt = Integer.parseInt(current)-1;
-		int pageSizeInt = Integer.parseInt(pageSize);
-		Pageable pageable = PageRequest.of(currentInt, pageSizeInt);
+			@RequestParam(defaultValue = PaginationConstants.DEFAULT_CURRENT_PAGE) int current,
+			@RequestParam(defaultValue = PaginationConstants.DEFAULT_PAGE_SIZE) int pageSize) {
+		Pageable pageable = PaginationUtils.createPageable(current, pageSize);
 		return ResponseEntity.ok(testCategoryService.getTestsByFormatAndYear(format, year, pageable));
 	}
 }
