@@ -29,7 +29,7 @@ public class SecurityConfiguration {
 
 	private String[] whiteList = {
 			"/",
-            "/api/v1/auth/**",
+            "/api/v1/auth/refresh",
             "/oauth2/**", 
             "/api/oauth2/**",
             "/v3/api-docs/**",

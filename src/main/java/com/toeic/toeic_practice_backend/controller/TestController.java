@@ -2,7 +2,6 @@ package com.toeic.toeic_practice_backend.controller;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -28,12 +27,9 @@ import com.toeic.toeic_practice_backend.domain.dto.response.test.TestInfoRespons
 import com.toeic.toeic_practice_backend.domain.dto.response.test.TestResultIdResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Question;
 import com.toeic.toeic_practice_backend.domain.entity.Test;
-import com.toeic.toeic_practice_backend.domain.entity.User;
-import com.toeic.toeic_practice_backend.service.AuthService;
 import com.toeic.toeic_practice_backend.service.AzureBlobService;
 import com.toeic.toeic_practice_backend.service.QuestionService;
 import com.toeic.toeic_practice_backend.service.TestService;
-import com.toeic.toeic_practice_backend.service.UserService;
 import com.toeic.toeic_practice_backend.utils.PaginationUtils;
 import com.toeic.toeic_practice_backend.utils.constants.PaginationConstants;
 
@@ -46,8 +42,6 @@ public class TestController {
 	private final TestService testService;
 	private final AzureBlobService azureBlobService;
 	private final QuestionService questionService;
-	private final UserService userService;
-	private final AuthService authService;
 	
 	@PostMapping("{testId}/import")
     public ResponseEntity<?> importQuestions(@RequestParam("file") MultipartFile file, @PathVariable String testId) {
@@ -125,14 +119,7 @@ public class TestController {
 	
 	@GetMapping("/{testId}/info")
 	public ResponseEntity<TestInfoResponse> getTestInfo(@PathVariable String testId) {
-		String email = authService.getCurrentEmail();
-	    Optional<User> userOptional = userService.getUserByEmailWithoutStat(email);
-	    String userId = null;
-	    if (userOptional.isPresent()) {
-	    	userId = userOptional.get().getId();
-	    }
-	    System.out.println(userId);
-	    return ResponseEntity.ok(testService.getTestInfo(testId, userId));
+	    return ResponseEntity.ok(testService.getTestInfo(testId));
 	}
 	
 	@PostMapping("/submit")

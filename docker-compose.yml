@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  app:
+    container_name: backend
+    image: ghcr.io/dinhhieu2003/toeic-practice-backend/backend:latest
+    ports:
+      - "8080:8080"
+    depends_on:
+      - redis
+
+  redis:
+    image: "redis:7.0"
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]

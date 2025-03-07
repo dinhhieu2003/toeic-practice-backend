@@ -31,6 +31,12 @@ public class AuthController {
 	private final JwtTokenUtils jwtTokenUtils;
 	private final AuthService authService;
 
+	@GetMapping("/logout")
+	public ResponseEntity<?> logout() {
+		authService.logout();
+		return null;
+	}
+	
 	@GetMapping("/refresh")
     public ResponseEntity<LoginResponse> handleRefreshToken(
             @CookieValue(name = "refresh_token") String refresh_token) {

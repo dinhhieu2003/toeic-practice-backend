@@ -47,9 +47,11 @@ import com.toeic.toeic_practice_backend.utils.constants.ScoreBoard;
 import com.toeic.toeic_practice_backend.utils.security.SecurityUtils;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TestService {
 	private final TestRepository testRepository;
 	private final CategoryRepository categoryRepository;
@@ -58,74 +60,86 @@ public class TestService {
 	private final ResultService resultService;
 	private final TopicService topicService;
 	private final UserService userService;
+	private final AuthService authService;
 	
 	public Test addTest(CreateTestRequest testCreationRequest) {
+		log.info("Start: Add new test");
 		Optional<Test> testOptional = 
 				testRepository.findByName(testCreationRequest.getName());
 		Test testResponse = new Test();
-		if(testOptional.isEmpty()) {
-			Category category = categoryRepository
-					.findById(testCreationRequest.getCategoryId())
-					.orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
-			Test newTest = new Test();
-			newTest.setName(testCreationRequest.getName());
-			newTest.setActive(true);
-			newTest.setTotalQuestion(testCreationRequest.getTotalQuestion());
-			newTest.setTotalScore(testCreationRequest.getTotalScore());
-			newTest.setTotalUserAttempt(testCreationRequest.getTotalUserAttempt());
-			newTest.setLimitTime(testCreationRequest.getLimitTime());
-			newTest.setCategory(category);
-			testResponse = testRepository.save(newTest);
-		} else {
+		if(testOptional.isPresent()) {
+			log.error("Error: This test is already exists");
 			throw new AppException(ErrorCode.TEST_ALREADY_EXISTS);
 		}
+		Category category = categoryRepository
+				.findById(testCreationRequest.getCategoryId())
+				.orElseThrow(() -> {
+					log.error("Error: Category not found when adding test");
+					return new AppException(ErrorCode.CATEGORY_NOT_FOUND);
+				});
+		Test newTest = new Test();
+		newTest.setName(testCreationRequest.getName());
+		newTest.setActive(true);
+		newTest.setTotalQuestion(testCreationRequest.getTotalQuestion());
+		newTest.setTotalScore(testCreationRequest.getTotalScore());
+		newTest.setTotalUserAttempt(testCreationRequest.getTotalUserAttempt());
+		newTest.setLimitTime(testCreationRequest.getLimitTime());
+		newTest.setCategory(category);
+		testResponse = testRepository.save(newTest);
+		log.info("End: Add new test success");
 		return testResponse;
 	}
 	
 	public Test updateTest(UpdateTestRequest testUpdateRequest, String testId) {
+		log.info("Start: Update test with id {}", testId);
 		Optional<Test> existingTest = testRepository.findByName(testUpdateRequest.getName());
 		Test testResponse = new Test();
-		if(existingTest.isEmpty() || existingTest.get().getId().equals(testId)) {
-			Optional<Test> testOptional = 
-					testRepository.findById(testId);
-			if(!testOptional.isEmpty()) {
-				Test updatedTest = testOptional.get();
-				updatedTest.setName(testUpdateRequest.getName());
-				updatedTest.setTotalQuestion(testUpdateRequest.getTotalQuestion());
-				updatedTest.setTotalScore(testUpdateRequest.getTotalScore());
-				updatedTest.setLimitTime(testUpdateRequest.getLimitTime());
-				testResponse = testRepository.save(updatedTest);
-			} else {
-				throw new AppException(ErrorCode.TEST_NOT_FOUND);
-			}
-		} else {
+		if(existingTest.isPresent() && !existingTest.get().getId().equals(testId)) {
+			log.error("Error: Test name is already exists in other test");
 			throw new AppException(ErrorCode.TEST_ALREADY_EXISTS);
 		}
 		
+		Optional<Test> testOptional = testRepository.findById(testId);
+		if(testOptional.isEmpty()) {
+			log.error("Error: Test not found with id {}", testId);
+			throw new AppException(ErrorCode.TEST_NOT_FOUND);	
+		}
+		
+		Test updatedTest = testOptional.get();
+		updatedTest.setName(testUpdateRequest.getName());
+		updatedTest.setTotalQuestion(testUpdateRequest.getTotalQuestion());
+		updatedTest.setTotalScore(testUpdateRequest.getTotalScore());
+		updatedTest.setLimitTime(testUpdateRequest.getLimitTime());
+		testResponse = testRepository.save(updatedTest);
+		log.info("End: Update test with id {} success", testId);
 		return testResponse;
 	}
 	
 	public Test updateTest(UpdateTestStatusRequest updateTestStatus, String testId) {
+		log.info("Start: Update status test with id {}", testId);
 		Test existingTest = testRepository.findById(testId)
-				.orElseThrow(() -> new AppException(ErrorCode.TEST_NOT_FOUND));
+				.orElseThrow(() -> {
+					log.error("Error: Test not found with id {}", testId);
+					return new AppException(ErrorCode.TEST_NOT_FOUND);
+				});
 		existingTest.setActive(updateTestStatus.isActive());
 		Test newTest = testRepository.save(existingTest);
+		log.info("Start: Update status test with id {} success", testId);
 		return newTest;
 	}
 	
-	public TestInfoResponse getTestInfo(String testId, String userId) {
-	    // Record start time for the entire method
-	    long startTime = System.nanoTime();
-
+	public TestInfoResponse getTestInfo(String testId) {
+		String email = authService.getCurrentEmail();
+	    Optional<User> userOptional = userService.getUserByEmailWithoutStat(email);
+	    String userId = null;
+	    if (userOptional.isPresent()) {
+	    	userId = userOptional.get().getId();
+	    }
+	    
 	    Test test = new Test();
 	    TestInfoResponse testInfoInfoResponse = new TestInfoResponse();
 
-	    // Time for getting questions
-	    long startQuestionsTime = System.nanoTime();
 	    List<Question> listQuestion = questionService.getQuestionForTestInfo(testId);
-	    long endQuestionsTime = System.nanoTime();
-	    long questionsQueryTime = endQuestionsTime - startQuestionsTime;
-	    System.out.println("Time to fetch questions: " + questionsQueryTime / 1000000 + " ms");
 
 	    HashMap<Integer, Set<String>> topicNamesByPartNumMap = new HashMap<>();
 	    for (Question question : listQuestion) {
@@ -138,8 +152,6 @@ public class TestService {
 	        topicNamesByPartNumMap.get(partNum).addAll(topicNames);
 	    }
 
-	    // Time for processing topics
-	    long startTopicsTime = System.nanoTime();
 	    List<TopicOverview> topicsOverview = new ArrayList<>();
 	    for (Map.Entry<Integer, Set<String>> entry : topicNamesByPartNumMap.entrySet()) {
 	        int partNum = entry.getKey();
@@ -149,18 +161,10 @@ public class TestService {
 	        topicOverview.setTopicNames(new ArrayList<>(topicNames));
 	        topicsOverview.add(topicOverview);
 	    }
-	    long endTopicsTime = System.nanoTime();
-	    long topicsProcessingTime = endTopicsTime - startTopicsTime;
-	    System.out.println("Time to process topics: " + topicsProcessingTime / 1000000 + " ms");
-
-	    // Time for fetching test details
-	    long startTestTime = System.nanoTime();
+	 
 	    test = testRepository.findById(testId)
 	            .orElseThrow(() -> new AppException(ErrorCode.TEST_NOT_FOUND));
-	    long endTestTime = System.nanoTime();
-	    long testQueryTime = endTestTime - startTestTime;
-	    System.out.println("Time to fetch test details: " + testQueryTime / 1000000 + " ms");
-
+	    
 	    // Construct TestInfoResponse
 	    testInfoInfoResponse = TestInfoResponse
 	            .builder()
@@ -175,12 +179,7 @@ public class TestService {
 
 	    List<ResultOverview> listResultOverview = new ArrayList<>();
 	    if (userId != null) {
-	        // Time for fetching results
-	        long startResultTime = System.nanoTime();
 	        List<Result> listResult = resultService.getByTestIdAndUserId(testId, userId);
-	        long endResultTime = System.nanoTime();
-	        long resultQueryTime = endResultTime - startResultTime;
-	        System.out.println("Time to fetch results: " + resultQueryTime / 1000000 + " ms");
 
 	        for (Result result : listResult) {
 	            int totalQuestion = result.getTotalCorrectAnswer() + result.getTotalIncorrectAnswer() + result.getTotalSkipAnswer();
@@ -203,11 +202,6 @@ public class TestService {
 	        }
 	        testInfoInfoResponse.setResultsOverview(listResultOverview);
 	    }
-
-	    // Record end time for the entire method
-	    long endTime = System.nanoTime();
-	    long totalMethodTime = endTime - startTime;
-	    System.out.println("Total time for getTestInfo: " + totalMethodTime / 1000000 + " ms");
 
 	    return testInfoInfoResponse;
 	}

@@ -3,11 +3,11 @@ package com.toeic.toeic_practice_backend.config;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
@@ -17,19 +17,26 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtGra
 
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import com.nimbusds.jose.util.Base64;
+import com.toeic.toeic_practice_backend.exception.AppException;
+import com.toeic.toeic_practice_backend.utils.constants.ErrorCode;
 import com.toeic.toeic_practice_backend.utils.security.JwtTokenUtils;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 @Configuration
+@RequiredArgsConstructor
+@Slf4j
 public class SecurityJwtConfiguration {
 
-	private static final Logger LOG = LoggerFactory.getLogger(SecurityJwtConfiguration.class);
-    
+    private final RedisTemplate<String, String> redisTemplate;
+	
 	@Value("${toeic-practice-backend.security.authentication.jwt.base64-secret}")
 	private String jwtKey;
 	
 	@Bean
     public JwtEncoder jwtEncoder() {
-		System.out.println("Encoder");
+		log.info("Encoder");
         return new NimbusJwtEncoder(new ImmutableSecret<>(getSecretKey()));
     }
 
@@ -38,12 +45,21 @@ public class SecurityJwtConfiguration {
         NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder.withSecretKey(
                 getSecretKey()).macAlgorithm(JwtTokenUtils.JWT_ALGORITHM).build();
         return token -> {
+        	Jwt jwt;
             try {
-                return jwtDecoder.decode(token);
+            	jwt = jwtDecoder.decode(token);
             } catch (Exception e) {
-                System.out.println(">>> JWT error: " + e.getMessage());
-                throw e;
+                log.error(">>> JWT error: {}", e.getMessage(), e);
+                throw new AppException(ErrorCode.TOKEN_NOT_VALID);
             }
+            
+            String key = jwt.getId();
+            // Check token absent in blacklist
+        	if(redisTemplate.opsForValue().get(key) != null) {
+        		log.error("Token {} is blacklisted", key);
+        		throw new AppException(ErrorCode.TOKEN_NOT_VALID);
+        	}
+        	return jwt;
         };
     }
 	

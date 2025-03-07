@@ -39,10 +39,8 @@ public class CategoryController {
 	
 	@PostMapping("")
 	public ResponseEntity<Category> addCategory(@RequestBody Category category) {
-		String format = category.getFormat();
-		int year = category.getYear();
 		return ResponseEntity.status(HttpStatus.CREATED)
-				.body(categoryService.addCategory(format, year));
+				.body(categoryService.addCategory(category));
 	}
 	
 	@PutMapping("/{id}")
