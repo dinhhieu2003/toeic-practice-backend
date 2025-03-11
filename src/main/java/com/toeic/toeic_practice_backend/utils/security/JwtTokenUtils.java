@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
@@ -52,6 +53,7 @@ public class JwtTokenUtils {
                 .expiresAt(validity)
                 .subject(user.getEmail())
                 .claim("user", userToken)
+                .id(UUID.randomUUID().toString())
                 .build();
 
         JwsHeader jwsHeader = JwsHeader.with(JWT_ALGORITHM).build();
@@ -75,6 +77,7 @@ public class JwtTokenUtils {
                 .expiresAt(validity)
                 .subject(user.getEmail())
                 .claim("user", userToken)
+                .id(UUID.randomUUID().toString())
                 .build();
 
         JwsHeader jwsHeader = JwsHeader.with(JWT_ALGORITHM).build();

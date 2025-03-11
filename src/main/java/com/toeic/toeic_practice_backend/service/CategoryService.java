@@ -20,25 +20,34 @@ import com.toeic.toeic_practice_backend.utils.PaginationUtils;
 import com.toeic.toeic_practice_backend.utils.constants.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 @Transactional(rollbackFor = {Exception.class})
 public class CategoryService {
 	private final CategoryRepository categoryRepository;
-	public Category addCategory(String format, int year) {
+	
+	public Category addCategory(Category category) {
+		log.info("Start: Add new category");
+		
+		String format = category.getFormat();
+		int year = category.getYear();
 		Optional<Category> categoryOptional = categoryRepository.findByFormatAndYear(format, year);
-		Category categoryResponse = new Category();
-		if(categoryOptional.isEmpty()) {
-			Category newCategory = new Category();
-			newCategory.setFormat(format);
-			newCategory.setYear(year);
-			newCategory.setActive(true);
-			categoryResponse = categoryRepository.save(newCategory);
-		} else {
+		
+		if(categoryOptional.isPresent()) {
+			log.error("Error: Category with format [{}] and year [{}] is existed", format, year);
 			throw new AppException(ErrorCode.CATEGORY_ALREADY_EXISTS);
 		}
-		return categoryResponse;
+		Category newCategory = new Category();
+        newCategory.setFormat(format);
+        newCategory.setYear(year);
+        newCategory.setActive(true);
+        
+        Category savedCategory = categoryRepository.save(newCategory);
+        log.info("Add category success with id: {}", savedCategory.getId());
+		return savedCategory;
 	}
 	
 	public Category findById(String id) {
@@ -48,23 +57,31 @@ public class CategoryService {
 	}
 	
 	public Category updateCategory(Category category, String id) {
+		log.info("Start: Update an existed category");
         Category currentCategory = findById(id);
-        currentCategory.setFormat(category.getFormat());
-        currentCategory.setYear(category.getYear());
+        String format = category.getFormat();
+        int year = category.getYear();
+    
         Optional<Category> categoryOptional = categoryRepository
-                .findByFormatAndYear(category.getFormat(), category.getYear());
+                .findByFormatAndYear(format, year);
 
-        if (categoryOptional.isEmpty()) {
-            return categoryRepository.save(currentCategory);
-        } else {
-            throw new AppException(ErrorCode.CATEGORY_ALREADY_EXISTS);
+        if(categoryOptional.isPresent()) {
+        	log.error("Error: Category with format [{}] and year [{}] is existed", format, year);
+        	throw new AppException(ErrorCode.CATEGORY_ALREADY_EXISTS);
         }
+        currentCategory.setFormat(format);
+        currentCategory.setYear(year);
+        Category updatedCategory = categoryRepository.save(currentCategory);
+        log.info("End: Update category success with id {}", updatedCategory.getId());
+        return updatedCategory;
 	}
 	
 	public UpdateCategoryStatusResponse updateCategoryStatus(String categoryId, UpdateCategoryStatusRequest updateCategoryStatusRequest) {
+		log.info("Start: Update category status");
 		Category currentCategory = findById(categoryId);
 		currentCategory.setActive(updateCategoryStatusRequest.isActive());
 		Category newCategory = categoryRepository.save(currentCategory);
+		log.info("End: Update category status success");
 		UpdateCategoryStatusResponse updateCategoryStatusResponse = new UpdateCategoryStatusResponse();
 		updateCategoryStatusResponse.setId(newCategory.getId());
 		updateCategoryStatusResponse.setFormat(newCategory.getFormat());

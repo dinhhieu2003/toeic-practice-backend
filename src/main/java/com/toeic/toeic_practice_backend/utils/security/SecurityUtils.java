@@ -7,6 +7,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
 public class SecurityUtils {
 	public static Optional<String> getCurrentUserLogin() {
@@ -35,7 +36,7 @@ public class SecurityUtils {
     public static Optional<String> getCurrentUserJWT() {
         SecurityContext securityContext = SecurityContextHolder.getContext();
         return Optional.ofNullable(securityContext.getAuthentication())
-                .filter(authentication -> authentication.getCredentials() instanceof String)
-                .map(authentication -> (String) authentication.getCredentials());
+                .filter(authentication -> authentication instanceof JwtAuthenticationToken)
+                .map(authentication -> ((JwtAuthenticationToken) authentication).getToken().getTokenValue());
     }
 }
