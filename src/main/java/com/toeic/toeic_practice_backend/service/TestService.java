@@ -229,12 +229,16 @@ public class TestService {
 	
 	public PaginationResponse<List<Test>> getTestsByCategoryId(String search,
 			String categoryId, Pageable pageable) {
+		log.info("Start: Function get test by category id");
 		Page<Test> testPage = null;
 		if(search.isEmpty()) {
+			log.info("Search term is empty - finding all tests by cate_id in database");
 			testPage = testRepository.findByCategory_Id(categoryId, pageable);
 		} else if(!search.isEmpty()) {
+			log.info("Finding all tests by cate_id by search term");
 			testPage = testRepository.findByTestNameContaining(search, categoryId, pageable);
 		}
+		log.info("End: Function get test by category id");
 		return PaginationUtils.buildPaginationResponse(pageable, testPage);
 	}
 	

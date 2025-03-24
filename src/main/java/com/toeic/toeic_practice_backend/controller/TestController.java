@@ -3,6 +3,8 @@ package com.toeic.toeic_practice_backend.controller;
 import java.io.IOException;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,12 +25,14 @@ import com.toeic.toeic_practice_backend.domain.dto.request.test.UpdateTestStatus
 import com.toeic.toeic_practice_backend.domain.dto.request.test.CreateTestRequest;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.test.FullTestResponse;
+import com.toeic.toeic_practice_backend.domain.dto.response.test.GetTestCardResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.test.TestInfoResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.test.TestResultIdResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Question;
 import com.toeic.toeic_practice_backend.domain.entity.Test;
 import com.toeic.toeic_practice_backend.service.AzureBlobService;
 import com.toeic.toeic_practice_backend.service.QuestionService;
+import com.toeic.toeic_practice_backend.service.TestCategoryService;
 import com.toeic.toeic_practice_backend.service.TestService;
 import com.toeic.toeic_practice_backend.utils.PaginationUtils;
 import com.toeic.toeic_practice_backend.utils.constants.PaginationConstants;
@@ -39,9 +43,11 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("${api.prefix}/tests")
 @RequiredArgsConstructor
 public class TestController {
+	private final Logger log = LoggerFactory.getLogger(TestController.class);
 	private final TestService testService;
 	private final AzureBlobService azureBlobService;
 	private final QuestionService questionService;
+	private final TestCategoryService testCategoryService;
 	
 	@PostMapping("{testId}/import")
     public ResponseEntity<?> importQuestions(@RequestParam("file") MultipartFile file, @PathVariable String testId) {
@@ -135,5 +141,27 @@ public class TestController {
 			@RequestParam(defaultValue = PaginationConstants.DEFAULT_PAGE_SIZE) int pageSize) {
 		Pageable pageable = PaginationUtils.createPageable(current, pageSize);
 		return ResponseEntity.ok(testService.getAllQuestionsInTestByTestId(testId, pageable));
+	}
+	
+	@GetMapping("/{categoryId}")
+	public ResponseEntity<PaginationResponse<List<Test>>> getTestsInCategory(
+			@PathVariable String categoryId,
+			@RequestParam(defaultValue = PaginationConstants.DEFAULT_CURRENT_PAGE) int current,
+			@RequestParam(defaultValue = PaginationConstants.DEFAULT_PAGE_SIZE) int pageSize,
+			@RequestParam(required = false, defaultValue = "") String search) {
+		log.info("User is getting tests by category");
+		Pageable pageable = PaginationUtils.createPageable(current, pageSize);
+		return ResponseEntity.ok(testService.getTestsByCategoryId(search, categoryId, pageable));
+	}
+	
+	// list test displayed for client
+	@GetMapping("/public")
+	public ResponseEntity<PaginationResponse<List<GetTestCardResponse>>> getTestsByFormatAndYear(
+			@RequestParam(defaultValue = "ETS") String format,
+			@RequestParam(defaultValue = "") String year,
+			@RequestParam(defaultValue = PaginationConstants.DEFAULT_CURRENT_PAGE) int current,
+			@RequestParam(defaultValue = PaginationConstants.DEFAULT_PAGE_SIZE) int pageSize) {
+		Pageable pageable = PaginationUtils.createPageable(current, pageSize);
+		return ResponseEntity.ok(testCategoryService.getTestsByFormatAndYear(format, year, pageable));
 	}
 }
