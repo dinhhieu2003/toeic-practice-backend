@@ -62,6 +62,13 @@ toeic-practice-backend:
     # RefreshToken is valid 7 days
     refreshToken-validity-in-seconds: 604800
 
+# Config ChatGPT API
+chatgpt:
+  api:
+    url: ${CHATGPT_URL}
+    model: ${CHATGPT_MODEL}
+    key: ${CHATGPT_API_KEY}
+
 # Config azure
 azure:
   url-resources: ${AZURE_URL_RESOURCES}
