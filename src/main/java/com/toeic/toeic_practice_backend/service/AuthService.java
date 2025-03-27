@@ -47,6 +47,7 @@ public class AuthService {
                 "revoked", 
                 Duration.ofMinutes(remainingTimeMinutes)
          );
+		log.info("Log out function is success");
 	}
 	
 	public Tokens handleRefreshToken(User user) {

@@ -5,8 +5,10 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -53,6 +55,7 @@ public class JwtTokenUtils {
                 .expiresAt(validity)
                 .subject(user.getEmail())
                 .claim("user", userToken)
+                .claim("role", user.getRole().getName())
                 .id(UUID.randomUUID().toString())
                 .build();
 
@@ -77,6 +80,7 @@ public class JwtTokenUtils {
                 .expiresAt(validity)
                 .subject(user.getEmail())
                 .claim("user", userToken)
+                .claim("role", user.getRole().getName())
                 .id(UUID.randomUUID().toString())
                 .build();
 

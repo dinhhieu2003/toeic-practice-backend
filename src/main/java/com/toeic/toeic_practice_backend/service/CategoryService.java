@@ -2,8 +2,9 @@ package com.toeic.toeic_practice_backend.service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -15,22 +16,23 @@ import com.toeic.toeic_practice_backend.domain.dto.response.category.UpdateCateg
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Category;
 import com.toeic.toeic_practice_backend.exception.AppException;
+import com.toeic.toeic_practice_backend.mapper.CategoryMapper;
 import com.toeic.toeic_practice_backend.repository.CategoryRepository;
 import com.toeic.toeic_practice_backend.utils.PaginationUtils;
 import com.toeic.toeic_practice_backend.utils.constants.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
 @Transactional(rollbackFor = {Exception.class})
 public class CategoryService {
+	private final Logger log = LoggerFactory.getLogger(CategoryService.class);
 	private final CategoryRepository categoryRepository;
+	private final CategoryMapper categoryMapper;
 	
 	public Category addCategory(Category category) {
-		log.info("Start: Add new category");
+		log.info("Start: Function add new category");
 		
 		String format = category.getFormat();
 		int year = category.getYear();
@@ -46,7 +48,7 @@ public class CategoryService {
         newCategory.setActive(true);
         
         Category savedCategory = categoryRepository.save(newCategory);
-        log.info("Add category success with id: {}", savedCategory.getId());
+        log.info("End: Function add category success with id: {}", savedCategory.getId());
 		return savedCategory;
 	}
 	
@@ -91,32 +93,25 @@ public class CategoryService {
 	}
 	
 	public PaginationResponse<List<Category>> getAllCategory(Pageable pageable, String search) {
+		log.info("Start: Function get all category");
 		Page<Category> categoryPage = null;
 		if(search.isEmpty()) {
+			log.info("Search term is empty - finding all categories in database");
 			categoryPage = categoryRepository.findAll(pageable);
 		} else {
+			log.info("Finding all categories by search term");
 			categoryPage = categoryRepository.findByFormatContaining(search, pageable);
 		}
 		PaginationResponse<List<Category>> response = 
 				PaginationUtils.buildPaginationResponse(pageable, categoryPage);
+		log.info("End: Function get all categories");
 		return response;
 	}
 	
 	public List<GetCategoryResponse> getAllCategoryNonePage() {
+		log.info("Start: Function get all category by format list year");
 		List<Category> listCategory = categoryRepository.findByIsActiveTrue();
-		List<GetCategoryResponse> listGetCategoryResponse = listCategory.stream()
-		        .collect(Collectors.groupingBy(Category::getFormat))
-		        .entrySet().stream()
-		        .map(entry -> {
-		            GetCategoryResponse responseItem = new GetCategoryResponse();
-		            responseItem.setFormat(entry.getKey());
-		            responseItem.setYear(entry.getValue().stream()
-		                                       .map(Category::getYear)
-		                                       .distinct() // Loại bỏ các năm trùng lặp nếu cần
-		                                       .collect(Collectors.toList()));
-		            return responseItem;
-		        })
-		        .collect(Collectors.toList());
+		List<GetCategoryResponse> listGetCategoryResponse = categoryMapper.listCategoryToListGetCategoryResponse(listCategory);
 		return listGetCategoryResponse;
 	}
 	

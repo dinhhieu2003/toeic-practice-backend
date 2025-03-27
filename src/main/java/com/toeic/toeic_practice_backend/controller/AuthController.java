@@ -2,6 +2,8 @@ package com.toeic.toeic_practice_backend.controller;
 
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -26,13 +28,14 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
-
+	private final Logger log = LoggerFactory.getLogger(AuthController.class);
 	private final UserService userService;
 	private final JwtTokenUtils jwtTokenUtils;
 	private final AuthService authService;
 
 	@GetMapping("/logout")
 	public ResponseEntity<?> logout() {
+		log.info("User logging out");
 		authService.logout();
 		return null;
 	}
