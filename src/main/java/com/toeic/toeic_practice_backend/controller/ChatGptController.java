@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.toeic.toeic_practice_backend.domain.dto.request.chatgpt.PromptRequest;
 import com.toeic.toeic_practice_backend.domain.dto.response.chatgpt.ChatGPTResponse;
 import com.toeic.toeic_practice_backend.service.ChatGptService;
+import com.toeic.toeic_practice_backend.domain.dto.request.chatgpt.ChatMessageRequest;
+import com.toeic.toeic_practice_backend.domain.dto.response.chatgpt.TutorResponse;
 
 import lombok.RequiredArgsConstructor;
 
@@ -17,9 +19,19 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ChatGptController {
     private final ChatGptService chatGptService;
-
-    @PostMapping
-    public ResponseEntity<ChatGPTResponse> getChatGptResponse(@RequestBody PromptRequest promptRequest) {
-        return ResponseEntity.ok(chatGptService.getChatGptResponse(promptRequest));
+    /**
+     * Endpoint for the TOEIC question tutoring feature
+     * If sessionId is not provided, a new session will be created
+     */
+    @PostMapping("/tutor")
+    public ResponseEntity<TutorResponse> getTutorResponse(@RequestBody ChatMessageRequest request) {
+        String sessionId = request.getSessionId(); // Can be null for first message
+        String questionId = request.getQuestionId();
+        String message = request.getMessage();
+        
+        // Process the user's question about this specific TOEIC question
+        TutorResponse response = chatGptService.processTutorQuestion(sessionId, questionId, message);
+        
+        return ResponseEntity.ok(response);
     }
 }
