@@ -29,4 +29,9 @@ public interface TestRepository extends MongoRepository<Test, String> {
     Page<Test> findByFormatOnly(String format, Pageable pageable);
     
     List<Test> findTestByIdIn(List<String> testIds);
+
+    /**
+     * Find all active tests for recommendation
+     */
+    List<Test> findByActiveTrue();
 }

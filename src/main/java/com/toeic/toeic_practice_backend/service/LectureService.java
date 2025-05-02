@@ -223,4 +223,8 @@ public class LectureService {
     	updateLectureStatusResponse.setActive(newLecture.isActive());
     	return updateLectureStatusResponse;
     }
+    
+    public List<Lecture> getLecturesByIdIn(List<String> lectureIds) {
+    	return lectureRepository.findLectureByIdIn(lectureIds);
+    }
 }

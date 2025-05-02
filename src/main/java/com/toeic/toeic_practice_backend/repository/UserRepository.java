@@ -1,5 +1,6 @@
 package com.toeic.toeic_practice_backend.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -30,4 +31,12 @@ public interface UserRepository extends MongoRepository<User, String> {
     
     @Query(value = "{ 'email': {$regex: ?0, $options: 'i'} }", fields = "{'id': 1, 'email': 1, 'role': 1, 'target': 1 ,'isActive': 1}")
     Page<UserInfoResponse> findUserInfoByEmailContaining(String search, Pageable pageable);
+
+    /**
+     * Find all active users with fields needed for similarity calculations.
+     * Uses projection to optimize fetch by only including necessary fields.
+     */
+    @Query(value = "{ 'active': true }", 
+           fields = "{ 'id': 1, 'target': 1, 'overallStat': 1, 'testHistory': 1, 'learningProgress': 1 }")
+    List<User> findAllActiveUsers();
 }

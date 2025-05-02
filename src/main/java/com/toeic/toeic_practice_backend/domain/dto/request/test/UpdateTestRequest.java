@@ -12,4 +12,5 @@ public class UpdateTestRequest {
     private int totalQuestion;
     private int totalScore;
     private int limitTime;
+    private int difficulty;
 }

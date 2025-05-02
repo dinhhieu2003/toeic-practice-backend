@@ -41,9 +41,11 @@ import com.toeic.toeic_practice_backend.utils.PaginationUtils;
 import com.toeic.toeic_practice_backend.utils.constants.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 @Transactional(rollbackFor = {Exception.class})
 public class QuestionService {
     private final QuestionRepository questionRepository;
@@ -56,6 +58,7 @@ public class QuestionService {
     private static final double SIMILARITY_THRESHOLD = 0.9;
     
     public Question updateQuestion(UpdateQuestionRequest updateQuestionRequest) {
+    	log.info("Start: Function update question");
     	Question existingQuestion = questionRepository
     			.findById(updateQuestionRequest.getId())
     			.orElseThrow(() -> new AppException(ErrorCode.QUESTION_NOT_FOUND));
@@ -89,6 +92,7 @@ public class QuestionService {
         existingQuestion.setExplanation(updateQuestionRequest.getExplanation());
         
         Question updatedQuestion = questionRepository.save(existingQuestion);
+        
         
         if (needsDeactivation) {
             deactivateResults(updatedQuestion.getTestId());
@@ -156,7 +160,7 @@ public class QuestionService {
         return true;
     }
     
-    public List<Question> getQuestionForTestInfo(String testId) {
+    public List<Question> getQuestionTopicsForTestInfo(String testId) {
     	Query query = new Query(Criteria.where("testId").is(testId));
         query.fields().include("id").include("topic").include("partNum");
         return mongoTemplate.find(query, Question.class);
@@ -470,6 +474,10 @@ public class QuestionService {
     	return questionRepository.findByIdIn(listQuestionId);
     }
     
+    public List<Question> getQuestionByIdsOptimized(List<String> listQuestionId) {
+    	return questionRepository.findByIdInWithTopicIds(listQuestionId);
+    }
+    
     public Question getQuestionById(String questionId) {
     	Question question = questionRepository.findById(questionId)
     			.orElseThrow(() -> new AppException(ErrorCode.QUESTION_NOT_FOUND));
@@ -484,7 +492,8 @@ public class QuestionService {
     	List<Topic> listTopicNeedAdd = topicService.getTopicByIds(topicIds);
     	Question question = getQuestionById(questionId);
     	question.setTopic(listTopicNeedAdd);
-    	return saveQuestion(question);
+    	Question updatedQuestion = saveQuestion(question);
+    	return updatedQuestion;
     }
     
     public UpdateQuestionResourceResponse updateResourceQuestion(List<Resource> res, String questionId) {
