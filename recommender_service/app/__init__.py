@@ -1,3 +1,0 @@
-"""
-TOEIC Practice Recommender Service
-""" 
