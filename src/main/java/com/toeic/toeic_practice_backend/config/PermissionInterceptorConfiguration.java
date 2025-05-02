@@ -29,6 +29,10 @@ public class PermissionInterceptorConfiguration implements WebMvcConfigurer {
         		"/api/v1/questions/**",
         		"/api/v1/lectures/**"
         };
+        
+        // Add the interceptor to all paths, excluding the whitelist
+        // Note: Internal API paths (/api/v1/internal/**) are NOT in the whitelist,
+        // so they will be intercepted and validated by the PermissionInterceptor
         registry.addInterceptor(getPermissionInterceptor())
                 .excludePathPatterns(whiteList);
     }

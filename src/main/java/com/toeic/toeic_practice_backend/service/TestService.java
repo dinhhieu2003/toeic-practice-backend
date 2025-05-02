@@ -84,7 +84,9 @@ public class TestService {
 		newTest.setTotalScore(testCreationRequest.getTotalScore());
 		newTest.setTotalUserAttempt(testCreationRequest.getTotalUserAttempt());
 		newTest.setLimitTime(testCreationRequest.getLimitTime());
+		newTest.setDifficulty(testCreationRequest.getDifficulty());
 		newTest.setCategory(category);
+		
 		testResponse = testRepository.save(newTest);
 		log.info("End: Add new test success");
 		return testResponse;
@@ -110,6 +112,8 @@ public class TestService {
 		updatedTest.setTotalQuestion(testUpdateRequest.getTotalQuestion());
 		updatedTest.setTotalScore(testUpdateRequest.getTotalScore());
 		updatedTest.setLimitTime(testUpdateRequest.getLimitTime());
+		updatedTest.setDifficulty(testUpdateRequest.getDifficulty());
+		
 		testResponse = testRepository.save(updatedTest);
 		log.info("End: Update test with id {} success", testId);
 		return testResponse;
@@ -139,10 +143,10 @@ public class TestService {
 	    Test test = new Test();
 	    TestInfoResponse testInfoInfoResponse = new TestInfoResponse();
 
-	    List<Question> listQuestion = questionService.getQuestionForTestInfo(testId);
-
+	    List<Question> listQuestionTopics = questionService.getQuestionTopicsForTestInfo(testId);
+	    System.out.println(listQuestionTopics.size());
 	    HashMap<Integer, Set<String>> topicNamesByPartNumMap = new HashMap<>();
-	    for (Question question : listQuestion) {
+	    for (Question question : listQuestionTopics) {
 	        int partNum = question.getPartNum();
 	        List<String> topicNames = question.getTopic()
 	                .stream()
@@ -294,10 +298,8 @@ public class TestService {
 			updateTestUserAttempt(submitTestRequest.getTestId());
 		}
 		
-		// Update test history for user
-		HashSet<String> testIdsInHistory = currentUser.getTestHistory();
-		testIdsInHistory.add(testId);
-		currentUser.setTestHistory(testIdsInHistory);
+		// Calculate total score for current attempt
+		ScoreBoard scoreBoard = ScoreBoard.getInstance();
 		
 		// initial TopicStat
 		List<TopicStat> newTopicStats = new ArrayList<>();
@@ -315,8 +317,10 @@ public class TestService {
 			    .map(AnswerPair::getQuestionId)
 			    .collect(Collectors.toList());
 		
-		// Fetch questions and topics
-		List<Question> questions = questionService.getQuestionByIds(questionIds);
+		// Fetch questions with optimized topic loading
+		List<Question> questions = questionService.getQuestionByIdsOptimized(questionIds);
+		
+		// Create a map of all topics upfront to avoid lazy loading
 		Map<String, Topic> topicMap = topicService.getAllTopics().stream()
 		    .collect(Collectors.toMap(Topic::getId, topic -> topic));
 
@@ -332,16 +336,19 @@ public class TestService {
 		    partNumMap.put(question.getId(), question.getPartNum());
 		    questionMap.put(question.getId(), question);
 
-		    // Collect topic IDs and Topic objects for each question
-		    List<Topic> questionTopics = question.getTopic();
-		    topicIdMap.put(question.getId(), questionTopics.stream()
+		    // Extract topic IDs from question.getTopic() but don't use the Topic objects directly
+		    List<String> topicIds = question.getTopic().stream()
 		        .map(Topic::getId)
-		        .collect(Collectors.toList()));
-		    topicQuestionMap.put(question.getId(), questionTopics);
+		        .collect(Collectors.toList());
+		    topicIdMap.put(question.getId(), topicIds);
+		    
+		    // Create a new list of fully loaded Topic objects from the map
+		    List<Topic> fullyLoadedTopics = topicIds.stream()
+		        .map(topicMap::get)
+		        .collect(Collectors.toList());
+		    topicQuestionMap.put(question.getId(), fullyLoadedTopics);
 		}
 		
-		// Score board
-		ScoreBoard scoreBoard = ScoreBoard.getInstance();
 		// Member variable in result
 		int totalReadingCorrect = 0;
 		int totalListeningCorrect = 0;
@@ -476,6 +483,34 @@ public class TestService {
 			newSkillStats.add(skillStat);
 		});
 		currentUser.setSkillStats(newSkillStats);
+		
+		// Update test history for user with the new TestAttemptStat structure
+		int currentAttemptScore = listeningScoreFromScoreBoard + readingScoreFromScoreBoard;
+		List<User.TestAttemptStat> testHistory = currentUser.getTestHistory();
+		
+		// Find existing entry for this test if it exists
+		User.TestAttemptStat existingStat = null;
+		for (User.TestAttemptStat stat : testHistory) {
+			if (stat.getTestId().equals(testId)) {
+				existingStat = stat;
+				break;
+			}
+		}
+		
+		if (existingStat != null) {
+			// Update existing entry
+			int oldAvgScore = existingStat.getAvgScore();
+			int oldAttemptCount = existingStat.getAttempt();
+			int newAvgScore = ((oldAvgScore * oldAttemptCount) + currentAttemptScore) / (oldAttemptCount + 1);
+			existingStat.setAvgScore(newAvgScore);
+			existingStat.setAttempt(oldAttemptCount + 1);
+		} else {
+			// Create new entry
+			User.TestAttemptStat newStat = new User.TestAttemptStat(testId, currentAttemptScore, 1);
+			testHistory.add(newStat);
+		}
+		
+		currentUser.setTestHistory(testHistory);
 		userService.saveUser(currentUser);
 		
 		testResultIdResponse.setResultId(newResult.getId());

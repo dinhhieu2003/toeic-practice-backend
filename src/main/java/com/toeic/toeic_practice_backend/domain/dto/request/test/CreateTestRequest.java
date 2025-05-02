@@ -1,5 +1,6 @@
 package com.toeic.toeic_practice_backend.domain.dto.request.test;
 
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,4 +17,5 @@ public class CreateTestRequest {
     private int totalQuestion;
     private int totalScore;
     private int limitTime;
+    private int difficulty;
 }

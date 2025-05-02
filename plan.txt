@@ -1,0 +1,123 @@
+# TOEIC Practice Platform - Recommender System Integration Plan
+
+## 1. Introduction
+
+**Goal:** Integrate a personalized recommender system into the TOEIC practice platform.
+
+**Objectives:**
+*   Recommend relevant practice tests or specific parts (Listening/Reading) based on user performance, learning behavior, and similar user patterns.
+*   Recommend targeted lessons (vocabulary, grammar, specific topics) to help users improve identified weak areas.
+
+**Current Stack Context:**
+*   Backend: Java Spring Boot
+*   Database: MongoDB
+*   Existing Recommender Code: Python scripts (`recommender/`)
+
+## 2. Current System Evaluation
+
+### 2.1. Backend (Java/Spring Boot)
+
+*   **Entities:**
+    *   `User`: Well-structured, captures essential data for recommendations (target score, detailed overall/topic/skill stats, learning progress, test history).
+    *   `Lecture`: Links lessons to `Topic` entities effectively.
+    *   `Result`/`UserAnswer`: Detailed tracking of test attempts and question-level performance, crucial for updating user stats.
+    *   `Topic`: Defines topics and associated skills.
+    *   `Test`: **Gap:** Currently lacks fields for `difficulty` and associated `topics`, which are needed for content-based filtering as implemented in the Python script.
+*   **Overall:** The backend data model in MongoDB, accessed via Spring Data, provides a strong foundation for personalization. The core data needed for the recommender logic is largely available or can be easily derived.
+
+### 2.2. Recommender Code (`recommender/` Python)
+
+*   **Logic:** Implements a hybrid approach combining Content-Based Filtering (topic deficiency, test difficulty vs. user score/target) and Collaborative Filtering (similarity based on user score profiles and history). This logic aligns well with the project goals.
+*   **Implementation:**
+    *   Standalone Python scripts (`main.py` for data generation, `recommend.py` for core logic).
+    *   Uses Pandas for data manipulation.
+*   **Major Issues & Feasibility Concerns:**
+    *   **Data Source:** Reads data from a static `training_data.csv`. **This is not viable for a production environment** and must be replaced with live data access.
+    *   **Scalability:**
+        *   The `find_similar_users` function performs a linear scan through all user profiles to find matches for a target user. This has O(N) complexity (where N is the total number of users) for each recommendation request. **This will become a significant performance bottleneck** as the user base grows.
+        *   Loading potentially large user datasets into a Pandas DataFrame in memory might exceed resource limits.
+    *   **Integration:** Currently completely separate from the Spring Boot backend. Requires significant effort to integrate for real-time recommendations.
+    *   **Maintainability:** Candidate tests/lessons are hardcoded within the script, preventing dynamic updates.
+
+## 3. Proposed Architecture: Microservice Approach
+
+To address the limitations of the current Python script and leverage its existing logic while ensuring scalability and separation of concerns, a dedicated microservice architecture is recommended.
+
+*   **Components:**
+    1.  **Spring Boot Backend (Existing):** Continues to handle core application logic, user management, test/lesson delivery, and data persistence in MongoDB. It will expose internal APIs for the recommender.
+    2.  **Python Recommender Service (New):** A separate service (built with Flask or FastAPI) dedicated to computing recommendations. It will encapsulate the Python-based recommendation logic (ported from `recommend.py`).
+*   **Interaction Flow:**
+    1.  User requests recommendations via the Spring Boot frontend/API.
+    2.  The `RecommendationService` within Spring Boot calls the Python Recommender Service's API endpoint (e.g., via REST).
+    3.  The Python Recommender Service receives the `userId`.
+    4.  The Recommender Service calls specific, secured API endpoints on the Spring Boot backend to fetch:
+        *   The target user's profile data.
+        *   Relevant data for other users (for collaborative filtering).
+        *   Candidate test/lesson metadata.
+    5.  The Recommender Service computes the recommendations using its internal logic (content-based, collaborative).
+    6.  The Recommender Service returns a list of recommended `testId`s and `lectureId`s to the Spring Boot backend.
+    7.  The Spring Boot backend serves the recommendations to the user.
+*   **Rationale:**
+    *   **Separation of Concerns:** Isolates complex recommendation logic from the main backend.
+    *   **Technology Fit:** Allows using Python and its rich ML/data science ecosystem for the recommender.
+    *   **Scalability:** The recommender service can be scaled independently of the main backend based on its specific load.
+    *   **Reusability:** Leverages the existing Python recommendation logic foundation.
+
+## 4. Implementation Plan
+
+### Phase 1: Backend API & Entity Updates (Spring Boot)
+
+1.  **Modify `Test.java` Entity:**
+    *   Add `private int difficulty;` (or a more descriptive type if needed).
+    *   Add `private @DBRef List<Topic> topics = new ArrayList<>();`
+    *   Ensure services that create/update Tests populate these fields.
+2.  **(Optional) Add `averageTimeToComplete`:** Add relevant fields to `Test.java` and `Lecture.java` if this metric is desired for recommendations.
+3.  **Create Internal API Endpoints (New Controller/Service):**
+    *   Design these endpoints for internal use by the recommender service (secure appropriately, e.g., network policies, internal auth tokens).
+    *   `GET /api/v1/internal/users/{userId}/profile`: Returns necessary user data (stats, history, target etc.) based on `User.java`.
+    *   `GET /api/v1/internal/users/profiles`: Returns selected profile data for multiple users needed for similarity calculations (optimize payload size). *Consider pagination or filtering.*
+    *   `GET /api/v1/internal/tests/candidates`: Returns potential test candidates (ID, difficulty, topics, etc.).
+    *   `GET /api/v1/internal/lectures/candidates`: Returns potential lecture candidates (ID, topics, etc.).
+4.  **Verify Stat Updates:** Ensure user statistics (`User.OverallStat`, `User.TopicStat`, etc.) are reliably updated after relevant actions (test completion, lesson progress).
+
+### Phase 2: Recommender Service (Python/Flask/FastAPI)
+
+1.  **Setup Project:** Create a new Python project directory (e.g., `recommender_service`). Initialize Flask or FastAPI.
+2.  **Refactor `recommend.py` Logic:**
+    *   Adapt the core functions (`get_topic_deficiency`, `get_collaborative_score`, `score_candidate`, `recommend_hybrid`, etc.).
+    *   Replace CSV loading: Implement functions using the `requests` library to call the new Spring Boot internal APIs (from Phase 1) to fetch user profiles and candidate data.
+    *   **Address O(N) Similarity:**
+        *   **Immediate:** Keep the existing `find_similar_users` logic but fetch necessary user data via the new backend API. Acknowledge this is a temporary measure for initial functionality.
+        *   **Optimization Goal:** Plan to replace the linear scan. Pre-compute user feature vectors. Use a library like `scikit-learn`'s `NearestNeighbors` (exact search, still potentially slow) or ideally an Approximate Nearest Neighbor (ANN) library like `Faiss` (from Facebook/Meta) or `Annoy` (from Spotify) for efficient similarity search. This might require a background task to periodically update the index.
+3.  **Create API Endpoint:**
+    *   Define an endpoint (e.g., `POST /recommend`) that accepts `{"userId": "..."}`.
+    *   This endpoint orchestrates fetching data, running scoring logic, and returning `{"recommended_tests": [...], "recommended_lectures": [...]}`.
+4.  **Dependencies:** Create `requirements.txt` (e.g., `flask`/`fastapi`, `uvicorn`, `requests`, `pandas`, `numpy`, `scikit-learn`). Add `faiss-cpu` or `annoy` when implementing ANN.
+5.  **Containerize:** Create a `Dockerfile` for this Python service.
+
+### Phase 3: Integration & Deployment
+
+1.  **Update Spring Boot:** Modify the existing `RecommendationService` (or create it) in the Spring Boot backend. Remove any local calculation logic and replace it with an HTTP client call (e.g., using `RestTemplate` or `WebClient`) to the Python Recommender Service's `/recommend` endpoint.
+2.  **Configure Deployment:** Update `docker-compose.yml`:
+    *   Add a new service definition for the `recommender_service`, building from its Dockerfile.
+    *   Configure networking so the `toeic-practice-backend` service can reach the `recommender_service` (e.g., using service names).
+    *   Pass necessary environment variables (e.g., backend API URLs).
+3.  **Testing:**
+    *   Unit tests for the new API endpoints in Spring Boot and the core logic in the Python service.
+    *   Integration tests simulating the API call flow between the two services.
+    *   End-to-end tests verifying recommendations appear correctly for users.
+
+## 5. Future Improvements & Considerations
+
+*   **Scalability Optimization:** Prioritize implementing ANN search (Faiss/Annoy) to resolve the `find_similar_users` bottleneck. Explore caching strategies for user profiles or candidate lists. Consider offline/batch pre-computation of recommendations if real-time calculation remains too slow.
+*   **Algorithm Enhancements:**
+    *   Implement A/B testing framework to compare different recommendation algorithms or parameters.
+    *   Incorporate item popularity, recency bias, and negative feedback (e.g., dismissals).
+    *   Explore more advanced models (e.g., Matrix Factorization via libraries like `Surprise` or `implicit`, or deep learning models if data volume justifies it) for collaborative filtering.
+*   **Cold Start Problem:** Develop strategies for new users (recommend popular starting tests/lessons, rely more on content features, ask for initial preferences).
+*   **Monitoring:** Implement logging and monitoring for the recommender service (request latency, error rates) and recommendation quality (e.g., click-through rate, conversion rate if applicable).
+*   **Feature Engineering:** Refine user and item features used in scoring (e.g., time decay on scores, more nuanced difficulty metrics).
+
+## 6. Conclusion
+
+The proposed microservice architecture provides a robust and scalable solution for integrating the recommender system. It effectively separates the complex recommendation logic, allows leveraging Python's strengths, and addresses the critical scalability and data source issues identified in the current standalone scripts. Following the phased implementation plan will enable incremental development and integration, leading to a powerful personalization feature for the TOEIC platform. 

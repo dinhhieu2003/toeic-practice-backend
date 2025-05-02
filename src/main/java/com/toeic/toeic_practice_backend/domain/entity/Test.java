@@ -23,6 +23,7 @@ public class Test extends BaseEntity{
     private int totalQuestion;
     private int totalScore;
     private int limitTime;
+    private int difficulty;
     @JsonIgnore
     private Category category;
 }

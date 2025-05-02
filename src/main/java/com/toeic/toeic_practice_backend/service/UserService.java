@@ -1,17 +1,15 @@
 package com.toeic.toeic_practice_backend.service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.toeic.toeic_practice_backend.domain.dto.request.user.UpdateUserTargetRequest;
-import com.toeic.toeic_practice_backend.domain.dto.response.pagination.Meta;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.user.UpdateUserTargetResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.user.UserInfoResponse;
@@ -19,6 +17,7 @@ import com.toeic.toeic_practice_backend.domain.dto.response.user.UpdateUserRoleR
 import com.toeic.toeic_practice_backend.domain.dto.response.user.UpdateUserStatusResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Role;
 import com.toeic.toeic_practice_backend.domain.entity.User;
+import com.toeic.toeic_practice_backend.domain.entity.User.TestAttemptStat;
 import com.toeic.toeic_practice_backend.exception.AppException;
 import com.toeic.toeic_practice_backend.mapper.UserMapper;
 import com.toeic.toeic_practice_backend.repository.RoleRepository;
@@ -42,10 +41,15 @@ public class UserService {
 		return response;
 	}
 	
-	public HashSet<String> getUserTestHistory(String email) {
+	public List<String> getTestIdsHistory(String email) {
 		User user = userRepository.findByEmailWithOnlyTestHistory(email)
 				.orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-		return user.getTestHistory();
+		List<TestAttemptStat> testHistory = user.getTestHistory();
+		List<String> testIdsHistory = new ArrayList<>();
+		for(TestAttemptStat attempt : testHistory ) {
+			testIdsHistory.add(attempt.getTestId());
+		}
+		return testIdsHistory;
 	}
 	
 	public Optional<User> getUserByEmail(String email) {

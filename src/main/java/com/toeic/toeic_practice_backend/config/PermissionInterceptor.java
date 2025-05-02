@@ -3,10 +3,12 @@ package com.toeic.toeic_practice_backend.config;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.HandlerMapping;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.toeic.toeic_practice_backend.domain.entity.Permission;
 import com.toeic.toeic_practice_backend.domain.entity.Role;
 import com.toeic.toeic_practice_backend.domain.entity.User;
@@ -17,11 +19,22 @@ import com.toeic.toeic_practice_backend.utils.security.SecurityUtils;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class PermissionInterceptor implements HandlerInterceptor {
+
+    private static final String INTERNAL_API_PATH_PREFIX = "/api/v1/internal";
+    private static final String API_KEY_HEADER_NAME = "X-Internal-API-Key";
 
     @Autowired
     private UserService userService;
+    
+    @Autowired
+    private ObjectMapper objectMapper;
+    
+    @Value("${recommender.internal.api-key}")
+    private String internalApiKey;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -41,7 +54,28 @@ public class PermissionInterceptor implements HandlerInterceptor {
         System.out.println(">>> path= " + path);
         System.out.println(">>> requestURI= " + requestURI);
         System.out.println(">>> httpMethod= " + httpMethod);
+        
+        // Check for internal API requests
+        if (requestURI.startsWith(INTERNAL_API_PATH_PREFIX)) {
+            String apiKeyHeader = request.getHeader(API_KEY_HEADER_NAME);
+            // Check if the API key is missing or invalid
+            if (apiKeyHeader == null || !apiKeyHeader.equals(internalApiKey)) {
+                log.warn("Unauthorized access attempt to internal API: {}", requestURI);
+                
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json");
+                
+                // Write a JSON error response
+                objectMapper.writeValue(response.getOutputStream(), 
+                        new ErrorResponse("Unauthorized", "Invalid or missing API key"));
+                return false;
+            }
+            
+            log.debug("Authorized internal API request to: {}", requestURI);
+            return true; // Skip regular permission check for internal APIs
+        }
 
+        // Regular permission check for non-internal APIs
         // Lấy email từ security context
         String email = SecurityUtils.getCurrentUserLogin()
                 .filter(user -> !user.equals("anonymousUser"))
@@ -93,5 +127,23 @@ public class PermissionInterceptor implements HandlerInterceptor {
         // Sử dụng regex để chuyển {variable} thành phần tử động
         String regex = apiPath.replaceAll("\\{\\w+}", "[^/]+");
         return requestPath.matches(regex);
+    }
+    
+    private static class ErrorResponse {
+        private final String error;
+        private final String message;
+        
+        public ErrorResponse(String error, String message) {
+            this.error = error;
+            this.message = message;
+        }
+        
+        public String getError() {
+            return error;
+        }
+        
+        public String getMessage() {
+            return message;
+        }
     }
 }

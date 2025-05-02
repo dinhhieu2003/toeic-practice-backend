@@ -1,6 +1,6 @@
 package com.toeic.toeic_practice_backend.service;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -13,6 +13,7 @@ import com.toeic.toeic_practice_backend.domain.dto.response.pagination.Paginatio
 import com.toeic.toeic_practice_backend.domain.dto.response.test.GetTestCardResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Category;
 import com.toeic.toeic_practice_backend.domain.entity.Test;
+import com.toeic.toeic_practice_backend.mapper.TestMapper;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,6 +24,7 @@ public class TestCategoryService {
 	private final CategoryService categoryService;
 	private final UserService userService;
 	private final AuthService authService;
+	private final TestMapper testMapper;
 	
 	public PaginationResponse<List<GetTestCardResponse>> getTestsByFormatAndYear(
 			String format, String year, Pageable pageable) {
@@ -49,26 +51,17 @@ public class TestCategoryService {
 		meta.setPageSize(pageable.getPageSize());
 		meta.setTotalItems(testPage.getTotalElements());
 		meta.setTotalPages(testPage.getTotalPages());
+		
 		List<Test> listTest = testPage.getContent();
-		HashSet<String> testIds = new HashSet<>();
+		List<String> testIdsAttempt = new ArrayList<>();
 		
 	    String email = authService.getCurrentEmail();
 	    if(email != null) {
-	    	testIds.addAll(userService.getUserTestHistory(email));
+	    	testIdsAttempt.addAll(userService.getTestIdsHistory(email));
 	    }
 		
-		List<GetTestCardResponse> result = listTest.stream()
-                .map(test -> {
-                    GetTestCardResponse testCardResponse = new GetTestCardResponse();
-                    testCardResponse.setId(test.getId());
-                    testCardResponse.setName(test.getName());
-                    testCardResponse.setFormat(test.getCategory().getFormat());
-                    testCardResponse.setYear(test.getCategory().getYear());
-                    testCardResponse.setTotalUser(test.getTotalUserAttempt());
-                    testCardResponse.setCompleted(testIds.contains(test.getId()));
-                    return testCardResponse;
-                })
-                .collect(Collectors.toList());
+	    List<GetTestCardResponse> result = testMapper.listTestToListGetTestCardResponse(listTest, testIdsAttempt);
+
 		response.setMeta(meta);
 		response.setResult(result);
 		return response;

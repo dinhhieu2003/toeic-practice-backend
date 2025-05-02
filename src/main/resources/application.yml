@@ -81,3 +81,10 @@ azure:
 # api
 api:
   prefix: /api/v1
+  
+# recommender service interaction
+recommender:
+  service:
+    url: ${RECOMMENDER_SERVICE_URL}
+  internal:
+    api-key: ${RECOMMENDER_INTERNAL_API_KEY} 

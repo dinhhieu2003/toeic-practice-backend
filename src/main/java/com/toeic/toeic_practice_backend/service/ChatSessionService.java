@@ -80,7 +80,8 @@ public class ChatSessionService {
     	StringBuilder userPromptBuilder = new StringBuilder();
     	userPromptBuilder.append("Hi! I'm about to ask you a TOEIC-related question. "
     			+ "Please take a moment to review the image context below (if available), "
-    			+ "and respond with 'Ready' and 'Ready, i can read image' (if you can read image) when you're prepared to begin.");
+    			+ "if image is unavailable, respond with 'Ready' and 'Ready, i can read image' (if you can read image) when you're prepared to begin."
+    			+ "Please only response 'Ready' or 'Ready, i can read image'");
     	TextPart userPromptTextPart = new TextPart(userPromptBuilder.toString());
     	content.add(userPromptTextPart);
     	// Add image if part num is 1
@@ -91,7 +92,7 @@ public class ChatSessionService {
         			// Image part of system prompt
         			String url = resource.getContent();
         			ImageUrlPart systemPromptImageUrlPart = 
-        					new ImageUrlPart(new ImageUrl(url, "auto"));
+        					new ImageUrlPart(new ImageUrl(url, "high"));
         			content.add(systemPromptImageUrlPart);
         		}
         	}
