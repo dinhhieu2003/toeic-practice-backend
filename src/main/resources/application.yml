@@ -10,7 +10,7 @@ spring:
   data:
     mongodb:
       uri: ${MONGODB_URI}
-      database: Toeic
+      database: ${MONGODB_DATABASE_NAME}
       auto-index-creation: true
     redis:
       host: redis
