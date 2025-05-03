@@ -16,7 +16,7 @@ import com.toeic.toeic_practice_backend.domain.entity.Lecture;
 public interface LectureRepository extends MongoRepository<Lecture, String> {
 	Page<Lecture> findByIsActiveTrue(Pageable pageable);
 	@Aggregation(pipeline = {
-	        "{ $match: { lectureId: { $ne: ?0 } } }",
+	        "{ $match: { lectureId: { $ne: ?0 }, active: true } }",
 	        "{ $sample: { size: ?1 } }"
 	    })
 	List<Lecture> findRandomLecturesExcludingId(String lectureId, int size);

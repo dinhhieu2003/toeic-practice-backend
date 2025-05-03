@@ -16,13 +16,13 @@ import org.springframework.stereotype.Service;
 
 import com.toeic.toeic_practice_backend.domain.dto.request.lecture.CreateLectureRequest;
 import com.toeic.toeic_practice_backend.domain.dto.request.lecture.CreateLecturePracticeRequest;
-import com.toeic.toeic_practice_backend.domain.dto.request.lecture.CreateLecturePracticeRequest.PracticeQuestion;
 import com.toeic.toeic_practice_backend.domain.dto.request.lecture.UpdateLectureStatusRequest;
 import com.toeic.toeic_practice_backend.domain.dto.response.lecture.RandomLectureResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.lecture.UpdateLectureStatusResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.Meta;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Lecture;
+import com.toeic.toeic_practice_backend.domain.entity.Lecture.PracticeQuestion;
 import com.toeic.toeic_practice_backend.domain.entity.Question;
 import com.toeic.toeic_practice_backend.domain.entity.Topic;
 import com.toeic.toeic_practice_backend.exception.AppException;
@@ -168,31 +168,10 @@ public class LectureService {
 
     public Lecture saveLecturePractice(String lectureId, CreateLecturePracticeRequest request) {
         Lecture existedLecture = lectureRepository.findById(lectureId).orElseThrow(()-> new AppException(ErrorCode.LECTURE_NOT_FOUND));
-        List<Question> questions = request.getPracticeQuestions().stream().map(practiceQuestion -> 
-            convertPracticeToQuestion(practiceQuestion)
-        ).collect(Collectors.toList());
-        List<Question> savedQuestion = questionRepository.saveAll(questions);
-        existedLecture.setPracticeQuestions(savedQuestion);
+        List<PracticeQuestion> practiceQuestions = request.getPracticeQuestions();
+        existedLecture.setPracticeQuestions(practiceQuestions);
+        existedLecture.setTotalQuestion(practiceQuestions.size());
         return lectureRepository.save(existedLecture);
-    }
-
-    private Question convertPracticeToQuestion(PracticeQuestion practice) {
-        return Question.builder()
-            .type(practice.getType())
-            .subQuestions(practice.getSubQuestions().size() > 0 ? 
-                practice.getSubQuestions().stream().map(sub -> 
-                    convertPracticeToQuestion(sub)
-                ).collect(Collectors.toList())
-                : null
-            )
-            .content(practice.getContent())
-            .topic(topicService.getTopicByIds(practice.getTopicIds()))
-            .transcript(practice.getTranscript())
-            .explanation(practice.getExplanation())
-            .answers(practice.getAnswers())
-            .correctAnswer(practice.getCorrectAnswer())
-            .resources(practice.getResources())
-            .build();
     }
 
     public Lecture updateLecture(String lectureId, CreateLectureRequest request) {
@@ -203,10 +182,6 @@ public class LectureService {
         existLecture.setTopic(topics);
         return lectureRepository.save(existLecture);
     }
-
-    // public Lecture updateLecturePractice(String lectureId) {
-
-    // }
 
     public void deleteLecturePractice(String practiceId) {
         Lecture lecture = lectureRepository.findById(practiceId).orElseThrow(()-> new AppException(ErrorCode.LECTURE_NOT_FOUND));
