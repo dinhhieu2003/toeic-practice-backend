@@ -20,30 +20,32 @@ public enum ErrorCode {
 	CATEGORY_NOT_FOUND(2002, "Category not found", HttpStatus.NOT_FOUND),
 	
 //	Test 
-	TEST_ALREADY_EXISTS(2001, "Test already exists", HttpStatus.BAD_REQUEST),
-	TEST_NOT_FOUND(2002, "Test not found", HttpStatus.NOT_FOUND),
+	TEST_ALREADY_EXISTS(3001, "Test already exists", HttpStatus.BAD_REQUEST),
+	TEST_NOT_FOUND(3002, "Test not found", HttpStatus.NOT_FOUND),
 	
 //	Topic
-	TOPIC_ALREADY_EXISTS(3001, "Topic already exists", HttpStatus.BAD_REQUEST),
-	TOPIC_NOT_FOUND(3002, "Topic not found", HttpStatus.NOT_FOUND),
+	TOPIC_ALREADY_EXISTS(4001, "Topic already exists", HttpStatus.BAD_REQUEST),
+	TOPIC_NOT_FOUND(4002, "Topic not found", HttpStatus.NOT_FOUND),
 	
 //	User
-	USER_NOT_FOUND(4001, "Email not found", HttpStatus.NOT_FOUND),
+	USER_NOT_FOUND(5001, "Email not found", HttpStatus.NOT_FOUND),
 	
 //	Question
-	QUESTION_NOT_FOUND(5001, "Question not found", HttpStatus.NOT_FOUND),
+	QUESTION_NOT_FOUND(6001, "Question not found", HttpStatus.NOT_FOUND),
+	EXCEL_IMPORT_ERROR(6002, "Error importing Excel at row: %s", HttpStatus.BAD_REQUEST),
+	CEL_IMPORT_ERROR(6003, "ERROR in a cell with message: %s", HttpStatus.BAD_REQUEST),
 
 //	Result
-	RESULT_NOT_FOUND(6001, "Result not found", HttpStatus.NOT_FOUND),
+	RESULT_NOT_FOUND(7001, "Result not found", HttpStatus.NOT_FOUND),
 
 //  Lecture
-	LECTURE_NOT_FOUND(7001, "Lecture not found", HttpStatus.NOT_FOUND),
+	LECTURE_NOT_FOUND(8001, "Lecture not found", HttpStatus.NOT_FOUND),
 	
 //	Permission
-	PERMISSION_NOT_FOUND(8001, "Permission not found", HttpStatus.NOT_FOUND),
+	PERMISSION_NOT_FOUND(9001, "Permission not found", HttpStatus.NOT_FOUND),
 	
 //	Role
-	ROLE_NOT_FOUND(9001, "Role not found", HttpStatus.NOT_FOUND);
+	ROLE_NOT_FOUND(10001, "Role not found", HttpStatus.NOT_FOUND);
 	
 	private final int code;
 	private final String message;
@@ -55,5 +57,7 @@ public enum ErrorCode {
 		this.statusCode = statusCode;
 	}
 	
-	
+	public String formatMessage(Object... args) {
+		return String.format(this.message, args);
+	}
 }

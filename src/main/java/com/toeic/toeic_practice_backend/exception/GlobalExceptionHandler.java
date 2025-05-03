@@ -23,7 +23,7 @@ public class GlobalExceptionHandler {
 		ErrorCode errorCode = ex.getErrorCode();
 		ApiResponse<Object> res = new ApiResponse<>();
         res.setStatusCode(errorCode.getCode());
-        res.setMessage(errorCode.getMessage());
+        res.setMessage(ex.getMessage());
         res.setError(HttpStatus.valueOf(errorCode.getStatusCode().value()).name());
         return ResponseEntity.status(errorCode.getStatusCode()).body(res);
 	}

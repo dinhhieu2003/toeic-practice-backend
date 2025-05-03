@@ -231,25 +231,41 @@ public class QuestionService {
             Question currentGroup = null;
             while (rows.hasNext()) {
                 Row currentRow = rows.next();
-                Question question = parseRowByPart(currentRow, partNum);
-                if (question != null) {
-                    question.setTestId(testId);
-                    question.setPartNum(Integer.parseInt(partNum));
-                    question.setActive(true);
+                try {
+                    Question question = parseRowByPart(currentRow, partNum);
+                    if (question != null) {
+                        question.setTestId(testId);
+                        question.setPartNum(Integer.parseInt(partNum));
+                        question.setActive(true);
 
-                    if ("group".equalsIgnoreCase(question.getType())) {
-                        currentGroup = question;
-                        questionRepository.save(currentGroup);
-                    } else if (currentGroup != null && "subquestion".equalsIgnoreCase(question.getType())) {
-                        question.setParentId(currentGroup.getId());
-                    	questionRepository.save(question);
-                        currentGroup.getSubQuestions().add(question);
-                        currentGroup.setQuestionNum(question.getQuestionNum());
-                        questionRepository.save(currentGroup);
-                    } else {
-                        currentGroup = null;
-                        questionRepository.save(question);
+                        if ("group".equalsIgnoreCase(question.getType())) {
+                            currentGroup = question;
+                            questionRepository.save(currentGroup);
+                        } else if (currentGroup != null && "subquestion".equalsIgnoreCase(question.getType())) {
+                            question.setParentId(currentGroup.getId());
+                            questionRepository.save(question);
+                            currentGroup.getSubQuestions().add(question);
+                            currentGroup.setQuestionNum(question.getQuestionNum());
+                            questionRepository.save(currentGroup);
+                        } else {
+                            currentGroup = null;
+                            questionRepository.save(question);
+                        }
                     }
+                } catch (Exception e) {
+                    // Get row number for error message
+                    int rowNum = currentRow.getRowNum() + 1; // +1 because row index is 0-based
+                    log.error("Error importing row {} in sheet {}: {}", rowNum, partNum, e.getMessage());
+                    
+                    // Close workbook before throwing exception
+                    if (workbook != null) {
+                        workbook.close();
+                    }
+                    
+                    // Throw formatted AppException with row number
+                    String formattedMessage = String.format(ErrorCode.EXCEL_IMPORT_ERROR.getMessage(), rowNum);
+                    AppException appException = new AppException(ErrorCode.EXCEL_IMPORT_ERROR, formattedMessage);
+                    throw appException;
                 }
             }
         }
@@ -282,7 +298,7 @@ public class QuestionService {
     private Question parsePart1(Row row) {
         Question question = new Question();
         question.setType(getCellValue(row.getCell(0)));
-        question.setQuestionNum((int) getNumericCellValue(row.getCell(1)));
+        question.setQuestionNum((int) getSafeNumericCellValue(row.getCell(1)));
 
         // Handle resources if available
         String imageName = getCellValue(row.getCell(2));
@@ -305,7 +321,7 @@ public class QuestionService {
 
         question.setTranscript(getCellValue(row.getCell(9)));
         question.setExplanation(getCellValue(row.getCell(10)));
-        question.setDifficulty((int) getNumericCellValue(row.getCell(11)));
+        question.setDifficulty((int) getSafeNumericCellValue(row.getCell(11)));
 
         return question;
     }
@@ -313,7 +329,7 @@ public class QuestionService {
     private Question parsePart2(Row row) {
         Question question = new Question();
         question.setType(getCellValue(row.getCell(0)));
-        question.setQuestionNum((int) getNumericCellValue(row.getCell(1)));
+        question.setQuestionNum((int) getSafeNumericCellValue(row.getCell(1)));
         question.setContent(getCellValue(row.getCell(2)));
 
         // Handle resources if available
@@ -334,7 +350,7 @@ public class QuestionService {
 
         question.setTranscript(getCellValue(row.getCell(8)));
         question.setExplanation(getCellValue(row.getCell(9)));
-        question.setDifficulty((int) getNumericCellValue(row.getCell(10)));
+        question.setDifficulty((int) getSafeNumericCellValue(row.getCell(10)));
         return question;
     }
 
@@ -342,7 +358,7 @@ public class QuestionService {
         Question question = new Question();
         question.setType(getCellValue(row.getCell(0)));
         if (!"group".equalsIgnoreCase(question.getType())) {
-            question.setQuestionNum((int) getNumericCellValue(row.getCell(1)));
+            question.setQuestionNum((int) getSafeNumericCellValue(row.getCell(1)));
         }
         question.setContent(getCellValue(row.getCell(2)));
 
@@ -368,7 +384,7 @@ public class QuestionService {
 
         question.setTranscript(getCellValue(row.getCell(10)));
         question.setExplanation(getCellValue(row.getCell(11)));
-        question.setDifficulty((int) getNumericCellValue(row.getCell(12)));
+        question.setDifficulty((int) getSafeNumericCellValue(row.getCell(12)));
 
         return question;
     }
@@ -376,7 +392,7 @@ public class QuestionService {
     private Question parsePart5(Row row) {
         Question question = new Question();
         question.setType(getCellValue(row.getCell(0)));
-        question.setQuestionNum((int) getNumericCellValue(row.getCell(1)));
+        question.setQuestionNum((int) getSafeNumericCellValue(row.getCell(1)));
         question.setContent(getCellValue(row.getCell(2)));
 
         // Extract options
@@ -387,7 +403,7 @@ public class QuestionService {
         question.setAnswers(answers);
         question.setCorrectAnswer(getCellValue(row.getCell(7)));
         question.setExplanation(getCellValue(row.getCell(8)));
-        question.setDifficulty((int) getNumericCellValue(row.getCell(9)));
+        question.setDifficulty((int) getSafeNumericCellValue(row.getCell(9)));
 
         return question;
        
@@ -397,7 +413,7 @@ public class QuestionService {
 	    Question question = new Question();
 	    question.setType(getCellValue(row.getCell(0)));
 	    if (!"group".equalsIgnoreCase(question.getType())) {
-	        question.setQuestionNum((int) getNumericCellValue(row.getCell(1)));
+	        question.setQuestionNum((int) getSafeNumericCellValue(row.getCell(1)));
 	    }
 	    question.setContent(getCellValue(row.getCell(2)));
 	
@@ -447,17 +463,73 @@ public class QuestionService {
 	    question.setCorrectAnswer(getCellValue(row.getCell(11)));
 	    question.setTranscript(getCellValue(row.getCell(12)));
 	    question.setExplanation(getCellValue(row.getCell(13)));
-	    question.setDifficulty((int) getNumericCellValue(row.getCell(14)));
+	    question.setDifficulty((int) getSafeNumericCellValue(row.getCell(14)));
 	
 	    return question;
     }
 
     private String getCellValue(Cell cell) {
-        return (cell != null) ? cell.getStringCellValue() : null;
+        if (cell == null) {
+            return null;
+        }
+        
+        try {
+            // Try to get string value directly
+            return cell.getStringCellValue();
+        } catch (IllegalStateException e) {
+            // If cell contains a numeric value or other type, convert it to string
+            switch (cell.getCellType()) {
+                case NUMERIC:
+                    // Handle numeric values
+                    double numValue = cell.getNumericCellValue();
+                    // Check if it's an integer to format appropriately
+                    if (numValue == Math.floor(numValue)) {
+                        return String.valueOf((int) numValue);
+                    } else {
+                        return String.valueOf(numValue);
+                    }
+                case BOOLEAN:
+                    return String.valueOf(cell.getBooleanCellValue());
+                case FORMULA:
+                    try {
+                        return cell.getStringCellValue();
+                    } catch (Exception ex) {
+                        try {
+                            return String.valueOf(cell.getNumericCellValue());
+                        } catch (Exception exc) {
+                            return cell.getCellFormula();
+                        }
+                    }
+                case BLANK:
+                    return "";
+                default:
+                    log.warn("Unexpected cell type: {}", cell.getCellType());
+                    return "";
+            }
+        }
     }
 
-    private double getNumericCellValue(Cell cell) {
-        return (cell != null) ? cell.getNumericCellValue() : 0;
+    private double getSafeNumericCellValue(Cell cell) {
+        if (cell == null) {
+            return 0;
+        }
+        try {
+            // Try to get numeric value directly
+            return cell.getNumericCellValue();
+        } catch (IllegalStateException e) {
+            // If cell contains a string, try to parse it as a number
+            try {
+                String stringValue = cell.getStringCellValue();
+                if (stringValue == null || stringValue.trim().isEmpty()) {
+                    return 0;
+                }
+                return Double.parseDouble(stringValue.trim());
+            } catch (Exception ex) {
+                // If parsing fails, log the error and return default value
+                log.error("Error parsing numeric value from cell: {}", ex.getMessage());
+                throw new AppException(ErrorCode.CEL_IMPORT_ERROR, ex.getMessage());
+            }
+        }
     }
 
     public List<Question> getQuestionByTestId(String testId, String listPart) {
