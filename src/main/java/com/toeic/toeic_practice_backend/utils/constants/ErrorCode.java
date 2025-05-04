@@ -40,6 +40,7 @@ public enum ErrorCode {
 
 //  Lecture
 	LECTURE_NOT_FOUND(8001, "Lecture not found", HttpStatus.NOT_FOUND),
+	INDEX_OUT_BOUND(8002, "Index practice is out of bound", HttpStatus.BAD_REQUEST),
 	
 //	Permission
 	PERMISSION_NOT_FOUND(9001, "Permission not found", HttpStatus.NOT_FOUND),

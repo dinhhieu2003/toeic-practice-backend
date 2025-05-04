@@ -17,13 +17,19 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.toeic.toeic_practice_backend.domain.dto.request.lecture.CreateLectureRequest;
+import com.toeic.toeic_practice_backend.domain.dto.request.lecture.CreatePracticeLectureRequest;
+import com.toeic.toeic_practice_backend.domain.dto.request.lecture.DeletePracticeLectureRequest;
 import com.toeic.toeic_practice_backend.domain.dto.request.lecture.CreateLecturePracticeRequest;
 import com.toeic.toeic_practice_backend.domain.dto.request.lecture.UpdateLecturePercentRequest;
 import com.toeic.toeic_practice_backend.domain.dto.request.lecture.UpdateLectureStatusRequest;
+import com.toeic.toeic_practice_backend.domain.dto.request.lecture.UpdatePracticeLectureRequest;
+import com.toeic.toeic_practice_backend.domain.dto.response.lecture.CreatePracticeLectureResponse;
+import com.toeic.toeic_practice_backend.domain.dto.response.lecture.DeletePracticeLectureResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.lecture.LectureCardResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.lecture.RandomLectureResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.lecture.UpdateLecturePercentResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.lecture.UpdateLectureStatusResponse;
+import com.toeic.toeic_practice_backend.domain.dto.response.lecture.UpdatePracticeLectureResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Lecture;
 import com.toeic.toeic_practice_backend.service.LectureService;
@@ -124,13 +130,20 @@ public class LectureController {
     ) {
         return ResponseEntity.ok(lectureService.saveLectureContent(lectureId, request));
     }
-
-    @PostMapping("{lectureId}/savePractice")
-    public ResponseEntity<Lecture> saveLecturePractice(
-        @PathVariable String lectureId,
-        @RequestBody CreateLecturePracticeRequest request
-    ) {
-        return ResponseEntity.ok(lectureService.saveLecturePractice(lectureId, request));
+    
+    @PostMapping("{lectureId}/practice")
+    public ResponseEntity<CreatePracticeLectureResponse> addPractice(@PathVariable String lectureId, CreatePracticeLectureRequest request) {
+    	return ResponseEntity.ok(lectureService.addPractice(lectureId, request));
+    }
+    
+    @PutMapping("{lectureId}/practice")
+    public ResponseEntity<UpdatePracticeLectureResponse> updatePractice(@PathVariable String lectureId, UpdatePracticeLectureRequest request) {
+    	return ResponseEntity.ok(lectureService.updatePractice(lectureId, request));
+    }
+    
+    @DeleteMapping("{lectureId}/practice")
+    public ResponseEntity<DeletePracticeLectureResponse> deletePractice(@PathVariable String lectureId, DeletePracticeLectureRequest request) {
+    	return ResponseEntity.ok(lectureService.deletePractice(lectureId, request));
     }
 
     @PutMapping("{lectureId}")
