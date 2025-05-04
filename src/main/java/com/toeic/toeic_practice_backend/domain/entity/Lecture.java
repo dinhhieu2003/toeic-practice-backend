@@ -26,6 +26,28 @@ public class Lecture extends BaseEntity{
     private String content;
     @DBRef(lazy=true)
     private List<Topic> topic = new ArrayList<>();
-    @DBRef(lazy=true)
-    private List<Question> practiceQuestions;
+    private List<PracticeQuestion> practiceQuestions = new ArrayList<>();
+    private int totalQuestion = 0;
+    
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class PracticeQuestion {
+    	private String content;
+    	private List<Resource> resources = new ArrayList<>();
+    	private String transcript;
+    	private String explanation;
+        private List<String> answers= new ArrayList<>();
+        private String correctAnswer;
+    }
+    
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class Resource {
+    	private String type;
+    	private String content;
+    }
 }

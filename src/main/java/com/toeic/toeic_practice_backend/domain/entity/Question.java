@@ -28,7 +28,6 @@ public class Question extends BaseEntity{
     private String id;
 	@Indexed
 	private String testId;
-	private String practiceId;
 	private String parentId;	// id of group (question)
     private int questionNum;
     private int partNum;
