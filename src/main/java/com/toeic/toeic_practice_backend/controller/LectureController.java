@@ -132,17 +132,17 @@ public class LectureController {
     }
     
     @PostMapping("{lectureId}/practice")
-    public ResponseEntity<CreatePracticeLectureResponse> addPractice(@PathVariable String lectureId, CreatePracticeLectureRequest request) {
+    public ResponseEntity<CreatePracticeLectureResponse> addPractice(@PathVariable String lectureId, @RequestBody CreatePracticeLectureRequest request) {
     	return ResponseEntity.ok(lectureService.addPractice(lectureId, request));
     }
     
     @PutMapping("{lectureId}/practice")
-    public ResponseEntity<UpdatePracticeLectureResponse> updatePractice(@PathVariable String lectureId, UpdatePracticeLectureRequest request) {
+    public ResponseEntity<UpdatePracticeLectureResponse> updatePractice(@PathVariable String lectureId, @RequestBody UpdatePracticeLectureRequest request) {
     	return ResponseEntity.ok(lectureService.updatePractice(lectureId, request));
     }
     
     @DeleteMapping("{lectureId}/practice")
-    public ResponseEntity<DeletePracticeLectureResponse> deletePractice(@PathVariable String lectureId, DeletePracticeLectureRequest request) {
+    public ResponseEntity<DeletePracticeLectureResponse> deletePractice(@PathVariable String lectureId, @RequestBody DeletePracticeLectureRequest request) {
     	return ResponseEntity.ok(lectureService.deletePractice(lectureId, request));
     }
 
