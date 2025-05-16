@@ -31,7 +31,7 @@ public class CommentSpecification extends BaseSpecification<Comment> {
         }
 
         if (active != null) {
-            criteriaList.add(Criteria.where("deleted").is(!active)); // active = true -> deleted = false
+            criteriaList.add(Criteria.where("isActive").is(active));
         }
 
         if (parentId != null) {
