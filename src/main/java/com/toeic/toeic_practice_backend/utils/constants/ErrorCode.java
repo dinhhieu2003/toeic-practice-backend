@@ -46,7 +46,10 @@ public enum ErrorCode {
 	PERMISSION_NOT_FOUND(9001, "Permission not found", HttpStatus.NOT_FOUND),
 	
 //	Role
-	ROLE_NOT_FOUND(10001, "Role not found", HttpStatus.NOT_FOUND);
+	ROLE_NOT_FOUND(10001, "Role not found", HttpStatus.NOT_FOUND),
+	
+	// Comment
+	COMMENT_NOT_FOUND(11001, "Comment not found", HttpStatus.NOT_FOUND);
 	
 	private final int code;
 	private final String message;
