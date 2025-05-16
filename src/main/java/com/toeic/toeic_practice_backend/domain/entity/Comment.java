@@ -60,5 +60,5 @@ public class Comment extends BaseEntity {
     private float probHateSpeech;
     private float probSpam;
     private float probSevereToxicity;
-    private float obscene;
+    private float probObscene;
 }
