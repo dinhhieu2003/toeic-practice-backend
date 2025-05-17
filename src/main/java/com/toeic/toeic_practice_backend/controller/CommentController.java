@@ -18,6 +18,7 @@ import com.toeic.toeic_practice_backend.domain.dto.request.comment.CreateComment
 import com.toeic.toeic_practice_backend.domain.dto.request.comment.DeleteCommentRequest;
 import com.toeic.toeic_practice_backend.domain.dto.response.comment.CommentViewResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
+import com.toeic.toeic_practice_backend.domain.entity.Comment;
 import com.toeic.toeic_practice_backend.service.CommentService;
 import com.toeic.toeic_practice_backend.utils.PaginationUtils;
 import com.toeic.toeic_practice_backend.utils.constants.CommentTargetType;
@@ -33,6 +34,20 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class CommentController {
 	private final CommentService commentService;
+	
+	@Operation(summary = "Get comments for management", description = "Get paginated comments for management.")
+	@GetMapping("")
+	public ResponseEntity<PaginationResponse<List<Comment>>> getComments(
+			@RequestParam(defaultValue = PaginationConstants.DEFAULT_CURRENT_PAGE) int current,
+			@RequestParam(defaultValue = PaginationConstants.DEFAULT_PAGE_SIZE) int pageSize,
+			@RequestParam(required = false, defaultValue = "") String term,
+			@RequestParam(required = false) String[] sortBy,
+			@RequestParam(required = false) String[] sortDirection,
+			@RequestParam(required = false) Boolean active) {
+		log.info("Get comments for management");
+		Pageable pageable = PaginationUtils.createPageable(current, pageSize);
+		return ResponseEntity.ok(commentService.getComments(pageable, term, sortBy, sortDirection, active));
+	}
 	
 	@Operation(summary = "Get root comments", description = "Get paginated root-level comments for a given target.")
 	@GetMapping("/root/{targetType}/{targetId}")

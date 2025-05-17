@@ -39,6 +39,30 @@ public class CommentService {
 	private final CommentMapper commentMapper;
 	private final UserService userService;
 	
+	public PaginationResponse<List<Comment>> getComments(Pageable pageable, String term, String[] sortBy, String[] sortDirection, Boolean active) {
+		if(sortBy == null || sortBy.length == 0) {
+			sortBy = new String[] {"createdAt"};
+		}
+		
+		if(sortDirection == null || sortDirection.length == 0) {
+			sortDirection = new String[] {"desc"};
+		}
+		String parentId = null;
+		CommentTargetType commentTargetType = null;
+		String targetId = null;
+		boolean filteredByParentId = false;
+		CommentSpecification spec = new CommentSpecification(term, sortBy, sortDirection, active,
+				commentTargetType, targetId, parentId, filteredByParentId);
+		
+		Query query = spec.buildQuery(pageable);
+		List<Comment> comments = mongoTemplate.find(query, Comment.class);
+		long totalItems = mongoTemplate.count(query.skip(0).limit(0), Comment.class);
+		Page<Comment> pageData = new PageImpl<>(comments, pageable, totalItems);
+		PaginationResponse<List<Comment>> response = 
+				PaginationUtils.buildPaginationResponse(pageable, pageData);
+		return response;
+	}
+	
 	public PaginationResponse<List<CommentViewResponse>> getRootComments(Pageable pageable, String term, String[] sortBy, String[] sortDirection, Boolean active,
 			CommentTargetType commentTargetType, String targetId) {
 		if(sortBy == null || sortBy.length == 0) {
@@ -49,8 +73,9 @@ public class CommentService {
 			sortDirection = new String[] {"desc"};
 		}
 		String parentId = null;
+		boolean filteredByParentId = true;
 		CommentSpecification spec = new CommentSpecification(term, sortBy, sortDirection, active,
-				commentTargetType, targetId, parentId);
+				commentTargetType, targetId, parentId, filteredByParentId);
 		
 		// current user
 		var authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -82,8 +107,9 @@ public class CommentService {
 			sortDirection = new String[] {"desc"};
 		}
 		
+		boolean filteredByParentId = true;
 		CommentSpecification spec = new CommentSpecification(term, sortBy, sortDirection, active,
-				commentTargetType, targetId, parentId);
+				commentTargetType, targetId, parentId, filteredByParentId);
 		
 		// current user
 		var authentication = SecurityContextHolder.getContext().getAuthentication();

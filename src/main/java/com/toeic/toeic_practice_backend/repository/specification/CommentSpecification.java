@@ -15,12 +15,14 @@ public class CommentSpecification extends BaseSpecification<Comment> {
 	private CommentTargetType commentTargetType;
 	private String targetId;
 	private String parentId;
+	private boolean filteredByParentId;
 	public CommentSpecification(String searchTerm, String[] sortBy, String[] sortDirection, Boolean active,
-			CommentTargetType commentTargetType, String targetId, String parentId) {
+			CommentTargetType commentTargetType, String targetId, String parentId, boolean filteredByParentId) {
 		super(searchTerm, sortBy, sortDirection, active);
 		this.commentTargetType = commentTargetType;
 		this.targetId = targetId;
 		this.parentId = parentId;
+		this.filteredByParentId = filteredByParentId;
 	}
 
 	@Override
@@ -33,17 +35,20 @@ public class CommentSpecification extends BaseSpecification<Comment> {
         if (active != null) {
             criteriaList.add(Criteria.where("isActive").is(active));
         }
-
-        if (parentId != null) {
-        	System.out.println("ParentId: " + parentId);
-            criteriaList.add(Criteria.where("parentId").is(parentId));
-        } else {
-        	// get root comments
-            criteriaList.add(new Criteria().orOperator(
-                Criteria.where("parentId").is(null),
-                Criteria.where("parentId").is("")
-            ));
+        
+        if(filteredByParentId) {
+        	if (parentId != null) {
+            	System.out.println("ParentId: " + parentId);
+                criteriaList.add(Criteria.where("parentId").is(parentId));
+            } else {
+            	// get root comments
+                criteriaList.add(new Criteria().orOperator(
+                    Criteria.where("parentId").is(null),
+                    Criteria.where("parentId").is("")
+                ));
+            }
         }
+        
 
         if (targetId != null) {
             criteriaList.add(Criteria.where("targetId").is(targetId));
