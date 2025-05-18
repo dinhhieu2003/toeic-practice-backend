@@ -1,0 +1,15 @@
+package com.toeic.toeic_practice_backend.utils.constants;
+
+public enum CommentReportReasonCategory {
+	SPAM,
+	HATE_SPEECH,
+	HARASSMENT,
+	VIOLENCE_THREATS,
+	HARMFUL_MISINFORMATION,
+	SELF_HARM_OR_SUICIDE,
+	IMPERSONATION,
+	COPYRIGHT_INFRINGEMENT,
+	CHILD_SAFETY_ISSUES,
+	NON_CONSENSUAL_CONTENT,
+	OTHER
+}

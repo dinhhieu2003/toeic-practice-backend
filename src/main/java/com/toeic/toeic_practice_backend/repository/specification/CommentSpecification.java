@@ -38,7 +38,6 @@ public class CommentSpecification extends BaseSpecification<Comment> {
         
         if(filteredByParentId) {
         	if (parentId != null) {
-            	System.out.println("ParentId: " + parentId);
                 criteriaList.add(Criteria.where("parentId").is(parentId));
             } else {
             	// get root comments
