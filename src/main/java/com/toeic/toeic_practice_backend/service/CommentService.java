@@ -1,20 +1,35 @@
 package com.toeic.toeic_practice_backend.service;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.toeic.toeic_practice_backend.domain.dto.request.comment.CreateCommentRequest;
 import com.toeic.toeic_practice_backend.domain.dto.request.comment.DeleteCommentRequest;
+import com.toeic.toeic_practice_backend.domain.dto.response.ApiResponse;
+import com.toeic.toeic_practice_backend.domain.dto.response.comment.CommentClassificationResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.comment.CommentViewResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Comment;
@@ -25,6 +40,7 @@ import com.toeic.toeic_practice_backend.repository.CommentRepository;
 import com.toeic.toeic_practice_backend.repository.specification.CommentSpecification;
 import com.toeic.toeic_practice_backend.utils.PaginationUtils;
 import com.toeic.toeic_practice_backend.utils.constants.CommentTargetType;
+import com.toeic.toeic_practice_backend.utils.constants.DeleteReasonTagComment;
 import com.toeic.toeic_practice_backend.utils.constants.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
@@ -38,6 +54,7 @@ public class CommentService {
 	private final CommentRepository commentRepository;
 	private final CommentMapper commentMapper;
 	private final UserService userService;
+	private final CommentClassificationService commentClassificationService;
 	
 	public PaginationResponse<List<Comment>> getComments(Pageable pageable, String term, String[] sortBy, String[] sortDirection, Boolean active) {
 		if(sortBy == null || sortBy.length == 0) {
@@ -177,6 +194,9 @@ public class CommentService {
 	            .build();
 	    comment.setActive(true);
 	    Comment createdComment = commentRepository.save(comment);
+	   
+	    commentClassificationService.checkComment(createdComment);
+	    
 	    // Save direct reply count for parent if have
 	    if(parentComment != null) {
 	    	commentRepository.save(parentComment);
@@ -255,4 +275,14 @@ public class CommentService {
 	    
 	    return response;
 	}
+	
+	public Comment getComment(String commentId) {
+		Comment comment = commentRepository.findById(commentId)
+				.orElseThrow(() -> new AppException(ErrorCode.COMMENT_REPORT_NOT_FOUND));
+		return comment;
+	}
+	
+	
+
+
 }
