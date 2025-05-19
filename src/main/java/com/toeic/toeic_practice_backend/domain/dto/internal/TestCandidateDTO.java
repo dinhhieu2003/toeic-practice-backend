@@ -9,6 +9,7 @@ import com.toeic.toeic_practice_backend.domain.entity.Topic;
  */
 public record TestCandidateDTO(
     String testId,
+    String name,
     int difficulty,
     List<String> topics,	// topic names
     int totalUserAttempt
