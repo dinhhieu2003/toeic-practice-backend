@@ -22,6 +22,7 @@ import com.toeic.toeic_practice_backend.exception.AppException;
 import com.toeic.toeic_practice_backend.repository.CommentReportRepository;
 import com.toeic.toeic_practice_backend.repository.specification.CommentReportSpecification;
 import com.toeic.toeic_practice_backend.utils.PaginationUtils;
+import com.toeic.toeic_practice_backend.utils.constants.CommentReportReasonCategory;
 import com.toeic.toeic_practice_backend.utils.constants.CommentReportStatus;
 import com.toeic.toeic_practice_backend.utils.constants.CommentTargetType;
 import com.toeic.toeic_practice_backend.utils.constants.ErrorCode;
@@ -36,7 +37,8 @@ public class CommentReportService {
 	private final CommentService commentService;
 	private final CommentReportRepository commentReportRepository;
 	public PaginationResponse<List<CommentReport>> getCommentReports(Pageable pageable, String term, String[] sortBy, String[] sortDirection, Boolean active,
-			CommentTargetType commentContextType, String commentContextId) {
+			CommentTargetType commentContextType, String commentContextId, 
+			CommentReportStatus status, CommentReportReasonCategory reasonCategory) {
 		if(sortBy == null || sortBy.length == 0) {
 			sortBy = new String[] {"createdAt"};
 		}
@@ -45,7 +47,7 @@ public class CommentReportService {
 			sortDirection = new String[] {"desc"};
 		}
 		
-		CommentReportSpecification spec = new CommentReportSpecification(term, sortBy, sortDirection, active, commentContextType, commentContextId);
+		CommentReportSpecification spec = new CommentReportSpecification(term, sortBy, sortDirection, active, commentContextType, commentContextId, status, reasonCategory);
 		Query query = spec.buildQuery(pageable);
 		List<CommentReport> commentReports = mongoTemplate.find(query, CommentReport.class);
 		long totalItems = mongoTemplate.count(query.skip(0).limit(0), CommentReport.class);

@@ -29,8 +29,12 @@ public class CommentSpecification extends BaseSpecification<Comment> {
 	protected Criteria createSearchCriteria() {
 		List<Criteria> criteriaList = new ArrayList<>();
 		if (searchTerm != null && !searchTerm.isBlank()) {
-            criteriaList.add(Criteria.where("content").regex(".*" + Pattern.quote(searchTerm) + ".*", "i"));
-        }
+		    List<Criteria> orCriteria = new ArrayList<>();
+		    orCriteria.add(Criteria.where("_id").is(searchTerm));
+		    orCriteria.add(Criteria.where("content").regex(".*" + Pattern.quote(searchTerm) + ".*", "i"));
+
+		    criteriaList.add(new Criteria().orOperator(orCriteria.toArray(new Criteria[0])));
+		}
 
         if (active != null) {
             criteriaList.add(Criteria.where("isActive").is(active));

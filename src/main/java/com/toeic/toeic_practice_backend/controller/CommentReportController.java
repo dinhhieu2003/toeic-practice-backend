@@ -20,6 +20,8 @@ import com.toeic.toeic_practice_backend.domain.dto.response.pagination.Paginatio
 import com.toeic.toeic_practice_backend.domain.entity.CommentReport;
 import com.toeic.toeic_practice_backend.service.CommentReportService;
 import com.toeic.toeic_practice_backend.utils.PaginationUtils;
+import com.toeic.toeic_practice_backend.utils.constants.CommentReportReasonCategory;
+import com.toeic.toeic_practice_backend.utils.constants.CommentReportStatus;
 import com.toeic.toeic_practice_backend.utils.constants.CommentTargetType;
 import com.toeic.toeic_practice_backend.utils.constants.PaginationConstants;
 
@@ -41,10 +43,13 @@ public class CommentReportController {
 			@RequestParam(required = false) String[] sortDirection,
 			@RequestParam(required = false) Boolean active,
 			@RequestParam(required = false) CommentTargetType commentContextType,
-			@RequestParam(required = false) String commentContextId) {
+			@RequestParam(required = false) String commentContextId,
+			@RequestParam(required = false) CommentReportStatus status,
+			@RequestParam(required = false) CommentReportReasonCategory reasonCategory) {
 		log.info("Get comment reports");
 		Pageable pageable = PaginationUtils.createPageable(current, pageSize);
-		return ResponseEntity.ok(commentReportService.getCommentReports(pageable, term, sortBy, sortDirection, active, commentContextType, commentContextId));
+		return ResponseEntity.ok(commentReportService.getCommentReports(pageable, term, sortBy, sortDirection, active, 
+				commentContextType, commentContextId, status, reasonCategory));
 	}
 	
 	@PostMapping("")

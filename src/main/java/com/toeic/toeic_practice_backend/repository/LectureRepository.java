@@ -25,7 +25,7 @@ public interface LectureRepository extends MongoRepository<Lecture, String> {
 	/**
 	 * Find all active lectures for recommendation
 	 */
-	List<Lecture> findByActiveTrue();
+	List<Lecture> findByIsActiveTrue();
 	
 	List<Lecture> findLectureByIdIn(List<String> lectureIds);
 }
