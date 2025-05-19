@@ -1,5 +1,6 @@
 package com.toeic.toeic_practice_backend.service;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -109,7 +110,7 @@ public class InternalApiService {
     public List<TestCandidateDTO> getTestCandidates() {
         log.info("Fetching all active test candidates for recommendation");
         
-        List<Test> tests = testRepository.findByActiveTrue();
+        List<Test> tests = testRepository.findByIsActiveTrue();
         
         return tests.stream()
                 .map(this::mapToTestCandidateDTO)
@@ -124,7 +125,7 @@ public class InternalApiService {
     public List<LectureCandidateDTO> getLectureCandidates() {
         log.info("Fetching all active lecture candidates for recommendation");
         
-        List<Lecture> lectures = lectureRepository.findByActiveTrue();
+        List<Lecture> lectures = lectureRepository.findByIsActiveTrue();
         
         return lectures.stream()
                 .map(this::mapToLectureCandidateDTO)
@@ -182,26 +183,27 @@ public class InternalApiService {
     		topics.addAll(question.getTopic());
     	}
     	
-    	List<String> topicIds = topics.stream()
-                .map(Topic::getId)
-                .collect(Collectors.toList());
+    	List<String> topicNames = topics.stream()
+    			.map(Topic::getName)
+    			.collect(Collectors.toList());
         
         return new TestCandidateDTO(
                 test.getId(),
                 test.getDifficulty(),
-                topicIds,
+                topicNames,
                 test.getTotalUserAttempt()
         );
     }
     
     private LectureCandidateDTO mapToLectureCandidateDTO(Lecture lecture) {
-        List<String> topicIds = lecture.getTopic().stream()
-                .map(Topic::getId)
-                .collect(Collectors.toList());
-        
+        List<Topic> topics = lecture.getTopic();
+        List<String> topicNames = topics.stream()
+        		.map(Topic::getName)
+        		.collect(Collectors.toList());
+         
         return new LectureCandidateDTO(
                 lecture.getId(),
-                topicIds,
+                topicNames,
                 lecture.getCreatedAt()
         );
     }

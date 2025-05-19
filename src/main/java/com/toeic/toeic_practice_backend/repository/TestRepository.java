@@ -33,5 +33,5 @@ public interface TestRepository extends MongoRepository<Test, String> {
     /**
      * Find all active tests for recommendation
      */
-    List<Test> findByActiveTrue();
+    List<Test> findByIsActiveTrue();
 }
