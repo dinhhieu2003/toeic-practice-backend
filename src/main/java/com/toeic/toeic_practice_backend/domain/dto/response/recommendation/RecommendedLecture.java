@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RecommendedLecture {
 	private String id;	// its value is lecture label - lectureId or "Hoc tiep"
+	private String name;
 	private float score;
 	private String explanation;
 	private String lectureId;

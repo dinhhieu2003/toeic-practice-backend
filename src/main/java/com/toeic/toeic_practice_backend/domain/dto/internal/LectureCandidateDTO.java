@@ -10,6 +10,7 @@ import com.toeic.toeic_practice_backend.domain.entity.Topic;
  */
 public record LectureCandidateDTO(
     String lectureId,
+    String name,
     List<String> topics,	// topic names
     Instant createdAt
 ) {} 

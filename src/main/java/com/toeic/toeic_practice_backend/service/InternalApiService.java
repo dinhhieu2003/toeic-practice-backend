@@ -189,6 +189,7 @@ public class InternalApiService {
         
         return new TestCandidateDTO(
                 test.getId(),
+                test.getName(),
                 test.getDifficulty(),
                 topicNames,
                 test.getTotalUserAttempt()
@@ -203,6 +204,7 @@ public class InternalApiService {
          
         return new LectureCandidateDTO(
                 lecture.getId(),
+                lecture.getName(),
                 topicNames,
                 lecture.getCreatedAt()
         );

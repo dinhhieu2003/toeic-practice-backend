@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RecommendedTest {
 	private String id;	// recommend id - its value is test label: testId or "Lam lai"
+	private String name;
 	private float score;
 	private String explanation;
 	private String testId;
