@@ -34,6 +34,7 @@ import com.toeic.toeic_practice_backend.service.AzureBlobService;
 import com.toeic.toeic_practice_backend.service.QuestionService;
 import com.toeic.toeic_practice_backend.service.TestCategoryService;
 import com.toeic.toeic_practice_backend.service.TestService;
+import com.toeic.toeic_practice_backend.service.TestSubmissionService;
 import com.toeic.toeic_practice_backend.utils.PaginationUtils;
 import com.toeic.toeic_practice_backend.utils.constants.PaginationConstants;
 
@@ -48,6 +49,7 @@ public class TestController {
 	private final AzureBlobService azureBlobService;
 	private final QuestionService questionService;
 	private final TestCategoryService testCategoryService;
+	private final TestSubmissionService testSubmissionService;
 	
 	@PostMapping("{testId}/import")
     public ResponseEntity<?> importQuestions(@RequestParam("file") MultipartFile file, @PathVariable String testId) {
@@ -131,7 +133,7 @@ public class TestController {
 	@PostMapping("/submit")
 //	dùng map để chấm bài => lưu vào result => get result => convert từ test sang kiểu khác phù hợp cho frontend(có userAns và isCorrect)
 	public ResponseEntity<TestResultIdResponse> submitTest(@RequestBody SubmitTestRequest submitTestRequest) {
-		return ResponseEntity.ok(testService.submitTest(submitTestRequest));
+		return ResponseEntity.ok(testSubmissionService.submitTest(submitTestRequest));
 	}
 	
 	@GetMapping("/{testId}/questions")
