@@ -20,6 +20,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.beans.factory.annotation.Value;
@@ -166,25 +168,22 @@ public class QuestionService {
         return mongoTemplate.find(query, Question.class);
     }
     
-    // get random
     public PaginationResponse<List<Question>> getAllQuestionForPractice(Pageable pageable, Map<String, String> filterParams) {
-        Query query = new Query();
-
-        // Thêm điều kiện để loại bỏ các câu hỏi có type là "subquestion"
-        query.addCriteria(Criteria.where("type").ne("subquestion"));
+        List<Criteria> criteriaList = new ArrayList<>();
+        
+        criteriaList.add(Criteria.where("type").ne("subquestion"));
 
         filterParams.forEach((key, value) -> {
-            if(value != null && !value.isEmpty()) {
-            	System.out.println(value);
+            if (value != null && !value.isEmpty()) {
                 switch (key) {
                     case "DIFFICULTY":
-                        query.addCriteria(Criteria.where("difficulty").is(value));
+                        criteriaList.add(Criteria.where("difficulty").is(value));
                         break;
                     case "PARTNUM":
-                        query.addCriteria(Criteria.where("partNum").is(Integer.parseInt(value)));
+                        criteriaList.add(Criteria.where("partNum").is(Integer.parseInt(value)));
                         break;
                     case "TOPIC":
-                        query.addCriteria(Criteria.where("topic.name").is(value));
+                        criteriaList.add(Criteria.where("topic.name").is(value));
                         break;
                     default:
                         break;
@@ -192,25 +191,24 @@ public class QuestionService {
             }
         });
 
-        String orderAscBy = filterParams.get("ORDER_ASC_BY");
-        String orderDescBy = filterParams.get("ORDER_DESC_BY");
+        Criteria finalCriteria = new Criteria().andOperator(criteriaList.toArray(new Criteria[0]));
 
-        if (orderAscBy != null && !orderAscBy.isEmpty()) {
-            query.with(Sort.by(Sort.Direction.ASC, orderAscBy));
-        } else if (orderDescBy != null && !orderDescBy.isEmpty()) {
-            query.with(Sort.by(Sort.Direction.DESC, orderDescBy));
-        }
+        List<AggregationOperation> operations = new ArrayList<>();
+        operations.add(Aggregation.match(finalCriteria));
 
-        query.with(pageable);
-        
-        List<Question> questions = mongoTemplate.find(query, Question.class);
+        int pageSize = pageable.getPageSize();
+        operations.add(Aggregation.sample(pageSize));
 
-        long totalItems = mongoTemplate.count(query.skip(0).limit(0), Question.class);
+        Aggregation aggregation = Aggregation.newAggregation(operations);
+        List<Question> questions = mongoTemplate.aggregate(aggregation, "questions", Question.class).getMappedResults();
+
+        long totalItems = questions.size();
 
         Page<Question> questionPage = new PageImpl<>(questions, pageable, totalItems);
 
         return PaginationUtils.buildPaginationResponse(pageable, questionPage);
     }
+
     
     public PaginationResponse<List<Question>> getAllQuestionsInTestByTestId(
     		String testId, Pageable pageable) {
