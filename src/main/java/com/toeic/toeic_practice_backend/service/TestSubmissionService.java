@@ -68,7 +68,8 @@ public class TestSubmissionService {
 		// Step 4: Calculate score and update stats temporarily
 		CalculatedSubmissionDetails submissionDetails = calculateScoresAndProcessAnswers(
                 submitTestRequest.getUserAnswer(),
-                preparedData
+                preparedData,
+                type
         );
 		
 		// Step 5: Build and save result
@@ -117,7 +118,7 @@ public class TestSubmissionService {
 	
 
 	private CalculatedSubmissionDetails calculateScoresAndProcessAnswers(List<AnswerPair> answerPairs,
-			PreparedData preparedData) {
+			PreparedData preparedData, String type) {
 		Map<String, TopicStat> currentTopicStatMap = new HashMap<>(preparedData.initialTopicStatMap);
         Map<String, SkillStat> currentSkillStatMap = new HashMap<>(preparedData.initialSkillStatMap);
 
@@ -127,7 +128,8 @@ public class TestSubmissionService {
         int totalIncorrectAnswers = 0;
         int totalSkippedAnswers = 0;
         List<UserAnswer> userAnswersList = new ArrayList<>();
-
+        
+        int questionNumForExcercise = 1;
         for (AnswerPair answerPair : answerPairs) {
             String questionId = answerPair.getQuestionId();
             Question currentQuestion = preparedData.questionMap.get(questionId);
@@ -171,6 +173,10 @@ public class TestSubmissionService {
                         stat.updateStats(isCorrect, isSkipped, answerPair.getTimeSpent());
                     }
                 }
+            }
+            if(type.equals("exercise")) {
+            	currentQuestion.setQuestionNum(questionNumForExcercise);
+            	questionNumForExcercise++;
             }
             userAnswersList.add(createUserAnswerEntity(currentQuestion, answerPair, listTopics, isCorrect));
         }
