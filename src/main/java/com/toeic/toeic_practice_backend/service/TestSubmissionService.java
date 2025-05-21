@@ -195,52 +195,45 @@ public class TestSubmissionService {
 	}
 
 	private List<UserAnswer> processAndGroupUserAnswers(List<UserAnswer> flatUserAnswers, List<Question> allFetchedQuestions) {
-        List<UserAnswer> subUserAnswers = flatUserAnswers.stream()
-                .filter(ua -> "subquestion".equals(ua.getType()))
-                .collect(Collectors.toList());
-
-        if (subUserAnswers.isEmpty()) {
-            flatUserAnswers.sort(Comparator.comparingInt(UserAnswer::getQuestionNum));
-            return flatUserAnswers;
-        }
-
-        List<UserAnswer> mainUserAnswers = flatUserAnswers.stream()
-                .filter(ua -> !"subquestion".equals(ua.getType()))
-                .collect(Collectors.toList());
-
-        Set<String> groupQuestionIds = subUserAnswers.stream()
-                .map(UserAnswer::getParentId)
-                .filter(Objects::nonNull) // Đảm bảo parentId không null
-                .collect(Collectors.toSet());
-
-        Map<String, Question> groupQuestionMap = allFetchedQuestions.stream()
-            .filter(q -> groupQuestionIds.contains(q.getId()) && "group".equals(q.getType()))
-            .collect(Collectors.toMap(Question::getId, q -> q));
-
-        HashMap<String, List<UserAnswer>> subUserAnswerMap = new HashMap<>();
-        for (UserAnswer subUserAnswer : subUserAnswers) {
-            if (subUserAnswer.getParentId() != null) {
-                subUserAnswerMap
-                    .computeIfAbsent(subUserAnswer.getParentId(), k -> new ArrayList<>())
-                    .add(subUserAnswer);
-            }
-        }
-    
-        subUserAnswerMap.forEach((parentId, subs) -> subs.sort(Comparator.comparingInt(UserAnswer::getQuestionNum)));
-
-        List<UserAnswer> groupedUserAnswers = new ArrayList<>();
-        for (String groupQuestionId : groupQuestionIds) {
-            Question groupQuestion = groupQuestionMap.get(groupQuestionId);
-            if (groupQuestion != null) {
-                 UserAnswer groupUserAnswer = createGroupUserAnswerEntity(groupQuestion, subUserAnswerMap);
-                 groupedUserAnswers.add(groupUserAnswer);
-            }
-        }
-
-        mainUserAnswers.addAll(groupedUserAnswers);
-        mainUserAnswers.sort(Comparator.comparingInt(UserAnswer::getQuestionNum));
-
-        return mainUserAnswers;
+		// Filter subquestions
+		List<UserAnswer> subUserAnswers = flatUserAnswers.stream()
+		    .filter(userAnswer -> "subquestion".equals(userAnswer.getType()))
+		    .collect(Collectors.toList());
+		
+		// Get all group question IDs (parentIds of subquestions)
+		Set<String> groupQuestionIds = subUserAnswers.stream()
+		    .map(UserAnswer::getParentId)
+		    .collect(Collectors.toSet());
+		
+		// Query all group questions by their IDs
+		List<Question> groupQuestions = questionService.getQuestionByIds(new ArrayList<>(groupQuestionIds));
+		
+		// Map group question IDs to their corresponding questions
+		HashMap<String, Question> groupQuestionMap = new HashMap<>();
+		for (Question groupQuestion : groupQuestions) {
+		    groupQuestionMap.put(groupQuestion.getId(), groupQuestion);
+		}
+		
+		// Map parentId to their subquestions
+		HashMap<String, List<UserAnswer>> subUserAnswerMap = new HashMap<>();
+		for (UserAnswer subUserAnswer : subUserAnswers) {
+		    subUserAnswerMap
+		        .computeIfAbsent(subUserAnswer.getParentId(), k -> new ArrayList<>())
+		        .add(subUserAnswer);
+		}
+		
+		// Initialize UserAnswer groups with subquestions
+		List<UserAnswer> groupedUserAnswers = new ArrayList<>();
+		for (Question groupQuestion : groupQuestions) {
+		    UserAnswer groupUserAnswer = createGroupUserAnswerEntity(groupQuestion, subUserAnswerMap);
+		    groupedUserAnswers.add(groupUserAnswer);
+		}
+		
+		flatUserAnswers.addAll(groupedUserAnswers);
+		// Sort by questionNum
+		flatUserAnswers.sort(Comparator.comparingInt(UserAnswer::getQuestionNum));
+		return flatUserAnswers;
+		
     }
 
 	private String determineTestSkill(int partNum) {
