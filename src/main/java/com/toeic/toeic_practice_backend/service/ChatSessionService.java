@@ -84,18 +84,16 @@ public class ChatSessionService {
     			+ "Please only response 'Ready' or 'Ready, i can read image'");
     	TextPart userPromptTextPart = new TextPart(userPromptBuilder.toString());
     	content.add(userPromptTextPart);
-    	// Add image if part num is 1
-        if(question.getPartNum() == 1) {
-        	List<Resource> resources = question.getResources();
-        	for(Resource resource: resources) {
-        		if ("image".equalsIgnoreCase(resource.getType())) {
-        			// Image part of system prompt
-        			String url = resource.getContent();
-        			ImageUrlPart systemPromptImageUrlPart = 
-        					new ImageUrlPart(new ImageUrl(url, "high"));
-        			content.add(systemPromptImageUrlPart);
-        		}
-        	}
+    	// Add image
+    	List<Resource> resources = question.getResources();
+    	for(Resource resource: resources) {
+    		if ("image".equalsIgnoreCase(resource.getType())) {
+    			// Image part of system prompt
+    			String url = resource.getContent();
+    			ImageUrlPart systemPromptImageUrlPart = 
+    					new ImageUrlPart(new ImageUrl(url, "high"));
+    			content.add(systemPromptImageUrlPart);
+    		}
         }
         Message message = new Message("user", content);
         return message;
