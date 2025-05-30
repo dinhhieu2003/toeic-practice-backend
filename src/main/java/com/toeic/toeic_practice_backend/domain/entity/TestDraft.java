@@ -8,7 +8,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-@Document(collection = "categories")
+@Document(collection = "test_drafts")
 @Data
 @EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor

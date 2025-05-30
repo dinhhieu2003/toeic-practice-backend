@@ -1,5 +1,6 @@
 package com.toeic.toeic_practice_backend.mapper;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,6 +26,7 @@ public interface CategoryMapper {
 		            responseItem.setYear(entry.getValue().stream()
 		                                       .map(Category::getYear)
 		                                       .distinct() // Loại bỏ các năm trùng lặp nếu cần
+		                                       .sorted(Comparator.reverseOrder())
 		                                       .collect(Collectors.toList()));
 		            return responseItem;
 		        })
