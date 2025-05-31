@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -60,6 +61,8 @@ public class CommentService {
 	private final TestService testService;
 	private final LectureService lectureService;
 	private final NotificationService notificationService;
+	@Value("${client.url}")
+	String clientUrl;
 	
 	public PaginationResponse<List<Comment>> getComments(Pageable pageable, String term, String[] sortBy, String[] sortDirection, Boolean active) {
 		if(sortBy == null || sortBy.length == 0) {
@@ -160,15 +163,18 @@ public class CommentService {
     	String message = "Nothing";
     	boolean isRead = false;
     	NotificationType notificationType = null;
+    	String deepLink = clientUrl;
     	if(request.getTargetType() == CommentTargetType.TEST) {
     		String testName = testService.getTestName(relatedId);
     		message = userReply + " phản hồi comment của bạn trong đề thi: " + testName;
     		notificationType = NotificationType.COMMENT_REPLY_TEST;
+    		deepLink += "/test/"+ relatedId;
     	}
     	if(request.getTargetType() == CommentTargetType.LECTURE) {
     		String lectureName = lectureService.getLectureName(relatedId);
     		message = userReply + " phản hồi comment của bạn trong bài học: " + lectureName;
     		notificationType = NotificationType.COMMENT_REPLY_LECTURE;
+    		deepLink += "/lecture/" + lectureName + "___" + relatedId;
     	}
     	Notification notification = Notification.builder()
     			.userId(userId)
@@ -176,6 +182,7 @@ public class CommentService {
     			.message(message)
     			.relatedId(relatedId)
     			.isRead(isRead)
+    			.deepLink(deepLink)
     			.build();
     	return notification;
 	}

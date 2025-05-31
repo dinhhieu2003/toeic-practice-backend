@@ -18,4 +18,5 @@ public class NotificationResponse {
 	private String relatedId;
 	private boolean isRead;
 	private Instant createdAt;
+	private String deepLink;
 }

@@ -25,4 +25,5 @@ public class Notification extends BaseEntity {
 	private String message;
 	private String relatedId;
 	private boolean isRead;
+	private String deepLink;
 }

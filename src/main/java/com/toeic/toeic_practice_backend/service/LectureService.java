@@ -113,9 +113,9 @@ public class LectureService {
         Boolean orderDesc = filterParams.get("ORDER_DESC");
 
         if (orderAsc) {
-            query.with(Sort.by(Sort.Direction.ASC));
+            query.with(Sort.by(Sort.Direction.ASC, "createdAt"));
         } else if (orderDesc) {
-            query.with(Sort.by(Sort.Direction.DESC));
+            query.with(Sort.by(Sort.Direction.DESC, "createdAt"));
         }
 
         query.with(pageable);
