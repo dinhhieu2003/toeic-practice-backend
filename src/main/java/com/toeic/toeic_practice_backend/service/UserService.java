@@ -7,6 +7,8 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.toeic.toeic_practice_backend.domain.dto.request.user.UpdateUserTargetRequest;
@@ -131,5 +133,16 @@ public class UserService {
 		updateUserTargetResponse.setEmail(newUser.getEmail());
 		updateUserTargetResponse.setTarget(newUser.getTarget());
 		return updateUserTargetResponse;
+	}
+	
+	public String getCurrentUserId() {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        Optional<User> userOptional = getUserByEmail(username);
+        String userId = null;
+        if(userOptional.isPresent()) {
+        	userId = userOptional.get().getId();
+        }
+        return userId;
 	}
 }

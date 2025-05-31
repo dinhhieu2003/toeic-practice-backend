@@ -33,6 +33,7 @@ import com.toeic.toeic_practice_backend.domain.dto.response.comment.CommentClass
 import com.toeic.toeic_practice_backend.domain.dto.response.comment.CommentViewResponse;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
 import com.toeic.toeic_practice_backend.domain.entity.Comment;
+import com.toeic.toeic_practice_backend.domain.entity.Notification;
 import com.toeic.toeic_practice_backend.domain.entity.User;
 import com.toeic.toeic_practice_backend.exception.AppException;
 import com.toeic.toeic_practice_backend.mapper.CommentMapper;
@@ -42,6 +43,7 @@ import com.toeic.toeic_practice_backend.utils.PaginationUtils;
 import com.toeic.toeic_practice_backend.utils.constants.CommentTargetType;
 import com.toeic.toeic_practice_backend.utils.constants.DeleteReasonTagComment;
 import com.toeic.toeic_practice_backend.utils.constants.ErrorCode;
+import com.toeic.toeic_practice_backend.utils.constants.NotificationType;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -55,6 +57,9 @@ public class CommentService {
 	private final CommentMapper commentMapper;
 	private final UserService userService;
 	private final CommentClassificationService commentClassificationService;
+	private final TestService testService;
+	private final LectureService lectureService;
+	private final NotificationService notificationService;
 	
 	public PaginationResponse<List<Comment>> getComments(Pageable pageable, String term, String[] sortBy, String[] sortDirection, Boolean active) {
 		if(sortBy == null || sortBy.length == 0) {
@@ -148,6 +153,33 @@ public class CommentService {
 		return response;
 	}
 
+	private Notification buildTempNotification(Comment parentComment, CreateCommentRequest request, String userReply) {
+		log.info("Building notification...");
+		String userId = parentComment.getUserId();
+    	String relatedId = request.getTargetId();
+    	String message = "Nothing";
+    	boolean isRead = false;
+    	NotificationType notificationType = null;
+    	if(request.getTargetType() == CommentTargetType.TEST) {
+    		String testName = testService.getTestName(relatedId);
+    		message = userReply + " phản hồi comment của bạn trong đề thi: " + testName;
+    		notificationType = NotificationType.COMMENT_REPLY_TEST;
+    	}
+    	if(request.getTargetType() == CommentTargetType.LECTURE) {
+    		String lectureName = lectureService.getLectureName(relatedId);
+    		message = userReply + " phản hồi comment của bạn trong bài học: " + lectureName;
+    		notificationType = NotificationType.COMMENT_REPLY_LECTURE;
+    	}
+    	Notification notification = Notification.builder()
+    			.userId(userId)
+    			.type(notificationType)
+    			.message(message)
+    			.relatedId(relatedId)
+    			.isRead(isRead)
+    			.build();
+    	return notification;
+	}
+	
 	public CommentViewResponse createComment(CreateCommentRequest request) {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 	    String email = authentication.getName();
@@ -163,6 +195,7 @@ public class CommentService {
 	    Comment parentComment = null;
 	    // direct reply count for parent if have
 	    int directReplyCountsParent = 0;
+	    Notification notification = null;
 	    if(request.getParentId() != null) {
 	    	parentComment = commentRepository.findById(request.getParentId())
 	    			.orElseThrow(() -> new AppException(ErrorCode.COMMENT_NOT_FOUND));
@@ -175,6 +208,9 @@ public class CommentService {
 	    	if(level == 2) {
 	    		rootId = parentComment.getRootId();
 	    	}
+	    	
+	    	// build temp notification
+	    	notification = buildTempNotification(parentComment, request, email);
 	    }
 	    Comment comment = Comment.builder()
 	            .content(request.getContent())
@@ -202,6 +238,12 @@ public class CommentService {
 	    	commentRepository.save(parentComment);
 	    }
 	    CommentViewResponse response = commentMapper.toCommentViewResponse(createdComment, user.getId());
+	    
+	    // When a comment is successfully saved, a notification is created.
+	    if(notification != null) {
+	    	notificationService.createNotification(notification);
+	    }
+	    
 	    return response;
 	}
 	

@@ -32,6 +32,7 @@ import com.toeic.toeic_practice_backend.exception.AppException;
 import com.toeic.toeic_practice_backend.mapper.QuestionMapper;
 import com.toeic.toeic_practice_backend.repository.CategoryRepository;
 import com.toeic.toeic_practice_backend.repository.TestRepository;
+import com.toeic.toeic_practice_backend.repository.projectionInterface.TestNameOnly;
 import com.toeic.toeic_practice_backend.utils.PaginationUtils;
 import com.toeic.toeic_practice_backend.utils.constants.ErrorCode;
 
@@ -49,6 +50,12 @@ public class TestService {
 	private final ResultService resultService;
 	private final UserService userService;
 	private final AuthService authService;
+	
+	public String getTestName(String testId) {
+		TestNameOnly testName = testRepository.findTestNameByTestId(testId)
+				.orElseThrow(() -> new AppException(ErrorCode.TEST_NOT_FOUND));
+		return testName.getName();
+	}
 	
 	public Test addTest(CreateTestRequest testCreationRequest) {
 		log.info("Start: Add new test");

@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.Meta;
 import com.toeic.toeic_practice_backend.domain.dto.response.pagination.PaginationResponse;
@@ -14,6 +15,15 @@ public class PaginationUtils {
         int currentPageValid = Math.max(current - 1, 0);
         int pageSizeValid = Math.max(pageSize, 1);
         return PageRequest.of(currentPageValid, pageSizeValid);
+    }
+	
+	public static Pageable createPageable(int current, int pageSize, Sort sort) {
+        int currentPageValid = Math.max(current - 1, 0);
+        int pageSizeValid = Math.max(pageSize, 1);
+
+        return (sort == null)
+                ? PageRequest.of(currentPageValid, pageSizeValid)
+                : PageRequest.of(currentPageValid, pageSizeValid, sort);
     }
 	
 	public static <T> PaginationResponse<List<T>> buildPaginationResponse(Pageable pageable, Page<T> pageData) {

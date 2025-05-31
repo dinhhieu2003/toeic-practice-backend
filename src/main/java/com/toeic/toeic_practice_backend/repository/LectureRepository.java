@@ -11,6 +11,7 @@ import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.toeic.toeic_practice_backend.domain.entity.Lecture;
+import com.toeic.toeic_practice_backend.repository.projectionInterface.LectureNameOnly;
 
 @Repository
 public interface LectureRepository extends MongoRepository<Lecture, String> {
@@ -28,4 +29,7 @@ public interface LectureRepository extends MongoRepository<Lecture, String> {
 	List<Lecture> findByIsActiveTrue();
 	
 	List<Lecture> findLectureByIdIn(List<String> lectureIds);
+	
+	@Query(value = "{ '_id': ?0 }", fields = "{ 'name': 1, '_id': 0 }")
+	Optional<LectureNameOnly> findLectureNameByLectureId(String lectureId);
 }

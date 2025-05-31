@@ -31,6 +31,7 @@ import com.toeic.toeic_practice_backend.domain.entity.Lecture.PracticeQuestion;
 import com.toeic.toeic_practice_backend.domain.entity.Topic;
 import com.toeic.toeic_practice_backend.exception.AppException;
 import com.toeic.toeic_practice_backend.repository.LectureRepository;
+import com.toeic.toeic_practice_backend.repository.projectionInterface.LectureNameOnly;
 import com.toeic.toeic_practice_backend.utils.PaginationUtils;
 import com.toeic.toeic_practice_backend.utils.constants.ErrorCode;
 
@@ -47,6 +48,12 @@ public class LectureService {
     private final TopicService topicService;
 
     private final MongoTemplate mongoTemplate;
+    
+    public String getLectureName(String lectureId) {
+    	LectureNameOnly lectureName = lectureRepository.findLectureNameByLectureId(lectureId)
+    			.orElseThrow(() -> new AppException(ErrorCode.LECTURE_NOT_FOUND));
+    	return lectureName.getName();
+    }
     
     public List<Lecture> getById(List<String> ids) {
     	return lectureRepository.findByIdIn(ids);

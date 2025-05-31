@@ -55,7 +55,10 @@ public enum ErrorCode {
 	COMMENT_REPORT_NOT_FOUND(12001, "Comment report not found", HttpStatus.NOT_FOUND),
 	
 	// Test Draft
-	TEST_DRAFT_NOT_FOUND(12002, "Test draft not found", HttpStatus.NOT_FOUND);
+	TEST_DRAFT_NOT_FOUND(12002, "Test draft not found", HttpStatus.NOT_FOUND),
+	
+	// Notification
+	NOTIFICATION_NOT_FOUND(12003, "Notification not found", HttpStatus.NOT_FOUND);
 	
 	private final int code;
 	private final String message;

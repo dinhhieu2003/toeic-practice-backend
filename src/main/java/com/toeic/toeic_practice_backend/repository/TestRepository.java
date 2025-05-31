@@ -10,6 +10,7 @@ import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.toeic.toeic_practice_backend.domain.entity.Test;
+import com.toeic.toeic_practice_backend.repository.projectionInterface.TestNameOnly;
 
 @Repository
 public interface TestRepository extends MongoRepository<Test, String> {
@@ -34,4 +35,6 @@ public interface TestRepository extends MongoRepository<Test, String> {
      * Find all active tests for recommendation
      */
     List<Test> findByIsActiveTrue();
+    @Query(value = "{ '_id': ?0 }", fields = "{ 'name': 1, '_id': 0 }")
+    Optional<TestNameOnly> findTestNameByTestId(String testId);
 }
