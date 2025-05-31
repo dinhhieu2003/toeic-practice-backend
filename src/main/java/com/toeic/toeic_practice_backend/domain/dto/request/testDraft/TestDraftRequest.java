@@ -10,4 +10,5 @@ import lombok.NoArgsConstructor;
 public class TestDraftRequest {
 	private String testId;
 	private String draftData;
+	private Float version;
 }

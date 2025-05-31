@@ -19,4 +19,5 @@ public class TestDraft extends BaseEntity {
 	private String testId;
 	private String userId;
 	private String draftData;
+	private Float version;
 }

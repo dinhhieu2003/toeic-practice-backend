@@ -9,4 +9,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CheckTestDraftExistResponse {
 	private boolean exist;
+	private Float version;
 }
