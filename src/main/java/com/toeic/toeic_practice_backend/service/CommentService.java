@@ -61,8 +61,6 @@ public class CommentService {
 	private final TestService testService;
 	private final LectureService lectureService;
 	private final NotificationService notificationService;
-	@Value("${client.url}")
-	String clientUrl;
 	
 	public PaginationResponse<List<Comment>> getComments(Pageable pageable, String term, String[] sortBy, String[] sortDirection, Boolean active) {
 		if(sortBy == null || sortBy.length == 0) {
@@ -163,7 +161,7 @@ public class CommentService {
     	String message = "Nothing";
     	boolean isRead = false;
     	NotificationType notificationType = null;
-    	String deepLink = clientUrl;
+    	String deepLink = "";
     	if(request.getTargetType() == CommentTargetType.TEST) {
     		String testName = testService.getTestName(relatedId);
     		message = userReply + " phản hồi comment của bạn trong đề thi: " + testName;
