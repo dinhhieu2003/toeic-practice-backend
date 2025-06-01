@@ -10,6 +10,9 @@ import com.toeic.toeic_practice_backend.utils.constants.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.concurrent.TimeUnit;
+
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -57,7 +60,10 @@ public class RecommendationController {
             }
 
             
-            return ResponseEntity.ok(recommendationsResponse);
+            return ResponseEntity
+            		.ok()
+            		.cacheControl(CacheControl.maxAge(3600, TimeUnit.SECONDS).cachePublic())
+            		.body(recommendationsResponse);
 
         } catch (Exception e) {
             log.error("Error processing recommendations for user {}: {}", userId, e.getMessage(), e);
