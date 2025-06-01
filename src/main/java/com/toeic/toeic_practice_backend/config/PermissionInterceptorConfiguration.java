@@ -28,7 +28,8 @@ public class PermissionInterceptorConfiguration implements WebMvcConfigurer {
                 "/api/v1/categories/**",
         		"/api/v1/tests/**",
         		"/api/v1/questions/**",
-        		"/api/v1/lectures/**"
+        		"/api/v1/lectures/**",
+        		"/api/v1/comments/**"
         };
         
         // Add the interceptor to all paths, excluding the whitelist

@@ -78,11 +78,11 @@ public class LectureUserService {
 	}
 	
 	public PaginationResponse<List<LectureCardResponse>> getAllLectures(Pageable pageable, Map<String, Boolean> filterParams, String search) {
+		HashMap<String, Integer> learningProgressMap = new HashMap<>();
 		String email = authService.getCurrentEmail();
-		if(email == null ) {
-			throw new AppException(ErrorCode.USER_NOT_FOUND);
+		if(email != null ) {
+			learningProgressMap = userService.getUserLearningProgress(email);
 		}
-		HashMap<String, Integer> learningProgressMap = userService.getUserLearningProgress(email);
 		// Get all lectures 
 		PaginationResponse<List<Lecture>> lecturePage = lectureService.getAllLectures(pageable, filterParams, search);
 		List<Lecture> lectures = lecturePage.getResult();
