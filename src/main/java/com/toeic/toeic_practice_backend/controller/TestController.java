@@ -6,6 +6,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -141,7 +142,7 @@ public class TestController {
 			@PathVariable String testId, 
 			@RequestParam(defaultValue = PaginationConstants.DEFAULT_CURRENT_PAGE) int current,
 			@RequestParam(defaultValue = PaginationConstants.DEFAULT_PAGE_SIZE) int pageSize) {
-		Pageable pageable = PaginationUtils.createPageable(current, pageSize);
+		Pageable pageable = PaginationUtils.createPageable(current, pageSize, Sort.by("questionNum").ascending());
 		return ResponseEntity.ok(testService.getAllQuestionsInTestByTestId(testId, pageable));
 	}
 	

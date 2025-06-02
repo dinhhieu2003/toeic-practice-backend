@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -248,6 +249,7 @@ public class TestService {
 		return testRepository.findByFormatAndYear(format, year, pageable);
 	}
 	
+	@Cacheable(value = "fullTests", key = "#testId + '_' + #listPart")
 	public FullTestResponse getQuestionTest(String testId, String listPart) {
 	    // Query execution
 	    long queryStartTime = System.currentTimeMillis();

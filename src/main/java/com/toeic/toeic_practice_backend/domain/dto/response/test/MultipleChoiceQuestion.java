@@ -1,5 +1,6 @@
 package com.toeic.toeic_practice_backend.domain.dto.response.test;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,7 +13,12 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class MultipleChoiceQuestion {
+public class MultipleChoiceQuestion implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
 	private String id;
 	private int questionNum;
 	private int partNum;

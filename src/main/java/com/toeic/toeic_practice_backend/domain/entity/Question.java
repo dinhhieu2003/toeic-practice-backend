@@ -1,5 +1,6 @@
 package com.toeic.toeic_practice_backend.domain.entity;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +23,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Question extends BaseEntity{
+public class Question extends BaseEntity implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	@Id
 	@Indexed
     private String id;
@@ -46,8 +51,9 @@ public class Question extends BaseEntity{
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class Resource {
-        private String type;  // paragraph, image, or audio
+    public static class Resource implements Serializable {
+		private static final long serialVersionUID = 1L;
+		private String type;  // paragraph, image, or audio
         private String content;
     }
 }

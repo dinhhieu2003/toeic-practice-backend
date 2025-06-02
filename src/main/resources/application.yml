@@ -7,6 +7,8 @@ client:
 spring:
   application:
     name: toeic-practice-backend
+  cache:
+    type: redis
   data:
     mongodb:
       uri: ${MONGODB_URI}

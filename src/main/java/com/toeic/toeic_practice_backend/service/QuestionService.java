@@ -25,6 +25,7 @@ import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -59,6 +60,7 @@ public class QuestionService {
     private String urlResource;
     private static final double SIMILARITY_THRESHOLD = 0.9;
     
+    @CacheEvict(value = "fullTests", allEntries = true)
     public Question updateQuestion(UpdateQuestionRequest updateQuestionRequest) {
     	log.info("Start: Function update question");
     	Question existingQuestion = questionRepository
@@ -536,7 +538,7 @@ public class QuestionService {
     			.mapToObj(c -> Character.getNumericValue(c))
     			.collect(Collectors.toList());
     	
-    	List<Question> questions = questionRepository.findByTestIdAndTypeIsNotSubquestion(testId, listPartInt);
+    	List<Question> questions = questionRepository.findByTestIdAndTypeIsNotSubquestion(testId, listPartInt, Sort.by(Sort.Direction.ASC, "questionNum"));
     	return questions;
     }
     
