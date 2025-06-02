@@ -2,6 +2,7 @@ package com.toeic.toeic_practice_backend.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -38,12 +39,8 @@ public class RecommendationIntegrationService {
         this.internalApiKey = internalApiKey;
     }
 
-    /**
-     * Get personalized recommendations for a user from the recommender service
-     *
-     * @param userId The ID of the user to get recommendations for
-     * @return RecommenderResponse containing recommended test and lecture IDs, or null if the request fails
-     */
+    
+    @Cacheable(value = "recommendationCache", key = "#userId")
     public RecommendationResponse getRecommendations(String userId) {
         log.info("Fetching recommendations for user: {}", userId);
 

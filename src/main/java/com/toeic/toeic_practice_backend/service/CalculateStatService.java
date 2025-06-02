@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import com.toeic.toeic_practice_backend.domain.dto.response.recommendation.RecommendationResponse;
 import com.toeic.toeic_practice_backend.domain.entity.User;
 import com.toeic.toeic_practice_backend.domain.entity.User.OverallStat;
 import com.toeic.toeic_practice_backend.service.TestSubmissionService.CalculatedSubmissionDetails;
@@ -19,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class CalculateStatService {
 	private final UserService userService;
+	private final RecommendationIntegrationService recommendationService;
 	@Async
 	public void updateUserAggregateStatistics(User currentUser, CalculatedSubmissionDetails submissionDetails,
 			String testId, int totalSeconds) {
@@ -59,5 +62,19 @@ public class CalculateStatService {
         currentUser.setTestHistory(testHistory);
         userService.saveUser(currentUser);
         log.info("Update stats success");
+        
+        log.info("Start save recommendation into redis");
+        refreshRecommendations(currentUser.getId());
+        log.info("Finished refreshing recommendations for user ID: {}", currentUser.getId());
+	}
+	
+	@CacheEvict(value = "recommendationCache", key = "#userId")
+	public void evictRecommendations(String userId) {
+		log.info("Evicting recommendations cache for user ID: {}", userId);
+	}
+
+	public RecommendationResponse refreshRecommendations(String userId) {
+	    evictRecommendations(userId);
+	    return recommendationService.getRecommendations(userId);
 	}
 }
