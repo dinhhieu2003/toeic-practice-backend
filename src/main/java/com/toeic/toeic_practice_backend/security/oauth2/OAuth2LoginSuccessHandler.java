@@ -91,10 +91,10 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
             targetUrl = UriComponentsBuilder.fromUriString(targetUrl)
                     .queryParam("status", status)
                     .queryParam("iduser", user.getId())
-                    .queryParam("token", accessToken)
                     .queryParam("email", encoder.encode(user.getEmail()))
                     .queryParam("avatar", encoder.encode(user.getAvatar()))
                     .queryParam("role", user.getRole().getName())
+                    .queryParam("token", accessToken)
                     .build().toUriString();
         } else {
             targetUrl = UriComponentsBuilder.fromUriString(targetUrl)
