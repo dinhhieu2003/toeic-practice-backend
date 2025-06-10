@@ -88,5 +88,3 @@ api:
 recommender:
   service:
     url: ${RECOMMENDER_SERVICE_URL}
-  internal:
-    api-key: ${RECOMMENDER_INTERNAL_API_KEY} 
