@@ -2,6 +2,7 @@ package com.toeic.toeic_practice_backend.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -82,5 +83,53 @@ public class RecommendationIntegrationService {
             log.error("Unexpected error retrieving recommendations: {}", e.getMessage(), e);
             return null;
         }
-    }    
+    }   
+    
+    @CachePut(value = "recommendationCache", key = "#userId")
+	public RecommendationResponse refreshRecommendations(String userId) {
+	    return getRecommendationsNoCache(userId);
+	}
+    
+    private RecommendationResponse getRecommendationsNoCache(String userId) {
+        log.info("Fetching recommendations for user: {}", userId);
+
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("X-Internal-API-Key", internalApiKey);
+            
+            String url = recommenderServiceUrl + "/recommendations/"+ userId;
+         
+            HttpEntity<Void> entity = new HttpEntity<>(headers);
+            
+            ResponseEntity<RecommendationResponse> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    entity,
+                    RecommendationResponse.class
+                );
+            // Check response status
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                log.info("Successfully retrieved recommendations for user: {}", userId);
+                return response.getBody();
+            } else {
+                log.warn("Received unsuccessful response from recommender service: {}", response.getStatusCode());
+                return null;
+            }
+        } catch (HttpClientErrorException e) {
+            if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
+                log.warn("User {} not found in recommender service", userId);
+            } else {
+                log.error("HTTP error when calling recommender service: {} - {}", 
+                    e.getStatusCode(), e.getResponseBodyAsString(), e);
+            }
+            return null;
+        } catch (RestClientException e) {
+            log.error("Error connecting to recommender service: {}", e.getMessage(), e);
+            return null;
+        } catch (Exception e) {
+            log.error("Unexpected error retrieving recommendations: {}", e.getMessage(), e);
+            return null;
+        }
+    }   
 } 

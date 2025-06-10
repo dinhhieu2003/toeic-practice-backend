@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -63,18 +64,10 @@ public class CalculateStatService {
         userService.saveUser(currentUser);
         log.info("Update stats success");
         
-        log.info("Start save recommendation into redis");
-        refreshRecommendations(currentUser.getId());
+        log.info("Start call recommendation service...");
+        recommendationService.refreshRecommendations(currentUser.getId());
         log.info("Finished refreshing recommendations for user ID: {}", currentUser.getId());
 	}
-	
-	@CacheEvict(value = "recommendationCache", key = "#userId")
-	public void evictRecommendations(String userId) {
-		log.info("Evicting recommendations cache for user ID: {}", userId);
-	}
 
-	public RecommendationResponse refreshRecommendations(String userId) {
-	    evictRecommendations(userId);
-	    return recommendationService.getRecommendations(userId);
-	}
+	
 }

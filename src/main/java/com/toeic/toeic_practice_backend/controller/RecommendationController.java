@@ -62,7 +62,7 @@ public class RecommendationController {
             
             return ResponseEntity
             		.ok()
-            		.cacheControl(CacheControl.maxAge(3600, TimeUnit.SECONDS).cachePublic())
+//            		.cacheControl(CacheControl.maxAge(3600, TimeUnit.SECONDS).cachePublic())
             		.body(recommendationsResponse);
 
         } catch (Exception e) {
